@@ -286,3 +286,35 @@ glad_study_variables_LR_model <- glm(
 summary(glad_study_variables_LR_model)
 
 ```
+
+```{r Model 4: Combined model}
+
+full_LR_model <- glm(
+  formula = completed_baseline ~ age_cleaned + 
+    gender_recode +
+    highest_education +
+    dem.questions_based_ethnic_origin +
+    dem.what_is_your_current_employment_status +
+    partnership_status +
+    phq.sum_score + 
+    gad.sum_score +
+    audit.sum_score +
+    dem.select_the_box_that_best_describes_you +
+    mental_health_comorbidities +
+    depressive_and_anxiety_comorbidity +
+    eating_disorders +
+    OCRDs +
+    psychotic_and_biploar_disorder +
+    mhd.asd +
+    mhd.addadhd +
+    mhd.personality_disorder +
+    startDate + 
+    kit_returned +
+    joined_coping_first_invitation,
+  family = "binomial",
+  data = glad_coping_participation_raw)
+
+#Check output
+summary(full_LR_model)
+
+```
