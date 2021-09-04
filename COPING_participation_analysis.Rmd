@@ -184,6 +184,22 @@ education_chi2_test
 
 ```
 
+```{r Post-hoc testing for education chi2 test}
+
+#Get the adjusted residuals 
+chisq.test(education_contingency_table, 
+           correct = TRUE)$stdres
+
+#Adjust for multiple testing with Bonferonni
+adj_sig_education_chi2 <- sig_level/(nrow(education_contingency_table) *
+                                       ncol(education_contingency_table))
+adj_sig_education_chi2
+
+#Critical Z value
+qnorm(adj_sig_education_chi2/2)
+
+```
+
 ```{r Chi2 test for employment}
 
 employment_chi2_test <- chisq.test(employment_contingency_table,
