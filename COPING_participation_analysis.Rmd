@@ -158,6 +158,22 @@ ethnicity_chi2_test
 
 ```
 
+```{r Post-hoc testing for ethnicity chi2}
+
+#Get the adjusted residuals 
+chisq.test(ethnicity_contingency_table, 
+           correct = TRUE)$stdres
+
+#Adjust for multiple testing with Bonferonni
+adj_sig_ethnicity_chi2 <- sig_level/(nrow(ethnicity_contingency_table) *
+                                       ncol(ethnicity_contingency_table))
+adj_sig_ethnicity_chi2
+
+#Critical Z value
+qnorm(adj_sig_ethnicity_chi2/2)
+
+```
+
 ```{r Chi2 test for education}
 
 education_chi2_test <- chisq.test(education_contingency_table,
