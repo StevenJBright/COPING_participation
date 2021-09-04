@@ -108,13 +108,50 @@ partnership_contingency_table
 
 ```
 
-#Run t-tests and chi2 tests
+#Run Aim 1 tests
 
 The aim here is to see whether there are any significant differences between 
 the GLAD Study paticipants who did and did not take part in the COPING baseline
 regarding their sociodremographic background.
 
-#Logistic regression models
+##Chi2 tests
+
+```{r Chi2 test for gender}
+
+chisq.test(gender_contingency_table,
+           correct = TRUE)
+
+```
+
+```{r Chi2 test for ethnicity}
+
+chisq.test(ethnicity_contingency_table,
+           correct = TRUE)
+
+```
+
+```{r Chi2 test for education}
+
+chisq.test(education_contingency_table,
+           correct = TRUE)
+
+```
+
+```{r Chi2 test for employment}
+
+chisq.test(employment_contingency_table,
+           correct = TRUE)
+
+```
+
+```{r Chi2 test for partnership status}
+
+chisq.test(partnership_contingency_table,
+           correct = TRUE)
+
+```
+
+##Logistic regression models
 
 We will run four logistic regression models for aim 1:
 
