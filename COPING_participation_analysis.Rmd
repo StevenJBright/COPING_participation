@@ -29,3 +29,21 @@ library(tidyverse)
 
 ```
 
+#Read in data
+
+```{r Source paths}
+
+source("..//COPING_participation_paths.r")
+
+```
+
+```{r Read in glad coping participation data}
+
+glad_coping_participation_raw <- read_rds(paste0(processed_data_path, processed_data_name))
+
+#Check data
+glad_coping_participation_raw %>% 
+  head()
+
+```
+
