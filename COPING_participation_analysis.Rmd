@@ -109,3 +109,29 @@ partnership_contingency_table
 
 ```
 
+#Logistic regression models
+
+We will run four logistic regression models for aim 1:
+
+Model 1: Sociodemographic variables
+Model 2: Psychiatric and health variables
+Model 3: Study variables
+Model 4: All variables together
+
+```{r Model 1: sociodemographic variables}
+
+sociodemographic_LR_model <- glm(
+  formula = completed_baseline ~ age_cleaned + 
+    gender_recode +
+    highest_education +
+    dem.questions_based_ethnic_origin +
+    dem.what_is_your_current_employment_status +
+    partnership_status,
+  family = "binomial",
+  data = glad_coping_participation_raw)
+
+#Check output
+summary(sociodemographic_LR_model)
+
+```
+
