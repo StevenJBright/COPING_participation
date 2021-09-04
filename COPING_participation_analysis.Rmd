@@ -59,7 +59,7 @@ Education
 Employment
 Partnership status
 
-```{r Create gender contingency table}
+```{r Create contingency table for gender}
 
 gender_contingency_table <- glad_coping_participation_raw %>% 
   group_by(gender_recode) %>% 
@@ -70,7 +70,7 @@ gender_table
 
 ```
 
-```{r Create ethnicity contingency table}
+```{r Create contingency table for ethnicity}
 
 ethnicity_contingency_table <- glad_coping_participation_raw %>% 
   group_by(dem.questions_based_ethnic_origin) %>% 
@@ -78,6 +78,18 @@ ethnicity_contingency_table <- glad_coping_participation_raw %>%
 
 #Check output
 ethnicity_contingency_table
+
+```
+
+```{r Create contingency table for Education}
+
+# education_contingency_table <- glad_coping_participation_raw %>% 
+#   select(dem.college_or_university_degree,
+#          dem.a_levelsas_levels_or_equivalent,
+#          dem.o_levelsgcses_or_equivalent,
+#          dem.cses_or_equivalent,
+#          dem.nvq_or_hnd_or_hnc_or_equivalent) %>% 
+#   gather(key, name)
 
 ```
 
