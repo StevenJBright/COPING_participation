@@ -48,9 +48,8 @@ glad_coping_participation_raw %>%
 ```
 
 #Create tables for chi2 tests
-##Sociodemographics variables
 
-Variables:
+Sociodemographic variables:
 
 Age (continuous - Not applicable)
 Gender
@@ -114,20 +113,6 @@ partnership_contingency_table
 The aim here is to see whether there are any significant differences between 
 the GLAD Study paticipants who did and did not take part in the COPING baseline
 regarding their sociodremographic background.
-
-##Age
-
-```{r Run t-test for age}
-
-t.test(glad_coping_participation_raw$completed_baseline, 
-       glad_coping_participation_raw$age_cleaned,
-       mu = 0,
-       alt = "two.sided",
-       conf = 0.95,
-       var.eq = FALSE,
-       paired = FALSE)
-
-```
 
 #Logistic regression models
 
