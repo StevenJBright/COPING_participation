@@ -47,3 +47,25 @@ glad_coping_participation_raw %>%
 
 ```
 
+#Create tables for chi2 tests
+##Sociodemographics variables
+
+Variables:
+
+Age (continuous - Not applicable)
+Gender
+Ethnicity
+Education
+Employment
+Partnership status
+
+```{r Calculate distribution tables}
+
+gender_table <- glad_coping_participation_raw %>% 
+  group_by(gender_recode) %>% 
+  count()
+
+gender_table
+
+```
+
