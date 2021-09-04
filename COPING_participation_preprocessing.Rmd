@@ -2296,6 +2296,6 @@ glad_signup_final %>%
 
 ```{r write glad_signup_final}
 
-write_rds(paste0(processed_data_path, "glad_signup_final.rds"))
+write_rds(glad_signup_final, paste0(processed_data_path, "glad_coping_participation.rds"))
 
 ```
