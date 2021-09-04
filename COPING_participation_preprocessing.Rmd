@@ -26,6 +26,7 @@ remove(list = ls())
 #install.packages("summarytools")
 #install.packages("psych")
 #install.packages("eeptools")
+#install.packages("lubridate")
 
 ```
 
@@ -588,7 +589,7 @@ freq(GLAD_signup_age_filter$dem.which_gender_do_you_identify_with)
 
 ```{r Create factor variable for gender}
 
-GLAD_signup_age_filter$gender_labelled <- factor(
+GLAD_signup_age_filter$dem.which_gender_do_you_identify_with_labelled <- factor(
   GLAD_signup_age_filter$dem.which_gender_do_you_identify_with,
   levels = c(0, 1, 2, 3),
   labels = c("Male", "Female", "Non-binary", "Self-define")
@@ -596,7 +597,7 @@ GLAD_signup_age_filter$gender_labelled <- factor(
 
 #Check distribution
 GLAD_signup_age_filter %>% 
-  freq(gender_labelled)
+  freq(dem.which_gender_do_you_identify_with_labelled)
 
 ```
 
@@ -604,7 +605,7 @@ GLAD_signup_age_filter %>%
 ```{r Combine non-binary and self-define into one level}
 
 GLAD_signup_gender_recode <- GLAD_signup_age_filter %>% 
-  mutate(gender_recoded =
+  mutate(gender_recode =
            case_when(
              dem.which_gender_do_you_identify_with == 0 ~ 0,
              dem.which_gender_do_you_identify_with == 1 ~ 1,
@@ -614,14 +615,14 @@ GLAD_signup_gender_recode <- GLAD_signup_age_filter %>%
 
 #Check outcome
 GLAD_signup_gender_recode %>% 
-  freq(gender_recoded)
+  freq(gender_recode)
 
 ```
 
 ```{r Create factor variable for recoded gender}
 
 GLAD_signup_gender_recode$gender_recode_labelled <- factor(
-  GLAD_signup_gender_recode$gender_recoded,
+  GLAD_signup_gender_recode$gender_recode,
   levels = c(0, 1, 2),
   labels = c("Male", "Female", "Non-binary/prefer to self-define")
 )
@@ -719,7 +720,7 @@ GLAD_signup_gender_recode %>%
 
 ```{r Create factor variable for partnership status}
 
-GLAD_signup_gender_recode$partnership_status_labelled <- factor(
+GLAD_signup_gender_recode$dem.what_is_your_current_maritalrelationship_status_labelled <- factor(
   GLAD_signup_gender_recode$dem.what_is_your_current_maritalrelationship_status,
   levels = c(1, 2, 3, 4, 5, 6, 7, 8),
   labels = c("Single",
@@ -731,6 +732,36 @@ GLAD_signup_gender_recode$partnership_status_labelled <- factor(
              "Widowed",
              "Other")
   )
+
+#Check distribution
+GLAD_signup_gender_recode %>% 
+  freq(dem.what_is_your_current_maritalrelationship_status_labelled)
+
+```
+
+```{r Create Recoded partnership status variable}
+
+GLAD_signup_gender_recode <- GLAD_signup_gender_recode %>% 
+  mutate(partnership_status = 
+           case_when(
+             dem.what_is_your_current_maritalrelationship_status == 1 ~ 1,
+             dem.what_is_your_current_maritalrelationship_status == 2 ~ 2,
+             dem.what_is_your_current_maritalrelationship_status == 3 ~ 2,
+             dem.what_is_your_current_maritalrelationship_status == 4 ~ 2,
+             dem.what_is_your_current_maritalrelationship_status == 5 ~ 3,
+             dem.what_is_your_current_maritalrelationship_status == 6 ~ 3,
+             dem.what_is_your_current_maritalrelationship_status == 7 ~ 3
+           ))
+
+```
+
+```{r Create labelled factor variable for recoded partnership status}
+
+GLAD_signup_gender_recode$partnership_status_labelled <- factor(
+  GLAD_signup_gender_recode$partnership_status,
+  levels = c(1, 2, 3),
+  labels = c("Single", "Relationship or married/civil partnership", "Divorced/widowed/separated")
+)
 
 #Check distribution
 GLAD_signup_gender_recode %>% 
@@ -1148,31 +1179,6 @@ GLAD_signup_first_invitation$joined_coping_first_invitation <- factor(
 GLAD_signup_first_invitation %>% 
   group_by(joined_coping_first_invitation) %>% 
   count()
-
-```
-
-```{r Check endDate times for completed COPING base pt's}
-
-test <- GLAD_signup_first_invitation %>% 
-  filter(joined_coping_first_invitation == "Completed COPING baseline before 1st follow-up")
-
-#Get subset of COPING GLAD baseline with the IDs of these pt's
-COPING_GLAD_endDate_test <- COPING_GLAD_base_clean %>% 
-  subset_df_by_comparison_IDs(df_ID_col = "externalDataReference",
-                              comparison_IDs = test$externalDataReference,
-                              matching_IDs = TRUE)
-
-#Check results
-test %>% 
-  dim()
-
-COPING_GLAD_endDate_test %>% 
-  dim()
-
-COPING_GLAD_base_clean %>% 
-  dim()
-
-#View(COPING_GLAD_endDate_test$endDate)
 
 ```
 
@@ -2265,7 +2271,8 @@ glad_signup_total_waves %>%
 
 Pt's we want to remove are as follows:
 
--Pt's with NA for gender, and NA/implausible value for age
+-Pt's with NA for gender
+-Pt's with NA/implausible value for age
 -Pt's who signed up to the COPING survey after the 30th April 2020
 
 ```{r Filter final object}
@@ -2273,7 +2280,8 @@ Pt's we want to remove are as follows:
 glad_signup_final <- glad_signup_total_waves %>% 
   filter(age_cleaned >= 16 &
            age_cleaned <= 117) %>%  #41,142, 28 pt's removed
-  filter(!is.na(gender_recode_labelled)) #40,271, 871 pt's removed
+  filter(!is.na(gender_recode_labelled)) %>% #40,271, 871 pt's removed
+  filter(joined_coping_first_invitation != "Not applicable") #34,285, 5,986 pt's removed
 
 #Check results
 glad_signup_total_waves %>% 
@@ -2288,6 +2296,6 @@ glad_signup_final %>%
 
 ```{r write glad_signup_final}
 
-write_rds(paste0(processed_data_path, "glad_signup_final.rds"))
+write_rds(glad_signup_final, paste0(processed_data_path, "glad_coping_participation.rds"))
 
 ```
