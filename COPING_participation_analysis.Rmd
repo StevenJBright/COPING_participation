@@ -194,6 +194,23 @@ employment_chi2_test
 
 ```
 
+```{r Post-hoc testing for employment chi2 test}
+
+#Get the adjusted residuals 
+chisq.test(employment_contingency_table, 
+           correct = TRUE)$stdres
+
+#Adjust for multiple testing with Bonferonni
+adj_sig_employment_chi2 <- sig_level/(nrow(employment_contingency_table) *
+                                       ncol(employment_contingency_table))
+adj_sig_employment_chi2
+
+#Critical Z value
+qnorm(adj_sig_employment_chi2/2)
+
+```
+
+
 ```{r Chi2 test for partnership status}
 
 partnership_chi2_test <- chisq.test(partnership_contingency_table,
