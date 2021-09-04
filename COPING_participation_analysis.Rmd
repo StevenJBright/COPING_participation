@@ -81,13 +81,33 @@ ethnicity_contingency_table
 
 ```{r Create contingency table for Education}
 
-# education_contingency_table <- glad_coping_participation_raw %>% 
-#   select(dem.college_or_university_degree,
-#          dem.a_levelsas_levels_or_equivalent,
-#          dem.o_levelsgcses_or_equivalent,
-#          dem.cses_or_equivalent,
-#          dem.nvq_or_hnd_or_hnc_or_equivalent) %>% 
-#   gather(key, name)
+education_contingency_table <- glad_coping_participation_raw %>%
+  select(dem.college_or_university_degree,
+         dem.a_levelsas_levels_or_equivalent,
+         dem.o_levelsgcses_or_equivalent,
+         dem.cses_or_equivalent,
+         dem.nvq_or_hnd_or_hnc_or_equivalent) %>% 
+   gather(key, name)
+
+```
+
+```{r Create contingency table for employment}
+
+employment_contingency_table <- table(glad_coping_participation_raw$employment_labelled,
+                                      glad_coping_participation_raw$completed_baseline_labelled)
+
+#Check output
+employment_contingency_table
+
+```
+
+```{r Partnership status}
+
+partnership_contingency_table <- table(glad_coping_participation_raw$partnership_status_labelled,
+                                       glad_coping_participation_raw$completed_baseline_labelled)
+
+#Check output
+partnership_contingency_table
 
 ```
 
