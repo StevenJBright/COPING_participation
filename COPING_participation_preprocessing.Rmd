@@ -755,6 +755,19 @@ GLAD_signup_gender_recode <- GLAD_signup_gender_recode %>%
 
 ```
 
+```{r Create labelled factor variable for recoded partnership status}
+
+GLAD_signup_gender_recode$partnership_status_labelled <- factor(
+  GLAD_signup_gender_recode$partnership_status,
+  levels = c(1, 2, 3),
+  labels = c("Single", "Relationship or married/civil partnership", "Divorced/widowed/separated")
+)
+
+#Check distribution
+GLAD_signup_gender_recode %>% 
+  freq(partnership_status_labelled)
+
+```
 
 ##Smoking status
 
