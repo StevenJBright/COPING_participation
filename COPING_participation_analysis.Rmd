@@ -117,12 +117,6 @@ the GLAD Study paticipants who did and did not take part in the COPING baseline.
 
 This will only focus on the sociodemographic variables.
 
-```{r Set significance value}
-
-sig_level <- 0.05
-
-```
-
 ```{r Chi2 test for gender}
 
 gender_chi2_test <- chisq.test(gender_contingency_table,
