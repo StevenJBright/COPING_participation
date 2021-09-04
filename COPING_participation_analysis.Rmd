@@ -226,7 +226,6 @@ qnorm(adj_sig_employment_chi2/2)
 
 ```
 
-
 ```{r Chi2 test for partnership status}
 
 partnership_chi2_test <- chisq.test(partnership_contingency_table,
@@ -234,6 +233,22 @@ partnership_chi2_test <- chisq.test(partnership_contingency_table,
 
 #Check output
 partnership_chi2_test
+
+```
+
+```{r Post-hoc testing for partnership status chi2 test}
+
+#Get the adjusted residuals 
+chisq.test(partnership_contingency_table, 
+           correct = TRUE)$stdres
+
+#Adjust for multiple testing with Bonferonni
+adj_sig_partnership_chi2 <- sig_level/(nrow(partnership_contingency_table) *
+                                       ncol(partnership_contingency_table))
+adj_sig_partnership_chi2
+
+#Critical Z value
+qnorm(adj_sig_partnership_chi2/2)
 
 ```
 
