@@ -116,6 +116,12 @@ regarding their sociodremographic background.
 
 ##Chi2 tests
 
+```{r Set significance value}
+
+sig_level <- 0.05
+
+```
+
 ```{r Chi2 test for gender}
 
 gender_chi2_test <- chisq.test(gender_contingency_table,
@@ -125,6 +131,22 @@ gender_chi2_test <- chisq.test(gender_contingency_table,
 gender_chi2_test
 
 ```
+
+```{r Post hoc testing for gender}
+
+#Get the adjusted residuals 
+chisq.test(gender_contingency_table, 
+           correct = TRUE)$stdres
+
+#Adjust for multiple testing with Bonferonni
+adj_sig_gender_chi2 <- sig_level/(nrow(gender_contingency_table) * ncol(gender_contingency_table))
+adj_sig_gender_chi2
+
+#Critical Z value
+qnorm(adj_sig_gender_chi2/2)
+
+```
+
 
 ```{r Chi2 test for ethnicity}
 
