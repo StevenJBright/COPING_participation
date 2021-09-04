@@ -117,15 +117,15 @@ regarding their sociodremographic background.
 
 ##Age
 
-```{r run t-test for age}
+```{r Run t-test for age}
 
-# t.test(completed_baseline ~ age_cleaned,
-#        mu = 0,
-#        alt = "two-sided",
-#        conf = 0.95,
-#        var.eq = FALSE,
-#        paired = FALSE,
-#        data = glad_coping_participation_raw)
+t.test(glad_coping_participation_raw$completed_baseline, 
+       glad_coping_participation_raw$age_cleaned,
+       mu = 0,
+       alt = "two.sided",
+       conf = 0.95,
+       var.eq = FALSE,
+       paired = FALSE)
 
 ```
 
