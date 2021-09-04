@@ -71,9 +71,8 @@ gender_contingency_table
 
 ```{r Create contingency table for ethnicity}
 
-ethnicity_contingency_table <- glad_coping_participation_raw %>% 
-  group_by(dem.questions_based_ethnic_origin) %>% 
-  count()
+ethnicity_contingency_table <- table(glad_coping_participation_raw$ethnicity_labelled,
+                                     glad_coping_participation_raw$completed_baseline_labelled)
 
 #Check output
 ethnicity_contingency_table
