@@ -135,14 +135,14 @@ gender_chi2_test
 
 ```{r Create post_hoc function for sig chi2 results}
 
-post_hoc_chi2 <- function(contingency_table, correct_adj = FALSE, sig_level = 0.05){
+post_hoc_chi2_func <- function(contingency_table, correct_adj = FALSE, sig_level = 0.05){
   
   #Get the adjusted residuals
   chi2_result <- chisq.test(contingency_table,
              correct = correct_adj)$stdres
   
   #Make Bonferonni correction
-  bonferroni <- sig_level/(nrow(contingency_table) * ncol(contingency_table))
+  print(bonferroni <- sig_level/(nrow(contingency_table) * ncol(contingency_table)))
   
   #Get critical z value
   print(qnorm(bonferroni/2))
@@ -155,19 +155,8 @@ post_hoc_chi2 <- function(contingency_table, correct_adj = FALSE, sig_level = 0.
 
 ```{r Post hoc testing for gender}
 
-post_hoc_chi2(gender_contingency_table,
+post_hoc_chi2_func(gender_contingency_table,
               correct_adj = TRUE)
-
-#Get the adjusted residuals 
-chisq.test(gender_contingency_table, 
-           correct = TRUE)$stdres
-
-#Adjust for multiple testing with Bonferonni
-adj_sig_gender_chi2 <- sig_level/(nrow(gender_contingency_table) * ncol(gender_contingency_table))
-adj_sig_gender_chi2
-
-#Critical Z value
-qnorm(adj_sig_gender_chi2/2)
 
 ```
 
@@ -184,17 +173,8 @@ ethnicity_chi2_test
 
 ```{r Post-hoc testing for ethnicity chi2}
 
-#Get the adjusted residuals 
-chisq.test(ethnicity_contingency_table, 
-           correct = TRUE)$stdres
-
-#Adjust for multiple testing with Bonferonni
-adj_sig_ethnicity_chi2 <- sig_level/(nrow(ethnicity_contingency_table) *
-                                       ncol(ethnicity_contingency_table))
-adj_sig_ethnicity_chi2
-
-#Critical Z value
-qnorm(adj_sig_ethnicity_chi2/2)
+post_hoc_chi2_func(ethnicity_contingency_table,
+                   correct_adj = TRUE)
 
 ```
 
@@ -210,17 +190,8 @@ education_chi2_test
 
 ```{r Post-hoc testing for education chi2 test}
 
-#Get the adjusted residuals 
-chisq.test(education_contingency_table, 
-           correct = TRUE)$stdres
-
-#Adjust for multiple testing with Bonferonni
-adj_sig_education_chi2 <- sig_level/(nrow(education_contingency_table) *
-                                       ncol(education_contingency_table))
-adj_sig_education_chi2
-
-#Critical Z value
-qnorm(adj_sig_education_chi2/2)
+post_hoc_chi2_func(education_contingency_table,
+                   correct_adj = TRUE)
 
 ```
 
@@ -236,17 +207,8 @@ employment_chi2_test
 
 ```{r Post-hoc testing for employment chi2 test}
 
-#Get the adjusted residuals 
-chisq.test(employment_contingency_table, 
-           correct = TRUE)$stdres
-
-#Adjust for multiple testing with Bonferonni
-adj_sig_employment_chi2 <- sig_level/(nrow(employment_contingency_table) *
-                                       ncol(employment_contingency_table))
-adj_sig_employment_chi2
-
-#Critical Z value
-qnorm(adj_sig_employment_chi2/2)
+post_hoc_chi2_func(employment_contingency_table,
+                   correct_adj = TRUE)
 
 ```
 
@@ -262,17 +224,8 @@ partnership_chi2_test
 
 ```{r Post-hoc testing for partnership status chi2 test}
 
-#Get the adjusted residuals 
-chisq.test(partnership_contingency_table, 
-           correct = TRUE)$stdres
-
-#Adjust for multiple testing with Bonferonni
-adj_sig_partnership_chi2 <- sig_level/(nrow(partnership_contingency_table) *
-                                       ncol(partnership_contingency_table))
-adj_sig_partnership_chi2
-
-#Critical Z value
-qnorm(adj_sig_partnership_chi2/2)
+post_hoc_chi2_func(partnership_contingency_table,
+                   correct_adj = TRUE)
 
 ```
 
