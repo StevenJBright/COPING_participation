@@ -61,12 +61,11 @@ Partnership status
 
 ```{r Create contingency table for gender}
 
-gender_contingency_table <- glad_coping_participation_raw %>% 
-  group_by(gender_recode) %>% 
-  count()
+gender_contingency_table <- table(glad_coping_participation_raw$gender_recode_labelled,
+                                  glad_coping_participation_raw$completed_baseline_labelled)
 
 #Check output
-gender_table
+gender_contingency_table
 
 ```
 
