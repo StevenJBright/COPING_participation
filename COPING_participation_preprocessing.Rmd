@@ -1182,31 +1182,6 @@ GLAD_signup_first_invitation %>%
 
 ```
 
-```{r Check endDate times for completed COPING base pt's}
-
-test <- GLAD_signup_first_invitation %>% 
-  filter(joined_coping_first_invitation == "Completed COPING baseline before 1st follow-up")
-
-#Get subset of COPING GLAD baseline with the IDs of these pt's
-COPING_GLAD_endDate_test <- COPING_GLAD_base_clean %>% 
-  subset_df_by_comparison_IDs(df_ID_col = "externalDataReference",
-                              comparison_IDs = test$externalDataReference,
-                              matching_IDs = TRUE)
-
-#Check results
-test %>% 
-  dim()
-
-COPING_GLAD_endDate_test %>% 
-  dim()
-
-COPING_GLAD_base_clean %>% 
-  dim()
-
-#View(COPING_GLAD_endDate_test$endDate)
-
-```
-
 ##Questionnaire sum scores
 
 *NOTE to self: Make sure to update the df being used below, since I have inserted
