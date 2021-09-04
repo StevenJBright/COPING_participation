@@ -59,13 +59,25 @@ Education
 Employment
 Partnership status
 
-```{r Calculate distribution tables}
+```{r Create gender contingency table}
 
-gender_table <- glad_coping_participation_raw %>% 
+gender_contingency_table <- glad_coping_participation_raw %>% 
   group_by(gender_recode) %>% 
   count()
 
+#Check output
 gender_table
+
+```
+
+```{r Create ethnicity contingency table}
+
+ethnicity_contingency_table <- glad_coping_participation_raw %>% 
+  group_by(dem.questions_based_ethnic_origin) %>% 
+  count()
+
+#Check output
+ethnicity_contingency_table
 
 ```
 
