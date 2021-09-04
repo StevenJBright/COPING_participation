@@ -1,0 +1,2293 @@
+---
+title: "COPING_participation_preprocessing"
+author: "Steven Bright"
+date: "09/08/2021"
+output: html_document
+---
+
+The purpose of this script is to clean the GLAD sign up and COPING GLAD data,
+including to create the derived variables, for the COPING participation paper.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r Clean global environment}
+
+remove(list = ls())
+
+```
+
+#Call libraries
+
+```{r Install packages}
+
+#install.packages("tidyverse")
+#install.packages("summarytools")
+#install.packages("psych")
+#install.packages("eeptools")
+
+```
+
+```{r Load libraries}
+
+library(tidyverse)
+library(summarytools)
+library(psych)
+library(eeptools)
+library(lubridate)
+
+```
+
+#Source data paths
+
+```{r Source paths}
+
+source("..//COPING_participation_paths.r")
+
+```
+
+#Source functions
+
+```{r Source functions}
+
+source("..//COPING_participation_functions.r")
+
+```
+
+
+#Read in data
+##GLAD sign up
+
+```{r Read in GLAD folder}
+
+#Get file names of GLAD data sets in GLAD folder
+GLAD_signup_directory <- list.files(GLAD_signup_path)
+
+#Create empty list equal to the no. of files in the directory
+GLAD_signup_files <- vector("list", length(GLAD_signup_directory))
+  
+#Pass the vector with file names one by one to readRDS --> GLAD sign up path
+GLAD_signup_files <- GLAD_signup_directory %>% 
+  map(function(file_name){
+    readRDS(paste0(GLAD_signup_path, file_name))
+  })
+
+```
+
+```{r Name the GLAD sign up data sets in list}
+
+#Save object with .rds removed from file names
+GLAD_signup_dataset_names <- GLAD_signup_directory %>% 
+  gsub(pattern = ".rds",
+       replacement = "")
+  
+#Name GLAD_signup_files
+GLAD_signup_files_renamed <- GLAD_signup_files %>% 
+  setNames(GLAD_signup_dataset_names)
+
+```
+
+##COPING baseline - GLAD
+
+```{r Read in COPING GLAD dem objects}
+
+#Get file names of COPING GLAD data sets in COPING GLAD base path
+COPING_GLAD_base_directory <- list.files(COPING_GLAD_base_path)
+
+#Create empty list equal to the no. of files in the directory
+COPING_GLAD_base_files <- vector("list", length(COPING_GLAD_base_directory))
+  
+#Pass the vector with file names one by one to readRDS --> GLAD sign up path
+COPING_GLAD_base_files <- COPING_GLAD_base_directory %>% 
+  map(function(file_name){
+    readRDS(paste0(COPING_GLAD_base_path, file_name))
+  })
+
+```
+
+```{r Name the COPING GLAD data sets in the list}
+
+#Save object with .rds removed from file names
+COPING_GLAD_base_dataset_names <- COPING_GLAD_base_directory %>% 
+  gsub(pattern = ".rds",
+       replacement = "")
+  
+#Name COPING GLAD base files
+COPING_GLAD_base_files_renamed <- COPING_GLAD_base_files %>% 
+  setNames(COPING_GLAD_base_dataset_names)
+
+```
+
+##COPING follow-up A
+
+```{r Read in COPING follow-up A dem objects}
+
+#Get file names of COPING GLAD data sets in COPING GLAD base path
+COPING_followup_A_directory <- list.files(COPING_followup_A_path)
+
+#Create empty list equal to the no. of files in the directory
+COPING_followup_A_files <- vector("list", length(COPING_followup_A_directory))
+  
+#Pass the vector with file names one by one to readRDS --> GLAD sign up path
+COPING_followup_A_files <- COPING_followup_A_directory %>% 
+  map(function(file_name){
+    readRDS(paste0(COPING_followup_A_path, file_name))
+  })
+
+```
+
+```{r Name the COPING GLAD data sets in the list}
+
+#Save object with .rds removed from file names
+COPING_followup_A_dataset_names <- COPING_followup_A_directory %>% 
+  gsub(pattern = ".rds",
+       replacement = "")
+  
+#Name COPING GLAD base files
+COPING_followup_A_files_renamed <- COPING_followup_A_files %>% 
+  setNames(COPING_followup_A_dataset_names)
+
+```
+
+##COPING follow-up B
+
+```{r Read in the COPING followup B object}
+
+COPING_followup_B_phq_raw <- readRDS(paste0(COPING_followup_B_folder, COPING_followup_B_phq_name))
+
+#Check data
+COPING_followup_B_phq_raw %>% 
+  dim()
+
+```
+
+#Clean data
+##GLAD sign up
+
+```{r Re-arrange the order of the GLAD sign up files}
+
+#Put names of GLAD sign up data set in intended order
+GLAD_signup_dataset_names_ordered <- c("dem_glad", "mhd_glad", "gad_glad", "phq_glad", 
+                                       "audit_glad")
+
+#Use vector to re-order the list
+GLAD_signup_files_reordered <- GLAD_signup_files_renamed[GLAD_signup_dataset_names_ordered]
+
+```
+
+```{r Drop the extra startDate and endDate columns}
+
+#Each data set has a start and end date column, but we only need endDate from the
+#GLAD sign up dem object.
+GLAD_signup_files_start_enddate_clean <- GLAD_signup_files_reordered %>% 
+  map2(GLAD_signup_dataset_names_ordered, function(x, y){
+    if(y != "gad_glad"){
+      x <- x %>% 
+        select(-startDate,
+               -endDate)
+    } else if(y == "gad_glad"){
+      x
+    }
+    return(x)
+  })
+
+```
+
+```{r Clean IDs in the GLAD sign up files}
+
+#Remove duplicate IDs and drop NA's in every data set ID column
+GLAD_signup_files_cleanIDs <- map(GLAD_signup_files_start_enddate_clean, distinct, 
+                                   externalDataReference, .keep_all = TRUE)
+  
+GLAD_signup_files_cleanIDs <- map(GLAD_signup_files_cleanIDs, drop_na, 
+                                   externalDataReference)
+
+```
+
+```{r Join the GLAD sign up objects together}
+
+GLAD_signup_joined <- GLAD_signup_files_cleanIDs %>% 
+  reduce(full_join, by = "externalDataReference")
+
+#Check data
+head(GLAD_signup_joined)
+dim(GLAD_signup_joined)
+
+```
+
+```{r Select relevant variables and change -88 -99 values}
+
+GLAD_signup_clean <- GLAD_signup_joined %>% 
+  select(externalDataReference, #ID and demographic variables
+         startDate,
+         endDate,
+         dem.how_old_are_you_now.txt,
+         dem.day,
+         dem.month,
+         dem.year,
+         dem.select_questionnaire_items_medical,
+         dem.which_gender_do_you_identify_with,
+         dem.college_or_university_degree,
+         dem.a_levelsas_levels_or_equivalent,
+         dem.o_levelsgcses_or_equivalent,
+         dem.cses_or_equivalent,
+         dem.nvq_or_hnd_or_hnc_or_equivalent,
+         dem.other_professional_qualifications,
+         dem.questions_based_ethnic_origin,
+         dem.what_is_your_current_employment_status,
+         dem.what_is_your_current_maritalrelationship_status,
+         dem.select_the_box_that_best_describes_you,
+         dem.asthma, #Physical health variables
+         dem.emphysema_or_chronic_bronchitis,
+         dem.heart_attack_or_angina,
+         dem.breast_cancer,
+         dem.lung_cancer,
+         dem.stomach_cancer,
+         dem.colon_cancer,
+         dem.uterus_cancer,
+         dem.prostate_cancer,
+         dem.epilepsy_or_convulsions,
+         dem.diabetes_type_1,
+         dem.diabetes_type_2,
+         dem.high_blood_pressure,
+         dem.high_blood_cholesterol,
+         dem.stroke,
+         dem.migraines,
+         audit.alcohol_drink, #Alcohol consumption variables - only ones for sum score?
+         audit.units_alcohol_drink_drinking,
+         audit.occasion_units,
+         audit.stop_drinking_found_started,
+         audit.expected_failed_drinking_year,
+         audit.morning_needed_drink_year,
+         audit.guilt_remorse_drinking_feeling,
+         audit.remember_unable_night_happened,
+         audit.injured_result_drinking,
+         audit.concerned_cut_suggested_relative,
+         mhd.mdd, #Mental health diagnoses, depression
+         mhd.perinatal_depression,
+         mhd.pmdd,
+         mhd.gad, #anxiety variables
+         mhd.social_anxiety,
+         mhd.specific_phobia,
+         mhd.agoraphobia,
+         mhd.panic_disorder,
+         mhd.panic_attacks,
+         mhd.an, #eating disorder variables
+         mhd.atypical_an,
+         mhd.bn,
+         mhd.bed,
+         mhd.ocd, #OCD variables
+         mhd.other_ocd,
+         mhd.schizophrenia, #Psychosis variables
+         mhd.schizoaffective,
+         mhd.psychosis,
+         mhd.bipolar_disorder,
+         mhd.personality_disorder, #Personality disorder variables
+         mhd.personality_disorder_diagnosed,
+         mhd.addadhd, #Neurodevelopmental disorder variables
+         mhd.asd,
+         mhd.ptsd, #PTSD variable
+         mhd.none_of_the_above, #No MH disorder variables
+         mhd.none_of_the_above.1,
+         gad.feeling_nervous_anxious_or_on_edge, #Anxiety symptom variables
+         gad.control_worrying_stop,
+         gad.worrying_too_much_about_different_things,
+         gad.trouble_relaxing,
+         gad.sit_restless_hard,
+         gad.becoming_easily_annoyed_or_irritable,
+         gad.awful_feeling_afraid_happen,
+         phq.little_interest_or_pleasure_in_doing_things, #Depression symptom variables
+         phq.feeling_down_depressed_or_hopeless,
+         phq.staying_asleep_sleeping_trouble,
+         phq.feeling_tired_or_having_little_energy,
+         phq.poor_appetite_or_overeating,
+         phq.feeling_bad_failure_family,
+         phq.trouble_concentrating_reading_newspaper,
+         phq.moving_fidgety_noticed_opposite,
+         phq.dead_hurting_thoughts
+         ) %>%
+  mutate_if(is.numeric, ~na_if(., -88)) %>% # Recode missing values to NAs in numeric variables
+  mutate_if(is.numeric, ~na_if(., -99)) %>%
+  mutate_if(is.numeric, ~na_if(., -77)) %>%
+  mutate_if(is.factor, ~na_if(., "Seen but not answered")) %>% # Recode missing values to NAs in factor variables
+  mutate_if(is.factor, ~na_if(., "Don't know")) %>%
+  mutate_if(is.factor, ~na_if(., "Prefer not to say")) %>%
+  mutate_if(is.factor, ~na_if(., "Prefer not to answer")) %>%
+  mutate_if(is.factor, ~forcats::fct_drop(., only = "Seen but not answered")) %>% # Drop empty factor levels
+  mutate_if(is.factor, ~forcats::fct_drop(., only = "Don't know")) %>%
+  mutate_if(is.factor, ~forcats::fct_drop(., only = "Prefer not to answer")) %>%
+  mutate_if(is.factor, ~forcats::fct_drop(., only = "Prefer not to say"))
+  
+#Check results
+GLAD_signup_joined %>% 
+  dim()
+
+GLAD_signup_clean %>% 
+  dim()
+
+```
+
+##COPING GLAD base
+
+Since COPING GLAD files are already in desired order, move to dropping the 
+startDate and endDate columns in one of the data sets.
+
+```{r Drop the extra startDate and endDate columns}
+
+#Each data set has a start and end date column, but we only need endDate from the
+#GLAD sign up dem object.
+
+COPING_GLAD_base_start_enddate_clean <- COPING_GLAD_base_files_renamed %>% 
+  map2(names(COPING_GLAD_base_files_renamed), function(x, y){
+    if(y != "dem_coping_glad"){
+      x <- x %>% 
+        select(-startDate,
+               -endDate)
+    } else if(y == "dem_coping_glad"){
+      x
+    }
+    return(x)
+  })
+
+```
+
+```{r Clean IDs in the COPING GLAD base files}
+
+#Remove duplicate IDs and drop NA's in every data set ID column
+COPING_GLAD_base_files_cleanIDs <- map(COPING_GLAD_base_start_enddate_clean, distinct, 
+                                   externalDataReference, .keep_all = TRUE)
+  
+COPING_GLAD_base_files_cleanIDs <- map(COPING_GLAD_base_files_cleanIDs, drop_na, 
+                                   externalDataReference)
+
+```
+
+```{r Join the GLAD sign up objects together}
+
+COPING_GLAD_base_clean <- COPING_GLAD_base_files_cleanIDs %>% 
+  reduce(full_join, by = "externalDataReference")
+
+#Check data
+head(COPING_GLAD_base_clean)
+dim(COPING_GLAD_base_clean)
+
+```
+
+##COPING follow-up A
+
+```{r Merge COPING followup A/ongoing A dem objects}
+
+#Assign to individual objects
+COPING_followup_A_dem_raw <- COPING_followup_A_files_renamed$dem_coping_followupa
+COPING_followup_A_ongo_raw <- COPING_followup_A_files_renamed$dem_coping_followupa_ongoing
+
+#Find colnames that don't match
+setdiff(colnames(COPING_followup_A_dem_raw), colnames(COPING_followup_A_ongo_raw))
+
+#Rename non-matching cols in COPING follow-up A
+COPING_followup_A_dem_raw <- COPING_followup_A_dem_raw %>% 
+  rename("dem.age_children_living" = dem.age_living_children,
+         "dem.age_children_living.1" = dem.age_living_children.1)
+
+#Merge data sets
+COPING_followup_A_dem_merged <- COPING_followup_A_dem_raw %>% 
+  rbind(COPING_followup_A_ongo_raw)
+
+#Check results
+COPING_followup_A_dem_merged %>% 
+  head()
+
+COPING_followup_A_dem_merged %>% 
+  dim()
+
+dim(COPING_followup_A_dem_raw) + dim(COPING_followup_A_ongo_raw)
+
+```
+
+#Clean GLAD sign up IVs
+
+The IVs for explaining participation in the COPING Study and the
+follow-up waves include:
+
+-Age
+-Sex
+-Gender
+-Ethnicity
+-Highest education
+-Employment status
+-Partnership status
+-Smoking status
+-Drinking status
+-Self-reported MH diagnosis
+-Individual physical health vars (cancers, asthma, emphysema, heart attack)
+-Physical health comorbidity (variable will be created)
+-GAD sum score (variable will be created)
+-PHQ symptoms (variable will be created)
+-Sign up date (Qualtrics variable)
+-Provided a saliva kit (variable will be created)
+-Joined after first invitation (variable will be created)
+-MH comorbidity (variable will be created)
+
+##Age
+
+```{r Check distribution of age}
+
+freq(GLAD_signup_clean$dem.how_old_are_you_now.txt)
+
+```
+
+Before we remove the NA's/errnoneous values, we will calculate the pt's current
+age to see if we can derive their age in this fashion.
+
+```{r Fix year variable}
+
+#add 1900 to birthyear
+GLAD_signup_clean$Birthyear_numeric.calc <- GLAD_signup_clean$dem.year + 1900
+
+head(GLAD_signup_clean$Birthyear_numeric.calc)
+
+```
+
+```{r set Birthyear upper limits}
+
+# Set upper limit for year (all participants must be over 16 at time of recruitment)
+birthyear.m_upper = 2005
+birthyear.m_lower = 1904
+
+birthyear.n_outliers <- which(GLAD_signup_clean$Birthyear_numeric.calc < birthyear.m_lower | GLAD_signup_clean$Birthyear_numeric.calc > birthyear.m_upper)
+
+birthyear.n_outliers %>% 
+  length()
+
+```
+
+```{r remove birth year outliers}
+
+if(length(birthyear.n_outliers)>0){
+
+  # Remove outliers
+  GLAD_signup_clean$Birthyear_numeric <- with(data = GLAD_signup_clean,
+                                              ifelse(Birthyear_numeric.calc < birthyear.m_lower | Birthyear_numeric.calc > birthyear.m_upper, NA, Birthyear_numeric.calc))
+
+}
+
+```
+
+```{r Calculate age}
+
+#create dob as date format
+GLAD_signup_clean$Birthdate <- as.Date(paste(GLAD_signup_clean$Birthyear_numeric,
+                                  GLAD_signup_clean$dem.month,
+                                  GLAD_signup_clean$dem.day,
+                                  sep = "-"),
+                               "%Y-%m-%d")
+
+# convert survey endDate to date format
+GLAD_signup_clean$endDate_dateformat <- as.Date(GLAD_signup_clean$endDate,
+                                  "%Y-%m-%d HH:MM:SS", tz="UTC")
+
+#Calculate dem.age (remove NAs as it throws an error)
+ages <- age_calc(na.omit(GLAD_signup_clean$Birthdate), enddate = GLAD_signup_clean$endDate_dateformat, units = "years")
+
+#Create dem.age column
+GLAD_signup_clean$age.unc <- NA
+
+#Populate with values (excluding NAs)
+GLAD_signup_clean$age.unc.decimal <- ages
+
+#Round age down
+GLAD_signup_clean$age.unc <- floor(GLAD_signup_clean$age.unc.decimal)
+
+#Check ages
+GLAD_signup_clean %>% 
+  freq(age.unc)
+
+```
+
+```{r Create age cleaned variable}
+
+GLAD_signup_clean <- GLAD_signup_clean %>% 
+  mutate(age_cleaned = 
+           case_when(
+             !is.na(dem.how_old_are_you_now.txt) ~ dem.how_old_are_you_now.txt,
+             is.na(dem.how_old_are_you_now.txt) &
+               !is.na(age.unc) ~ age.unc
+           ))
+
+#Check output
+GLAD_signup_clean %>% 
+  freq(age_cleaned)
+
+```
+
+```{r Change negative ages to correct age}
+
+GLAD_signup_clean <- GLAD_signup_clean %>% 
+  mutate(age_cleaned = 
+           case_when(
+             age_cleaned == -55 ~ 55,
+             age_cleaned == -52 ~ 52,
+             age_cleaned == -44 ~ 44,
+             !is.na(age_cleaned) ~ age_cleaned
+           ))
+
+#Check result
+GLAD_signup_clean %>% 
+  freq(age_cleaned)
+
+```
+
+```{r Remove erroneous values}
+
+#Turn outliers to NAs
+GLAD_signup_age_filter <- GLAD_signup_clean %>% 
+  mutate(dem.how_old_are_you_now.txt =
+           case_when(
+             dem.how_old_are_you_now.txt >= 16 
+             & dem.how_old_are_you_now.txt <= 117 ~ dem.how_old_are_you_now.txt
+           ))
+
+#Check values have been removed
+freq(GLAD_signup_age_filter$dem.how_old_are_you_now.txt)
+
+```
+
+##Sex
+
+```{r Check distribution of sex}
+
+freq(GLAD_signup_age_filter$dem.select_questionnaire_items_medical)
+
+```
+
+```{r Create labelled sex variable}
+
+GLAD_signup_age_filter$sex_labelled <- factor(
+  GLAD_signup_age_filter$dem.select_questionnaire_items_medical,
+  levels = c(0, 1),
+  labels = c("Male", "Female")
+)
+
+#Check distribution
+GLAD_signup_age_filter %>% 
+  freq(sex_labelled)
+
+```
+
+##Gender
+
+Should I collapse to 3 levels by doing prefer to self-define/Non-binary as one
+level?
+
+```{r Check distribution of gender}
+
+freq(GLAD_signup_age_filter$dem.which_gender_do_you_identify_with)
+
+```
+
+```{r Create factor variable for gender}
+
+GLAD_signup_age_filter$gender_labelled <- factor(
+  GLAD_signup_age_filter$dem.which_gender_do_you_identify_with,
+  levels = c(0, 1, 2, 3),
+  labels = c("Male", "Female", "Non-binary", "Self-define")
+)
+
+#Check distribution
+GLAD_signup_age_filter %>% 
+  freq(gender_labelled)
+
+```
+
+
+```{r Combine non-binary and self-define into one level}
+
+GLAD_signup_gender_recode <- GLAD_signup_age_filter %>% 
+  mutate(gender_recoded =
+           case_when(
+             dem.which_gender_do_you_identify_with == 0 ~ 0,
+             dem.which_gender_do_you_identify_with == 1 ~ 1,
+             dem.which_gender_do_you_identify_with == 2 ~ 2,
+             dem.which_gender_do_you_identify_with == 3 ~ 2
+           ))
+
+#Check outcome
+GLAD_signup_gender_recode %>% 
+  freq(gender_recoded)
+
+```
+
+```{r Create factor variable for recoded gender}
+
+GLAD_signup_gender_recode$gender_recode_labelled <- factor(
+  GLAD_signup_gender_recode$gender_recoded,
+  levels = c(0, 1, 2),
+  labels = c("Male", "Female", "Non-binary/prefer to self-define")
+)
+
+#Check distribution
+GLAD_signup_gender_recode %>% 
+  freq(gender_recode_labelled)
+
+```
+
+##Ethnicity
+
+```{r See distribution of ethnicity}
+
+freq(GLAD_signup_gender_recode$dem.questions_based_ethnic_origin)
+
+```
+
+```{r Create factor variable for ethnicity}
+
+GLAD_signup_gender_recode$ethnicity_labelled <- factor(
+  GLAD_signup_gender_recode$dem.questions_based_ethnic_origin,
+  levels = c(1, 2, 3, 4, 5, 6),
+  labels = c("White", "Mixed", "Asian or Asian British", "Black or Black British",
+             "Arab", "Other")
+  )
+
+#Check distribution
+GLAD_signup_gender_recode %>% 
+  freq(ethnicity_labelled)
+
+```
+
+##Highest education
+
+```{r See distribution of degrees}
+
+#Get the colnames of the highest education variables
+highest_education_variables <- GLAD_signup_gender_recode %>% 
+  select(dem.college_or_university_degree,
+         dem.a_levelsas_levels_or_equivalent,
+         dem.o_levelsgcses_or_equivalent,
+         dem.cses_or_equivalent,
+         dem.nvq_or_hnd_or_hnc_or_equivalent) %>% 
+  colnames()
+
+#See distribution for each variable
+highest_education_variables %>% 
+  map(function(x){
+    group_by_at(GLAD_signup_gender_recode, x) %>% 
+      summarise(Count = n()) %>% 
+      as_tibble()
+  })
+
+```
+
+##Employment status
+
+```{r See distribution of employment status}
+
+GLAD_signup_gender_recode %>% 
+  freq(dem.what_is_your_current_employment_status)
+
+```
+
+```{r Create employment status factor variable}
+
+GLAD_signup_gender_recode$employment_labelled <- factor(
+  GLAD_signup_gender_recode$dem.what_is_your_current_employment_status,
+  levels = c(1, 2, 3, 4, 5, 6, 7, 8),
+  labels = c("In paid employment or self-employed", 
+             "Retired", 
+             "Looking after home and/or family", 
+             "Unable to work because of sickness or disability",
+             "Unemployed",
+             "Doing unpaid or voluntary work",
+             "Full or part-time student",
+             "None of the above")
+  )
+
+#Check distribution
+GLAD_signup_gender_recode %>% 
+  freq(employment_labelled)
+
+```
+
+##Partnership status
+
+```{r See distribution of partnership status}
+
+GLAD_signup_gender_recode %>% 
+  freq(dem.what_is_your_current_maritalrelationship_status)
+
+```
+
+```{r Create factor variable for partnership status}
+
+GLAD_signup_gender_recode$partnership_status_labelled <- factor(
+  GLAD_signup_gender_recode$dem.what_is_your_current_maritalrelationship_status,
+  levels = c(1, 2, 3, 4, 5, 6, 7, 8),
+  labels = c("Single",
+             "Relationship (not living together)",
+             "Relationship (Living together)",
+             "Married/civil partnership",
+             "Separated",
+             "Divorced",
+             "Widowed",
+             "Other")
+  )
+
+#Check distribution
+GLAD_signup_gender_recode %>% 
+  freq(partnership_status_labelled)
+
+```
+
+##Smoking status
+
+```{r See distribution in smoking status}
+
+GLAD_signup_gender_recode %>% 
+  freq(dem.select_the_box_that_best_describes_you)
+
+```
+
+```{r Create factor variable for smoking status}
+
+GLAD_signup_gender_recode$smoking_status_labelled <- factor(
+  GLAD_signup_gender_recode$dem.select_the_box_that_best_describes_you,
+  levels = c(0, 1, 2),
+  labels = c("Never smoked", "I smoke now", "I used to smoke")
+  )
+
+#Check distribution
+GLAD_signup_gender_recode %>% 
+  freq(smoking_status_labelled)
+
+```
+
+
+##Drinking status - AUDIT
+
+```{r See distribution in audit variables}
+
+#Get names of audit variables
+audit_variable_names <- GLAD_signup_gender_recode %>% 
+  select(starts_with("audit.")) %>% 
+  colnames()
+
+#See distribution for each variable
+audit_variable_names %>% 
+  map(function(x){
+    group_by_at(GLAD_signup_gender_recode, x) %>% 
+      summarise(Count = n()) %>% 
+      as_tibble()
+  })
+  
+```
+
+```{r Recode the audit.units_alcohol_drink_drinking variable}
+
+GLAD_signup_audit_recode <- GLAD_signup_gender_recode %>% 
+  mutate(audit.units_alcohol_drink_drinking =
+           case_when(
+             audit.units_alcohol_drink_drinking == 1 ~ 0,
+             audit.units_alcohol_drink_drinking == 2 ~ 1,
+             audit.units_alcohol_drink_drinking == 3 ~ 2,
+             audit.units_alcohol_drink_drinking == 4 ~ 3,
+             audit.units_alcohol_drink_drinking == 5 ~ 4
+           ))
+
+#Check result
+GLAD_signup_audit_recode %>% 
+  group_by(audit.units_alcohol_drink_drinking) %>% 
+  count()
+
+```
+
+##Self-reported MH diagnosis
+
+```{r See distribution in MH diagnosis variables}
+
+#Get names of audit variables
+mhd_variable_names <- GLAD_signup_audit_recode %>% 
+  select(starts_with("mhd.")) %>% 
+  colnames()
+
+#View distribution for each variable
+mhd_variable_names %>% 
+  map(function(x){
+    group_by_at(GLAD_signup_audit_recode, x) %>% 
+      summarise(Count = n()) %>% 
+      as_tibble()
+  })
+
+```
+
+```{r Check personality disorder vars match}
+
+#N who said yes to having a PD
+GLAD_signup_audit_recode %>% 
+  group_by(mhd.personality_disorder) %>% 
+  count()
+
+#N reporting specific types of PD's
+sum(!is.na(GLAD_signup_audit_recode$mhd.personality_disorder_diagnosed))
+
+```
+
+##Anxiety symptoms - GAD
+
+```{r See distribution in gad variables}
+
+#Get names of gad variables
+gad_variable_names <- GLAD_signup_audit_recode %>% 
+  select(starts_with("gad.")) %>% 
+  colnames()
+
+#View distribution for each variable
+gad_variable_names %>% 
+  map(function(x){
+    group_by_at(GLAD_signup_audit_recode, x) %>% 
+      summarise(Count = n()) %>% 
+      as_tibble()
+  })
+
+```
+
+##Depressive symptoms - PHQ
+
+```{r See distribution in the phq variables}
+
+#Get names of gad variables
+phq_variable_names <- GLAD_signup_audit_recode %>% 
+  select(starts_with("phq.")) %>% 
+  colnames()
+
+#View distribution for each variable
+phq_variable_names %>% 
+  map(function(x){
+    group_by_at(GLAD_signup_audit_recode, x) %>% 
+      summarise(Count = n()) %>% 
+      as_tibble()
+  })
+
+```
+
+##Individual Physical health vars
+###Asthma
+
+```{r See distribution in asthma}
+
+GLAD_signup_audit_recode %>% 
+  freq(dem.asthma)
+
+```
+
+###Diabetes
+
+Should I recode into one variable? (Have for now)
+
+```{r See distribution in diabetes}
+
+#Type I
+GLAD_signup_audit_recode %>% 
+  freq(dem.diabetes_type_1)
+
+#Type II
+GLAD_signup_audit_recode %>% 
+  freq(dem.diabetes_type_2)
+
+```
+
+```{r Create type I or II diabetes variable}
+
+GLAD_signup_diabetes_recode <- GLAD_signup_audit_recode %>% 
+  mutate(diabetes_type_I_or_II = 
+           case_when(
+             dem.diabetes_type_1 == 1 ~ 1,
+             dem.diabetes_type_2 == 1 ~ 1,
+             dem.diabetes_type_1 == 0 ~ 0,
+             dem.diabetes_type_2 == 0 ~ 0
+           ))
+
+```
+
+```{r See distribution in type I or II diabetes}
+
+GLAD_signup_diabetes_recode %>% 
+  freq(diabetes_type_I_or_II)
+
+```
+
+###Emphysema or chronic bronchitis
+
+N too small?
+
+```{r See distribution in Emphysema or chronic bronchitis}
+
+GLAD_signup_diabetes_recode %>% 
+  freq(dem.emphysema_or_chronic_bronchitis)
+
+```
+
+###Heart attack or angina
+
+N too small?
+
+```{r See distribution in heart attack or angina}
+
+GLAD_signup_diabetes_recode %>% 
+  freq(dem.heart_attack_or_angina)
+
+```
+
+###Cancer variables
+
+```{r See distribution in cancer types}
+
+#Get names of cancer variables
+cancer_variables <- GLAD_signup_diabetes_recode %>% 
+  select(ends_with("_cancer")) %>% 
+  colnames()
+
+#View distribution for each variable
+cancer_variables %>% 
+  map(function(x){
+    group_by_at(GLAD_signup_diabetes_recode, x) %>% 
+      summarise(Count = n()) %>% 
+      as_tibble()
+  })
+
+```
+
+```{r Combine cancer variables together}
+
+GLAD_signup_cancer_recode <- GLAD_signup_diabetes_recode %>% 
+  mutate(any_cancer = 
+           case_when(
+             dem.breast_cancer == 1 ~ 1,
+             dem.lung_cancer == 1 ~ 1,
+             dem.stomach_cancer == 1 ~ 1,
+             dem.colon_cancer == 1 ~ 1,
+             dem.uterus_cancer == 1 ~ 1,
+             dem.prostate_cancer == 1 ~ 1,
+             dem.breast_cancer == 0 ~ 0,
+             dem.lung_cancer == 0 ~ 0,
+             dem.stomach_cancer == 0 ~ 0,
+             dem.colon_cancer == 0 ~ 0,
+             dem.uterus_cancer == 0 ~ 0,
+             dem.prostate_cancer == 0 ~ 0
+           ))
+
+```
+
+```{r Check distribution in cancer variable}
+
+GLAD_signup_cancer_recode %>% 
+  freq(any_cancer)
+
+```
+
+##Physical health comorbidity
+
+These are the variables that will be used in the physcial health comorbidity variable.
+
+```{r See distribution in physical health comorbidity variables}
+
+#Create char vector with physical health comorbidity variables
+physical_health_comorbidity_variables <- c(
+  "dem.epilepsy_or_convulsions",
+  "dem.diabetes_type_1",
+  "dem.diabetes_type_2",
+  "dem.high_blood_pressure",
+  "dem.high_blood_cholesterol",
+  "dem.stroke",
+  "dem.migraines"
+)
+
+#See distribution in variables
+physical_health_comorbidity_variables %>% 
+  map(function(x){
+    group_by_at(GLAD_signup_cancer_recode, x) %>% 
+      summarise(Count = n()) %>% 
+      as_tibble()
+  })
+
+```
+
+#Creating IVs
+
+The IVs that need to be created are:
+
+-Provided a saliva kit
+-Joined COPING after first invitation
+-GAD sum score
+-PHQ sum score
+-AUDIT sum score
+-MH self-reported diagnosis groups (based on Young et al. 2021)
+-MH comorbidity
+-Physical health comorbidity
+
+##Provided a saliva kit
+
+Binary variable: 1 = pt has provided a saliva kit, 0 = pt hasn't provided kit.
+
+```{r Read in GLAD and EDGI saliva kit received reports}
+
+GLAD_kits_received_raw <- read_csv(paste0(redcap_reports_folder_path, GLAD_kit_report_name))
+
+#Check objects
+GLAD_kits_received_raw %>% 
+  head()
+
+GLAD_kits_received_raw %>% 
+  dim()
+
+```
+
+```{r Rename participant ID col to externalDataReference}
+
+GLAD_kits_received_renamed <- GLAD_kits_received_raw %>% 
+  rename("externalDataReference" = participant_id)
+
+#Check
+GLAD_kits_received_renamed %>% 
+  colnames()
+
+```
+
+```{r Create kits received variable}
+
+GLAD_signup_kits_returned <- GLAD_signup_cancer_recode %>% 
+  mutate(kit_returned = 
+           case_when(
+             externalDataReference %in% GLAD_kits_received_renamed$externalDataReference ~ 1,
+             externalDataReference %not_in% GLAD_kits_received_renamed$externalDataReference ~ 0
+           ))
+
+```
+
+```{r Turn kit_returned into a factor}
+
+GLAD_signup_kits_returned$kit_returned_labelled <- factor(GLAD_signup_kits_returned$kit_returned,
+                                                 levels = c(0, 1),
+                                                 labels = c("Pt had not provided saliva kit", 
+                                                            "Pt has provided saliva kit"))
+#Check new variable
+GLAD_signup_kits_returned %>% 
+  group_by_at(vars(starts_with("kit"))) %>% 
+  count() #25,506 - Is this N lower because it's an old extraction?
+
+GLAD_kits_received_renamed %>% 
+  dim() #27,548
+
+```
+
+##Joined COPING after first invitation
+
+This will be a binary variable reflecting whether the participant completed 
+the COPING baseline questionnaire before the first follow-up on the 19th May.
+
+Note that the participants who signed up to join GLAD after the 30th April
+will be given a "not applicable" status. I.e. they couldn't have physically 
+responded to the first invitations to the COPING study because they were
+not already a participant in the GLAD Study.
+
+```{r Read in COPING GLAD invitation list}
+
+COPING_GLAD_invitations <- read_csv(paste0(redcap_reports_folder_path, 
+                                           COPING_GLAD_invitations_name))
+
+#Check data
+COPING_GLAD_invitations %>% 
+  head()
+
+```
+
+```{r Put key dates into condition variables}
+
+#Pt's joining after 30th April didn't receive the first batch of invitations
+April_30th_2020 <- as.POSIXct("2020-04-30")
+
+#Pt needed to complete their baseline before the first follow-up
+May_19th_2020 <- as.POSIXct("2020-06-19")
+
+```
+
+
+```{r Create joined COPING first invitation variable}
+
+GLAD_signup_first_invitation <- GLAD_signup_kits_returned %>% 
+  mutate(joined_coping_first_invitation =
+           case_when(
+             endDate <= April_30th_2020 & 
+               externalDataReference %in% COPING_GLAD_invitations$participant_id &
+               externalDataReference %in% COPING_GLAD_base_clean$externalDataReference &
+               COPING_GLAD_base_clean$endDate <= May_19th_2020 ~ 1,
+             endDate <= April_30th_2020 & 
+               externalDataReference %in% COPING_GLAD_invitations$participant_id &
+               externalDataReference %in% COPING_GLAD_base_clean$externalDataReference &
+               COPING_GLAD_base_clean$endDate > May_19th_2020 ~ 0,
+             endDate <= April_30th_2020 &
+               externalDataReference %in% COPING_GLAD_invitations$participant_id &
+               externalDataReference %not_in% COPING_GLAD_base_clean$externalDataReference ~ 0,
+             endDate <= April_30th_2020 &
+               externalDataReference %not_in% COPING_GLAD_invitations$participant_id ~ 2,
+             endDate >= April_30th_2020 ~ 2
+           ))
+
+```
+
+```{r Turn joined COPING first invitation variable into factor}
+
+GLAD_signup_first_invitation$joined_coping_first_invitation <- factor(
+  GLAD_signup_first_invitation$joined_coping_first_invitation,
+  levels = c(0, 1, 2),
+  labels = c("Didn't complete COPING baseline before 1st follow-up",
+             "Completed COPING baseline before 1st follow-up",
+             "Not applicable")
+)
+
+#Check results
+GLAD_signup_first_invitation %>% 
+  group_by(joined_coping_first_invitation) %>% 
+  count()
+
+```
+
+```{r Check endDate times for completed COPING base pt's}
+
+test <- GLAD_signup_first_invitation %>% 
+  filter(joined_coping_first_invitation == "Completed COPING baseline before 1st follow-up")
+
+#Get subset of COPING GLAD baseline with the IDs of these pt's
+COPING_GLAD_endDate_test <- COPING_GLAD_base_clean %>% 
+  subset_df_by_comparison_IDs(df_ID_col = "externalDataReference",
+                              comparison_IDs = test$externalDataReference,
+                              matching_IDs = TRUE)
+
+#Check results
+test %>% 
+  dim()
+
+COPING_GLAD_endDate_test %>% 
+  dim()
+
+COPING_GLAD_base_clean %>% 
+  dim()
+
+#View(COPING_GLAD_endDate_test$endDate)
+
+```
+
+##Questionnaire sum scores
+
+*NOTE to self: Make sure to update the df being used below, since I have inserted
+chunks before these rather than after them*
+
+Will create the gad, phq and audit sum scores using the scoreItems function 
+from the psych package.
+
+https://www.rdocumentation.org/packages/psych/versions/2.1.6/topics/scoreItems
+
+###GAD sum score
+
+```{r Create keys variable for gad scale}
+
+#1 for normal coding, -1 for reverse coding
+gad_sum_score_keys <- c(
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1
+) #No items are reverse coded for gad-7
+
+```
+
+```{r Create gad sum score}
+
+# calculate total/sum score
+gad_total_score <- scoreItems(keys = gad_sum_score_keys,
+                               items = GLAD_signup_first_invitation[gad_variable_names],
+                               totals = TRUE, #total sum score
+                               missing = TRUE, #will include individuals that have missing values
+                               impute = 'none', #does not impute the missing values, should we?
+                               min = 0, 
+                               max = 3
+                               )
+
+#Add in total score column to data frame
+GLAD_signup_gad_sum_scores <- GLAD_signup_first_invitation %>%
+  mutate(gad.sum_score = 
+           as.numeric(gad_total_score$scores))
+
+#check the values
+GLAD_signup_gad_sum_scores %>%
+  freq(gad.sum_score)
+
+```
+
+###PHQ sum score
+
+```{r Create phq keys variable}
+
+#1 for normal coding, -1 for reverse coding
+phq_sum_score_keys <- c(
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1
+) #No items in the PHQ are reverse coded
+
+```
+
+```{r Create PHQ sum score}
+
+#calculate total/sum score
+phq_total_score <- scoreItems(keys = phq_sum_score_keys,
+                               items = GLAD_signup_gad_sum_scores[phq_variable_names],
+                               totals = TRUE, #total sum score
+                               missing = TRUE, #will include individuals that have missing values
+                               impute = 'none', #does not impute the missing values, should we?
+                               min = 0, 
+                               max = 3
+                               )
+
+#Add in total score column to data frame
+GLAD_signup_phq_sum_scores <- GLAD_signup_gad_sum_scores %>%
+  mutate(phq.sum_score = 
+           as.numeric(phq_total_score$scores))
+
+#check the values
+GLAD_signup_phq_sum_scores %>%
+  freq(phq.sum_score)
+
+```
+
+###AUDIT sum score
+
+```{r Create AUDIT key variable}
+
+#1 for normal coding, -1 for reverse coded
+audit_sum_score_keys <- c(
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1
+) #No items in the audit are reverse coded
+
+```
+
+```{r Create AUDIT sum score}
+
+# calculate total/sum score
+audit_total_score <- scoreItems(keys = audit_sum_score_keys,
+                               items = GLAD_signup_phq_sum_scores[audit_variable_names],
+                               totals = TRUE, #total sum score
+                               missing = TRUE, #will include individuals that have missing values
+                               impute = 'none', #does not impute the missing values, should we?
+                               min = 0, 
+                               max = 4
+                               )
+
+#Add in total score column to data frame
+GLAD_signup_audit_sum_scores <- GLAD_signup_phq_sum_scores %>%
+  mutate(audit.sum_score = 
+           as.numeric(audit_total_score$scores))
+
+#check the values
+GLAD_signup_audit_sum_scores %>%
+  freq(audit.sum_score)
+
+```
+
+#Self-reported MH
+
+Self-reported MH diagnoses will be grouped according to the groups published in
+Young et al. (2021) "Depression, anxiety and PTSD symptoms before and during the 
+COVID-19 pandemic in the UK". Please note this is currently a preprint.
+
+https://psyarxiv.com/sf7b6
+
+Note to self: Add a description of the panchange MH groups and what diagnoses
+belong to which group here.
+
+##Depressive disorder
+
+```{r Create depressive disorder group}
+
+GLAD_signup_depressive_disorder <- GLAD_signup_audit_sum_scores %>% 
+  mutate(depressive_disorder = 
+           case_when(
+             mhd.mdd == 1 ~ 1,
+             mhd.perinatal_depression == 1 ~ 1,
+             mhd.pmdd == 1 ~ 1,
+             (mhd.mdd == 0 &
+                mhd.perinatal_depression == 0 &
+                mhd.pmdd == 0 ~ 0
+              )
+           ))
+
+```
+
+```{r Turn depressive disorder variable into factor}
+
+GLAD_signup_depressive_disorder$depressive_disorder_labelled <- factor(
+  GLAD_signup_depressive_disorder$depressive_disorder,
+  levels = c(0, 1),
+  labels = c("No depressive disorder", "Depressive disorder")
+)
+
+#Check results
+GLAD_signup_depressive_disorder %>% 
+  group_by(depressive_disorder_labelled) %>% 
+  count()
+
+```
+
+##Anxiety disorder
+
+```{r Create anxiety disorder group}
+
+GLAD_signup_anxiety_disorder <- GLAD_signup_depressive_disorder %>% 
+  mutate(anxiety_disorder = 
+           case_when(
+             mhd.gad == 1 ~ 1,
+             mhd.social_anxiety == 1 ~ 1,
+             mhd.specific_phobia == 1 ~ 1,
+             mhd.agoraphobia == 1 ~ 1,
+             mhd.panic_disorder == 1 ~ 1,
+             mhd.panic_attacks == 1 ~ 1,
+             (mhd.gad == 0 &
+                mhd.social_anxiety == 0 &
+                mhd.specific_phobia == 0 &
+                mhd.agoraphobia == 0 &
+                mhd.panic_disorder == 0 ~ 0
+              )
+           ))
+
+```
+
+```{r Turn anxiety disorder variable into a factor}
+
+GLAD_signup_anxiety_disorder$anxiety_disorder_labelled <- factor(
+  GLAD_signup_anxiety_disorder$anxiety_disorder,
+  levels = c(0, 1),
+  labels = c("No anxiety disorder", "Anxiety disorder")
+)
+
+#Check results
+GLAD_signup_anxiety_disorder %>% 
+  group_by(anxiety_disorder_labelled) %>% 
+  count()
+
+```
+
+##Depressive and anxiety disorder
+
+```{r Create depressive and anxiety disorder group}
+
+GLAD_signup_depression_and_anxiety <- GLAD_signup_anxiety_disorder %>% 
+  mutate(depressive_and_anxiety_comorbidity = 
+           case_when(
+             depressive_disorder == 1 &
+               anxiety_disorder == 1 ~ 1,
+             depressive_disorder == 0 &
+               anxiety_disorder == 0 ~ 0,
+             depressive_disorder == 1 &
+               anxiety_disorder == 0 ~ 2,
+             depressive_disorder == 0 &
+               anxiety_disorder == 1 ~ 3
+           ))
+
+```
+
+```{r Turn depressive and anxiety disorder variable into a factor}
+
+GLAD_signup_depression_and_anxiety$depressive_and_anxiety_comorbidity_labelled <- factor(
+  GLAD_signup_depression_and_anxiety$depressive_and_anxiety_comorbidity,
+  levels = c(0, 1, 2, 3),
+  labels = c("No depressive and anxiety disorder", "Depressive and anxiety disorder",
+             "Depressive disorder only", "Anxiety disorder only")
+  )
+
+#Check results
+GLAD_signup_depression_and_anxiety %>% 
+  group_by(depressive_and_anxiety_comorbidity_labelled) %>% 
+  count()
+
+```
+
+##PTSD
+
+PTSD is the only variable in the category so only need to create a labelled factor.
+
+```{r Create factor version of PTSD variable}
+
+GLAD_signup_depression_and_anxiety$PTSD_labelled <- factor(
+  GLAD_signup_depression_and_anxiety$mhd.ptsd,
+  levels = c(0, 1),
+  labels = c("No Post-traumatic stress disorder", "Post-traumatic stress disorder")
+  )
+
+#Check values
+GLAD_signup_depression_and_anxiety %>% 
+  group_by(PTSD_labelled) %>% 
+  count()
+
+```
+
+##OCRDs
+
+```{r Create OCRDs group}
+
+GLAD_signup_OCRDs <- GLAD_signup_depression_and_anxiety %>% 
+  mutate(OCRDs = 
+           case_when(
+             mhd.ocd == 1 ~ 1,
+             mhd.other_ocd == 1 ~ 1,
+             (mhd.ocd == 0 &
+                mhd.other_ocd == 0 ~ 0
+              )
+           ))
+
+```
+
+```{r Create factor version of the OCRDs variable}
+
+GLAD_signup_OCRDs$OCRDs_labelled <- factor(
+  GLAD_signup_OCRDs$OCRDs,
+  levels = c(0, 1),
+  labels = c("No OCRDs", "OCRDs")
+  )
+
+#Check results
+GLAD_signup_OCRDs %>% 
+  group_by(OCRDs_labelled) %>% 
+  count()
+
+```
+
+##Eating disorders
+
+```{r Create eating disorder group}
+
+GLAD_signup_eating_disorders <- GLAD_signup_OCRDs %>% 
+  mutate(eating_disorders = 
+           case_when(
+             mhd.an == 1 ~ 1,
+             mhd.atypical_an == 1 ~ 1,
+             mhd.bn == 1 ~ 1,
+             mhd.bed == 1 ~ 1,
+             (mhd.an == 0 &
+                mhd.atypical_an == 0 &
+                mhd.bn == 0 &
+                mhd.bed == 0 ~ 0
+              )
+           ))
+
+```
+
+```{r Create factor version of eating disorder variable}
+
+GLAD_signup_eating_disorders$eating_disorders_labelled <- factor(
+  GLAD_signup_eating_disorders$eating_disorders,
+  levels = c(0, 1),
+  labels = c("No eating disorder", "Eating disorder")
+  )
+
+#Check results
+GLAD_signup_eating_disorders %>% 
+  group_by(eating_disorders_labelled) %>% 
+  count()
+
+```
+
+##Personality disorders
+
+Only need to create a factor variable for personality disorder group because
+personality disorders is already a binary variable.
+
+```{r Create factor version of personality disorder variable}
+
+GLAD_signup_eating_disorders$personality_disorder_labelled <- factor(
+  GLAD_signup_eating_disorders$mhd.personality_disorder,
+  levels = c(0, 1),
+  labels = c("No personality disorder", "Personality disorder")
+  )
+
+#Check results
+GLAD_signup_eating_disorders %>% 
+  group_by(personality_disorder_labelled) %>% 
+  count()
+
+```
+
+###Personality Cluster A
+
+For the personality disorder group, Young et al. (2021) also split these 
+participants into Cluster A, B and C personality disorders. 
+
+Cluster A PDs: Paranoid (1), Schizoid (2), and Schizotypal (3)
+Cluster B PDs: Antisocial (4), Borderline (5), Histrionic (6), and Narcissistic (7)
+Cluster C PDs: Avoidant/Anxious (8), Dependent (9), and Obsessive-compulsive (10)
+
+```{r Create personality disorder cluster A group}
+
+GLAD_signup_personality_disorders <- GLAD_signup_eating_disorders %>% 
+  mutate(personality_cluster_A = 
+           case_when(
+        mhd.personality_disorder_diagnosed == 1 ~ 1,
+        mhd.personality_disorder_diagnosed == 2 ~ 1,
+        mhd.personality_disorder_diagnosed == 3 ~ 1,
+        mhd.personality_disorder_diagnosed == 4 ~ 0,
+        mhd.personality_disorder_diagnosed == 5 ~ 0,
+        mhd.personality_disorder_diagnosed == 6 ~ 0,
+        mhd.personality_disorder_diagnosed == 7 ~ 0,
+        mhd.personality_disorder_diagnosed == 8 ~ 0,
+        mhd.personality_disorder_diagnosed == 9 ~ 0,
+        mhd.personality_disorder_diagnosed == 10 ~ 0,
+      )
+  )
+
+```
+
+```{r Create factor version of the PD cluser A variable}
+
+GLAD_signup_personality_disorders$personality_cluster_A_labelled <- factor(
+  GLAD_signup_personality_disorders$personality_cluster_A,
+  levels = c(0, 1),
+  labels = c("No cluster A personality disorder", "Cluster A personality disorder")
+)
+
+#Check results
+GLAD_signup_personality_disorders %>% 
+  group_by(personality_cluster_A_labelled) %>% 
+  count()
+
+```
+
+###Personality cluster B
+
+```{r Create personality disorder cluster B group}
+
+GLAD_signup_personality_disorders <- GLAD_signup_personality_disorders %>% 
+  mutate(personality_cluster_B = 
+           case_when(
+        mhd.personality_disorder_diagnosed == 1 ~ 0,
+        mhd.personality_disorder_diagnosed == 2 ~ 0,
+        mhd.personality_disorder_diagnosed == 3 ~ 0,
+        mhd.personality_disorder_diagnosed == 4 ~ 1,
+        mhd.personality_disorder_diagnosed == 5 ~ 1,
+        mhd.personality_disorder_diagnosed == 6 ~ 1,
+        mhd.personality_disorder_diagnosed == 7 ~ 1,
+        mhd.personality_disorder_diagnosed == 8 ~ 0,
+        mhd.personality_disorder_diagnosed == 9 ~ 0,
+        mhd.personality_disorder_diagnosed == 10 ~ 0,
+      )
+  )
+
+```
+
+```{r Create factor version of the PD cluster B variable}
+
+GLAD_signup_personality_disorders$personality_cluster_B_labelled <- factor(
+  GLAD_signup_personality_disorders$personality_cluster_B,
+  levels = c(0, 1),
+  labels = c("No cluster B personality disorder", "Cluster B personality disorder")
+)
+
+#Check results
+GLAD_signup_personality_disorders %>% 
+  group_by(personality_cluster_B_labelled) %>% 
+  count()
+
+```
+
+###Personality cluster C
+
+```{r Create personality disorder cluster C group}
+
+GLAD_signup_personality_disorders <- GLAD_signup_personality_disorders %>% 
+  mutate(personality_cluster_C = 
+           case_when(
+        mhd.personality_disorder_diagnosed == 1 ~ 0,
+        mhd.personality_disorder_diagnosed == 2 ~ 0,
+        mhd.personality_disorder_diagnosed == 3 ~ 0,
+        mhd.personality_disorder_diagnosed == 4 ~ 0,
+        mhd.personality_disorder_diagnosed == 5 ~ 0,
+        mhd.personality_disorder_diagnosed == 6 ~ 0,
+        mhd.personality_disorder_diagnosed == 7 ~ 0,
+        mhd.personality_disorder_diagnosed == 8 ~ 1,
+        mhd.personality_disorder_diagnosed == 9 ~ 1,
+        mhd.personality_disorder_diagnosed == 10 ~ 1,
+      )
+  )
+
+```
+
+```{r Create factor version of the PD cluster C variable}
+
+GLAD_signup_personality_disorders$personality_cluster_C_labelled <- factor(
+  GLAD_signup_personality_disorders$personality_cluster_C,
+  levels = c(0, 1),
+  labels = c("No cluster C personality disorder", "Cluster C personality disorder")
+)
+
+#Check results
+GLAD_signup_personality_disorders %>% 
+  group_by(personality_cluster_C_labelled) %>% 
+  count()
+
+```
+
+##Psychotic disorders
+
+```{r Create psychotic disorder group}
+
+glad_signup_psychosis <- GLAD_signup_personality_disorders %>% 
+  mutate(psychotic_disorder = 
+           case_when(
+             mhd.schizophrenia == 1 ~ 1,
+             mhd.schizoaffective == 1 ~ 1,
+             mhd.psychosis == 1 ~ 1,
+             (mhd.schizophrenia == 0 &
+                mhd.schizoaffective == 0 | 
+                is.na(mhd.schizoaffective) &
+                mhd.psychosis == 0 ~ 0
+              )
+           ))
+
+```
+
+```{r Create factor version of the psychotic disorder variable}
+
+glad_signup_psychosis$psychotic_disorder_labelled <- factor(
+  glad_signup_psychosis$psychotic_disorder,
+  levels = c(0, 1),
+  labels = c("No psychotic disorder", "Psychotic disorder")
+)
+
+#Check results
+glad_signup_psychosis %>% 
+  group_by(psychotic_disorder_labelled) %>% 
+  count()
+
+```
+
+##Bipolar disorder
+
+Can just create a labelled factor since there is only one disorder in the group.
+
+```{r Created factor version of the bipolar disorder variable}
+
+glad_signup_psychosis$bipolar_disorder_labelled <- factor(
+  glad_signup_psychosis$mhd.bipolar_disorder,
+  levels = c(0, 1),
+  labels = c("No bipolar disorder", "Bipolar disorder")
+  )
+
+#Check results
+glad_signup_psychosis %>% 
+  group_by(bipolar_disorder_labelled) %>% 
+  count()
+
+```
+
+##Psychotic and bipolar disorder
+
+```{r Create psychotic and biploar disorder group}
+
+glad_signup_psychosis_and_bipolar <- glad_signup_psychosis %>% 
+  mutate(psychotic_and_biploar_disorder = 
+           case_when(
+             psychotic_disorder == 0 &
+               mhd.bipolar_disorder == 0 ~ 0,
+             psychotic_disorder == 1 &
+               mhd.bipolar_disorder == 1 ~ 1,
+             psychotic_disorder == 1 &
+               mhd.bipolar_disorder == 0 ~ 2,
+             psychotic_disorder == 0 &
+               mhd.bipolar_disorder == 1 ~ 3
+           ))
+
+```
+
+```{r Create factor version of psychotic and bipolar disorder variable}
+
+glad_signup_psychosis_and_bipolar$psychotic_and_biploar_disorder_labelled <- factor(
+  glad_signup_psychosis_and_bipolar$psychotic_and_biploar_disorder,
+  levels = c(0, 1, 2, 3),
+  labels = c("0" = "No psychotic or bipolar disorder",
+             "1" = "Psychotic and bipolar disorder",
+             "2" = "Only psychotic disorder",
+             "3" = "Only bipolar disorder")
+  )
+
+#Check results
+glad_signup_psychosis_and_bipolar %>% 
+  group_by(psychotic_and_biploar_disorder_labelled) %>% 
+  count()
+
+```
+
+##Autistic Spectrum Disorder
+
+Can just create a factor variable because there is only one variable in the group.
+
+```{r Create factor version of ASD variable}
+
+glad_signup_psychosis_and_bipolar$autistic_spectrum_disorder <- factor(
+  glad_signup_psychosis_and_bipolar$mhd.asd,
+  levels = c(0, 1),
+  labels = c("No autistic spectrum disorder", "Autistic spectrum disorder")
+  )
+
+#Check results
+glad_signup_psychosis_and_bipolar %>% 
+  group_by(autistic_spectrum_disorder) %>% 
+  count()
+
+```
+
+##ADHD
+
+Can just create a factor variable because there is only one variable in the group.
+
+```{r Create factor version of ADHD variable}
+
+glad_signup_psychosis_and_bipolar$ADHD_ADD_labelled <- factor(
+  glad_signup_psychosis_and_bipolar$mhd.addadhd,
+  levels = c(0, 1),
+  labels = c("No ADHD or ADD disorder", "ADHD or ADD disorder")
+  )
+
+#Check results
+glad_signup_psychosis_and_bipolar %>% 
+  group_by(ADHD_ADD_labelled) %>% 
+  count()
+
+```
+
+##Mental health comorbidity
+
+This will be a binary variable reflecting whether the participant has one 
+mental health disorder or 2+ mental health disorders
+
+```{r Create total disorders count variable}
+
+#Put disorder variables into a character vector
+mental_health_disorders <- c(
+  "depressive_disorder",
+  "anxiety_disorder",
+  "mhd.ptsd",
+  "OCRDs",
+  "eating_disorders",
+  "mhd.personality_disorder",
+  "psychotic_disorder",
+  "mhd.bipolar_disorder",
+  "mhd.asd",
+  "mhd.addadhd"
+)
+
+#Calculate every pt's total disorders with row sums
+glad_signup_total_MH_disorders <- glad_signup_psychosis_and_bipolar %>%
+  mutate(
+    MH_disorders_total_count =
+      rowSums(.[mental_health_disorders])
+  )
+
+#Check results
+glad_signup_total_MH_disorders %>% 
+  freq(MH_disorders_total_count)
+
+```
+
+```{r Create MH comorbidity variable}
+
+glad_signup_MH_comorbidity <- glad_signup_total_MH_disorders %>% 
+  mutate(mental_health_comorbidities = 
+           case_when(
+             MH_disorders_total_count <= 1 ~ 0,
+             MH_disorders_total_count > 1 ~ 1
+           ))
+
+```
+
+```{r Create factor version of MH comorbidity}
+
+glad_signup_MH_comorbidity$mental_health_comorbidities_labelled <- factor(
+  glad_signup_MH_comorbidity$mental_health_comorbidities,
+  levels = c(0, 1),
+  labels = c("No mental health comorbidity", "1+ mental health comorbidity"))
+
+#Check results
+glad_signup_MH_comorbidity %>% 
+  group_by(mental_health_comorbidities_labelled) %>% 
+  count()
+
+```
+
+##Physical health comorbidity
+
+Physical health comorbidity will be a binary variavle where "0" represents having
+no PH comorbidities and "1" represents having "+1 physical health comorbidity".
+
+Variables included will be: Epilepsy or convulutions, diabetes type I or II,
+high blood pressure, high blood cholesterol, stroke, and migraines.
+
+```{r Create total physical health disorders variable}
+
+#Old physical health variables object doesn't have the recoded vars, so we need
+#a new object with the recoded variable names instead
+physical_health_comorbidity_variables_recode <- c(
+  "dem.epilepsy_or_convulsions",
+  "diabetes_type_I_or_II",
+  "dem.high_blood_pressure",
+  "dem.high_blood_cholesterol",
+  "dem.stroke",
+  "dem.migraines"
+)
+
+#Calculate every pt's total disorders with row sums
+glad_signup_total_phy_disorders <- glad_signup_MH_comorbidity %>%
+  mutate(
+    phy_disorders_total_count =
+      rowSums(.[physical_health_comorbidity_variables_recode])
+  )
+
+#Check results
+glad_signup_total_phy_disorders %>% 
+  freq(phy_disorders_total_count)
+
+```
+
+```{r Create physical health comorbidities variable}
+
+glad_signup_phy_comorbidities <- glad_signup_total_phy_disorders %>% 
+  mutate(physical_health_comorbidities =
+           case_when(
+             phy_disorders_total_count <= 1 ~ 0,
+             phy_disorders_total_count > 1 ~ 1
+           ))
+
+```
+
+```{r Create factor version of physical health comorbidities variable}
+
+glad_signup_phy_comorbidities$physical_health_comorbidities_labelled <- factor(
+ glad_signup_phy_comorbidities$physical_health_comorbidities,
+ levels = c(0, 1),
+ labels = c("No physical health comorbidities", "1+ physical health comorbidity")
+ )
+
+#Check distribution
+glad_signup_phy_comorbidities %>% 
+  group_by(physical_health_comorbidities_labelled) %>% 
+  count()
+
+```
+
+#Create DVs
+
+There are two DVs for this study:
+
+DV 1: How many of the invited GLAD participants completed the COPING GLAD baseline?
+DV 2: How many waves did each COPING GLAD pt complete?
+
+##DV 1 - Completed COPING baseline pt's
+
+```{r Create binary variable for completed COPING baseline}
+
+glad_signup_completed_baseline <- glad_signup_MH_comorbidity %>% 
+  mutate(completed_baseline = 
+           case_when(
+               externalDataReference %in% COPING_GLAD_invitations$participant_id &
+                 externalDataReference %in% COPING_GLAD_base_clean$externalDataReference ~ 1,
+               externalDataReference %in% COPING_GLAD_invitations$participant_id &
+                 externalDataReference %not_in% COPING_GLAD_base_clean$externalDataReference ~ 0
+           ))
+
+```
+
+```{r Create factor version of completed COPING baseline variable}
+
+glad_signup_completed_baseline$completed_baseline_labelled <- factor(
+  glad_signup_completed_baseline$completed_baseline,
+  levels = c(0, 1),
+  labels = c("Did not complete COPING baseline", "Completed COPING baseline")
+)
+
+#Check results
+glad_signup_completed_baseline %>% 
+  group_by(completed_baseline_labelled) %>% 
+  count() #N is slightly lower than IDs in the COPING GLAD baseline? 
+          #Must be because of the extra invitations filter?
+
+COPING_GLAD_base_clean %>% 
+  dim()
+
+```
+
+##DV 2 - Number of follow-ups completed
+
+```{r Create date variables for COPING waves}
+
+# MAY 2 (wave 1) - FOLLOW UP A
+start1 <- as.POSIXct("2020-05-19")
+end1 <-  as.POSIXct("2020-06-02")  
+
+# JUNE 1 (wave 2) - FOLLOW UP B
+start2 <- as.POSIXct("2020-06-02")
+end2<-  as.POSIXct("2020-06-16")  
+
+# JUNE 2 (wave 3) - FOLLOW UP A
+start3 <- as.POSIXct("2020-06-16")
+end3 <-  as.POSIXct("2020-06-30") 
+
+# JULY 1 (wave 4) - FOLLOW UP B
+start4 <- as.POSIXct("2020-06-30")
+end4<-  as.POSIXct("2020-07-14") 
+
+# JULY 2 (wave 5) - FOLLOW UP A
+start5 <- as.POSIXct("2020-07-14")
+end5 <-  as.POSIXct("2020-07-28") ##Ongoing starts from here
+  
+# JULY - AUG (wave 6) - FOLLOW UP B
+start6 <- as.POSIXct("2020-07-28") 
+end6 <-  as.POSIXct("2020-08-25") 
+  
+# AUG - SEPT (wave 7) - FOLLOW UP A
+start7 <- as.POSIXct("2020-08-25")
+end7 <-  as.POSIXct("2020-09-22") 
+
+# SEPT - OCT (wave 8) - FOLLOW UP B
+start8 <- as.POSIXct("2020-09-22")
+end8 <-  as.POSIXct("2020-10-20") 
+
+# OCT - NOV (wave 9) - FOLLOW UP A
+start9 <- as.POSIXct("2020-10-20")
+end9 <-  as.POSIXct("2020-11-17") 
+
+# NOV - DEC (wave 10) - FOLLOW UP B
+start10 <- as.POSIXct("2020-11-17")
+end10 <-  as.POSIXct("2020-12-15") 
+
+# DEC - JAN (wave 11) - FOLLOW UP A
+start11 <- as.POSIXct("2020-12-15")
+end11 <-  as.POSIXct("2021-01-12")
+
+#Jan - Feb (wave 12) - FOLLOW UP B
+start12 <- as.POSIXct("2021-01-12")
+end12 <- as.POSIXct("2021-02-09")
+
+#Feb - March (wave 13) - FOLLOW UP A
+start13 <- as.POSIXct("2021-02-09")
+end13 <- as.POSIXct("2021-03-09")
+
+#March - April (wave 14) - FOLLOW UP B
+start14 <- as.POSIXct("2021-03-09")
+end14 <- as.POSIXct("2021-04-06")
+
+#April - May (wave 15) - FOLLOW UP A
+start15 <- as.POSIXct("2021-04-06")
+end15 <- as.POSIXct("2021-05-04")
+
+```
+
+```{r Create waves variable in the COPING follow-up A}
+
+COPING_followup_A_dem_waves <- COPING_followup_A_dem_merged %>% 
+  mutate(COPING_waves_A = 
+           case_when(
+             startDate >= start1 & 
+               startDate < end1 ~ ".Wave_1",
+             startDate >= start3 & 
+               startDate < end3 ~ ".Wave_3",
+             startDate >= start5 & 
+               startDate < end5 ~ ".Wave_5",
+             startDate >= start7 & 
+               startDate < end7 ~ ".Wave_7",
+             startDate >= start9 & 
+               startDate< end9 ~ ".Wave_9",
+             startDate >= start11 & 
+               startDate < end11 ~ ".Wave_11",
+             startDate >= start13 & 
+               startDate < end13 ~ ".Wave_13",
+             startDate >= start15 & 
+               startDate < end15 ~ ".Wave_15",
+             startDate >= start2 & 
+               startDate < end2 ~ ".Wave_2_QA",
+             startDate >= start4 & 
+               startDate < end4 ~ ".Wave_4_QA",
+             startDate >= start6 & 
+               startDate < end6 ~ ".Wave_6_QA",
+             startDate >= start8 & 
+               startDate < end8 ~ ".Wave_8_QA",
+             startDate >= start10 & 
+               startDate < end10 ~ ".Wave_10_QA",
+             startDate >= start12 & 
+               startDate < end12 ~ ".Wave_12_QA",
+             startDate >= start14 & 
+               startDate < end14 ~ ".Wave_14_QA"
+           ))
+
+#Note: QA are questionnaires that are A FOLLOW UP QUESTIONNAIRES but answered within a time point that was considered a "follow up B time-point"
+
+```
+
+```{r Create waves variable in COPING follow-up B}
+
+COPING_followup_B_phq_waves <- COPING_followup_B_phq_raw %>% 
+  mutate(COPING_waves_B = 
+           case_when(
+             startDate >= start1 & 
+               startDate < end1 ~ ".Wave_1_QB",
+             startDate >= start3 & 
+               startDate < end3 ~ ".Wave_3_QB",
+             startDate >= start5 & 
+               startDate < end5 ~ ".Wave_5_QB",
+             startDate >= start7 & 
+               startDate < end7 ~ ".Wave_7_QB",
+             startDate >= start9 & 
+               startDate< end9 ~ ".Wave_9_QB",
+             startDate >= start11 & 
+               startDate < end11 ~ ".Wave_11_QB",
+             startDate >= start13 & 
+               startDate < end13 ~ ".Wave_13_QB",
+             startDate >= start15 & 
+               startDate < end15 ~ ".Wave_15_QB",
+             startDate >= start2 & 
+               startDate < end2 ~ ".Wave_2",
+             startDate >= start4 & 
+               startDate < end4 ~ ".Wave_4",
+             startDate >= start6 & 
+               startDate < end6 ~ ".Wave_6",
+             startDate >= start8 & 
+               startDate < end8 ~ ".Wave_8",
+             startDate >= start10 & 
+               startDate < end10 ~ ".Wave_10",
+             startDate >= start12 & 
+               startDate < end12 ~ ".Wave_12",
+             startDate >= start14 & 
+               startDate < end14 ~ ".Wave_14"
+           ))
+
+```
+
+```{r Check distribution of waves}
+
+COPING_followup_A_dem_waves %>% 
+  freq(COPING_waves_A)
+
+COPING_followup_B_phq_waves %>% 
+  freq(COPING_waves_B)
+
+```
+
+Note to self: What should I do with the QB/QA ones?
+
+```{r Create individual objects for every COPING followup_A wave}
+
+COPING_followup_A_wave_1 <- COPING_followup_A_dem_waves %>% 
+  filter(COPING_waves_A == ".Wave_1")
+
+COPING_followup_A_wave_3 <- COPING_followup_A_dem_waves %>% 
+  filter(COPING_waves_A == ".Wave_3")
+
+COPING_followup_A_wave_5 <- COPING_followup_A_dem_waves %>% 
+  filter(COPING_waves_A == ".Wave_5")
+
+COPING_followup_A_wave_7 <- COPING_followup_A_dem_waves %>% 
+  filter(COPING_waves_A == ".Wave_7")
+
+COPING_followup_A_wave_9 <- COPING_followup_A_dem_waves %>% 
+  filter(COPING_waves_A == ".Wave_9")
+
+COPING_followup_A_wave_11 <- COPING_followup_A_dem_waves %>% 
+  filter(COPING_waves_A == ".Wave_11")
+
+COPING_followup_A_wave_13 <- COPING_followup_A_dem_waves %>% 
+  filter(COPING_waves_A == ".Wave_13")
+
+
+```
+
+```{r Create individual objects for every COPING followup B wave}
+
+COPING_followup_B_wave_2 <- COPING_followup_B_phq_waves %>% 
+  filter(COPING_waves_B == ".Wave_2")
+
+COPING_followup_B_wave_4 <- COPING_followup_B_phq_waves %>% 
+  filter(COPING_waves_B == ".Wave_4")
+
+COPING_followup_B_wave_6 <- COPING_followup_B_phq_waves %>% 
+  filter(COPING_waves_B == ".Wave_6")
+
+COPING_followup_B_wave_8 <- COPING_followup_B_phq_waves %>% 
+  filter(COPING_waves_B == ".Wave_8")
+
+COPING_followup_B_wave_10 <- COPING_followup_B_phq_waves %>% 
+  filter(COPING_waves_B == ".Wave_10")
+
+COPING_followup_B_wave_12 <- COPING_followup_B_phq_waves %>% 
+  filter(COPING_waves_B == ".Wave_12")
+
+COPING_followup_B_wave_14 <- COPING_followup_B_phq_waves %>% 
+  filter(COPING_waves_B == ".Wave_14")
+
+```
+
+```{r Put the COPING wave objects into a list}
+
+#Put the wave data sets into a new list
+COPING_waves_tib_list <- list(COPING_followup_A_wave_1,
+                              COPING_followup_B_wave_2,
+                              COPING_followup_A_wave_3,
+                              COPING_followup_B_wave_4,
+                              COPING_followup_A_wave_5,
+                              COPING_followup_B_wave_6,
+                              COPING_followup_A_wave_7,
+                              COPING_followup_B_wave_8,
+                              COPING_followup_A_wave_9,
+                              COPING_followup_B_wave_10,
+                              COPING_followup_A_wave_11,
+                              COPING_followup_B_wave_12,
+                              COPING_followup_A_wave_13,
+                              COPING_followup_B_wave_14)
+
+```
+
+```{r Clean the IDs in all the COPING wave objects}
+
+COPING_waves_tib_list_cleansIDs <- COPING_waves_tib_list %>% 
+  map(distinct, 
+      externalDataReference,
+      .keep_all = TRUE)
+
+COPING_waves_tib_list_cleansIDs <- COPING_waves_tib_list_cleansIDs %>% 
+  map(drop_na,
+      externalDataReference)
+
+```
+
+```{r Create vector with names for new columns in the GLAD sign up}
+
+#Create a character vector of the new column names for the waves in the GLAD
+#sign up
+GLAD_signup_wave_col_names <- c(
+  "completed_wave_1",
+  "completed_wave_2",
+  "completed_wave_3",
+  "completed_wave_4",
+  "completed_wave_5",
+  "completed_wave_6",
+  "completed_wave_7",
+  "completed_wave_8",
+  "completed_wave_9",
+  "completed_wave_10",
+  "completed_wave_11",
+  "completed_wave_12",
+  "completed_wave_13",
+  "completed_wave_14"
+)
+
+```
+
+```{r Create completed wave variables in the GLAD sign up}
+
+#Create N completed wave variable in GLAD sign up for each COPING object
+GLAD_signup_waves <- COPING_waves_tib_list %>% 
+  map2(GLAD_signup_wave_col_names, function(x, y){
+    df <- glad_signup_completed_baseline %>% 
+      mutate(!!y := 
+               case_when(
+                 externalDataReference %in% x$externalDataReference ~ 1,
+                 externalDataReference %not_in% x$externalDataReference ~ 0
+               ))
+    return(df)
+  })
+
+```
+
+```{r Add all the new completed wave columns back into one data set}
+
+GLAD_signup_waves_merged <- GLAD_signup_waves %>% 
+  reduce(full_join)
+
+#Check data
+GLAD_signup_waves_merged %>% 
+  dim()
+
+GLAD_signup_waves_merged %>% 
+  colnames()
+
+```
+
+```{r Inspect new completed wave variables}
+
+#See distribution for each variable
+GLAD_signup_wave_col_names %>% 
+  map(function(x){
+    group_by_at(GLAD_signup_waves_merged, x) %>% 
+      summarise(Count = n()) %>% 
+      as_tibble()
+  })
+
+```
+
+```{r Create total waves completed variable}
+
+#Calculate every pt's total disorders with row sums
+glad_signup_total_waves <- GLAD_signup_waves_merged %>%
+  mutate(
+    total_COPING_waves =
+      rowSums(.[GLAD_signup_wave_col_names])
+  )
+
+#Check results
+glad_signup_total_waves %>% 
+  freq(total_COPING_waves)
+
+```
+
+#Exclusions
+
+Pt's we want to remove are as follows:
+
+-Pt's with NA for gender, and NA/implausible value for age
+-Pt's who signed up to the COPING survey after the 30th April 2020
+
+```{r Filter final object}
+
+glad_signup_final <- glad_signup_total_waves %>% 
+  filter(age_cleaned >= 16 &
+           age_cleaned <= 117) %>%  #41,142, 28 pt's removed
+  filter(!is.na(gender_recode_labelled)) #40,271, 871 pt's removed
+
+#Check results
+glad_signup_total_waves %>% 
+  dim()
+
+glad_signup_final %>% 
+  dim()
+
+```
+
+#Write data
+
+```{r write glad_signup_final}
+
+write_rds(paste0(processed_data_path, "glad_signup_final.rds"))
+
+```
