@@ -118,36 +118,51 @@ regarding their sociodremographic background.
 
 ```{r Chi2 test for gender}
 
-chisq.test(gender_contingency_table,
+gender_chi2_test <- chisq.test(gender_contingency_table,
            correct = TRUE)
+
+#Check output
+gender_chi2_test
 
 ```
 
 ```{r Chi2 test for ethnicity}
 
-chisq.test(ethnicity_contingency_table,
+ethnicity_chi2_test <- chisq.test(ethnicity_contingency_table,
            correct = TRUE)
+
+#Check output
+ethnicity_chi2_test
 
 ```
 
 ```{r Chi2 test for education}
 
-chisq.test(education_contingency_table,
+education_chi2_test <- chisq.test(education_contingency_table,
            correct = TRUE)
+
+#Check output
+education_chi2_test
 
 ```
 
 ```{r Chi2 test for employment}
 
-chisq.test(employment_contingency_table,
+employment_chi2_test <- chisq.test(employment_contingency_table,
            correct = TRUE)
+
+#Check output
+employment_chi2_test
 
 ```
 
 ```{r Chi2 test for partnership status}
 
-chisq.test(partnership_contingency_table,
+partnership_chi2_test <- chisq.test(partnership_contingency_table,
            correct = TRUE)
+
+#Check output
+partnership_chi2_test
 
 ```
 
