@@ -279,3 +279,16 @@ summary(psychiatric_and_health_LR_model)
 
 ```
 
+```{r Model 3: Study variables}
+
+glad_study_variables_LR_model <- glm(
+  formula = completed_baseline ~ startDate + 
+    kit_returned +
+    joined_coping_first_invitation,
+  family = "binomial",
+  data = glad_coping_participation_raw)
+
+#Check output
+summary(glad_study_variables_LR_model)
+
+```
