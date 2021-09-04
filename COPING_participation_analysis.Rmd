@@ -111,10 +111,11 @@ partnership_contingency_table
 #Run Aim 1 tests
 
 The aim here is to see whether there are any significant differences between 
-the GLAD Study paticipants who did and did not take part in the COPING baseline
-regarding their sociodremographic background.
+the GLAD Study paticipants who did and did not take part in the COPING baseline.
 
 ##Chi2 tests
+
+This will only focus on the sociodemographic variables.
 
 ```{r Set significance value}
 
@@ -132,7 +133,30 @@ gender_chi2_test
 
 ```
 
+```{r Create post_hoc function for sig chi2 results}
+
+post_hoc_chi2 <- function(contingency_table, correct_adj = FALSE, sig_level = 0.05){
+  
+  #Get the adjusted residuals
+  chi2_result <- chisq.test(contingency_table,
+             correct = correct_adj)$stdres
+  
+  #Make Bonferonni correction
+  bonferroni <- sig_level/(nrow(contingency_table) * ncol(contingency_table))
+  
+  #Get critical z value
+  print(qnorm(bonferroni/2))
+
+  return(chi2_result)
+  
+}
+
+```
+
 ```{r Post hoc testing for gender}
+
+post_hoc_chi2(gender_contingency_table,
+              correct_adj = TRUE)
 
 #Get the adjusted residuals 
 chisq.test(gender_contingency_table, 
