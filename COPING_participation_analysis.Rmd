@@ -81,13 +81,11 @@ ethnicity_contingency_table
 
 ```{r Create contingency table for Education}
 
-education_contingency_table <- glad_coping_participation_raw %>%
-  select(dem.college_or_university_degree,
-         dem.a_levelsas_levels_or_equivalent,
-         dem.o_levelsgcses_or_equivalent,
-         dem.cses_or_equivalent,
-         dem.nvq_or_hnd_or_hnc_or_equivalent) %>% 
-   gather(key, name)
+education_contingency_table <- table(glad_coping_participation_raw$highest_education,
+                                     glad_coping_participation_raw$completed_baseline_labelled)
+
+#Check output
+education_contingency_table
 
 ```
 
