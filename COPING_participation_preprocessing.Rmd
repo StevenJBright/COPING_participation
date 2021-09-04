@@ -681,7 +681,7 @@ highest_education_variables %>%
 
 ```{r Combine binary education variables into single variable}
 
-glad_coping_participation_raw <- glad_coping_participation_raw %>% 
+GLAD_signup_gender_recode <- GLAD_signup_gender_recode %>% 
   mutate(highest_education = 
            case_when(
              dem.college_or_university_degree == 1 ~ 1,
@@ -695,6 +695,23 @@ glad_coping_participation_raw <- glad_coping_participation_raw %>%
                 dem.cses_or_equivalent == 0 &
                 dem.nvq_or_hnd_or_hnc_or_equivalent == 0 ~ 6)
            ))
+
+```
+
+```{r Label the highest education variable}
+
+GLAD_signup_gender_recode$highest_education_labelled <- factor(
+  GLAD_signup_gender_recode$highest_education,
+  levels = c(1, 2, 3, 4, 5, 6),
+  labels = c("College or university degree", "A levels/AS levels or equivalent",
+             "O levels/GCSEs or equivalent", "CSEs or equivalent",
+             "NVQ or HND or HNC or equivalent", "None of the above")
+  )
+
+#Check output
+GLAD_signup_gender_recode %>% 
+  group_by(highest_education_labelled) %>% 
+  count()
 
 ```
 
