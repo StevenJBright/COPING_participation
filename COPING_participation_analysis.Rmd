@@ -15,3 +15,17 @@ remove(list = ls())
 
 ```
 
+#Call libraries
+
+```{r Install packages}
+
+#install.packages("tidyverse")
+
+```
+
+```{r Load libraries}
+
+library(tidyverse)
+
+```
+
