@@ -109,6 +109,26 @@ partnership_contingency_table
 
 ```
 
+#Run t-tests and chi2 tests
+
+The aim here is to see whether there are any significant differences between 
+the GLAD Study paticipants who did and did not take part in the COPING baseline
+regarding their sociodremographic background.
+
+##Age
+
+```{r run t-test for age}
+
+# t.test(completed_baseline ~ age_cleaned,
+#        mu = 0,
+#        alt = "two-sided",
+#        conf = 0.95,
+#        var.eq = FALSE,
+#        paired = FALSE,
+#        data = glad_coping_participation_raw)
+
+```
+
 #Logistic regression models
 
 We will run four logistic regression models for aim 1:
