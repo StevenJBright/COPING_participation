@@ -587,3 +587,9 @@ all.corr.matrix <- as.matrix(all.corr.mat)
 
 ```
 
+```{r Save p values}
+
+all.p.matrix <- as.matrix(all.corr.mat$tests)
+
+```
+
