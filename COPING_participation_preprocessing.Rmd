@@ -1929,8 +1929,9 @@ glad_signup_total_phy_disorders %>%
 glad_signup_phy_comorbidities <- glad_signup_total_phy_disorders %>% 
   mutate(physical_health_comorbidities =
            case_when(
-             phy_disorders_total_count <= 1 ~ 0,
-             phy_disorders_total_count > 1 ~ 1
+             phy_disorders_total_count == 0 ~ 0,
+             phy_disorders_total_count == 1 ~ 1
+             phy_disorders_total_count > 1 ~ 2
            ))
 
 ```
@@ -1939,8 +1940,9 @@ glad_signup_phy_comorbidities <- glad_signup_total_phy_disorders %>%
 
 glad_signup_phy_comorbidities$physical_health_comorbidities_labelled <- factor(
  glad_signup_phy_comorbidities$physical_health_comorbidities,
- levels = c(0, 1),
- labels = c("No physical health comorbidities", "1+ physical health comorbidity")
+ levels = c(0, 1, 2),
+ labels = c("No physical health disorders", "1 physical health disorder",
+            "2+ physical health disorders")
  )
 
 #Check distribution
