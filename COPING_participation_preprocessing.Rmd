@@ -1203,7 +1203,7 @@ GLAD_signup_first_invitation <- GLAD_signup_kits_returned %>%
 
 ```{r Turn joined COPING first invitation variable into factor}
 
-GLAD_signup_first_invitation$joined_coping_first_invitation <- factor(
+GLAD_signup_first_invitation$joined_coping_first_invitation_labelled <- factor(
   GLAD_signup_first_invitation$joined_coping_first_invitation,
   levels = c(0, 1, 2),
   labels = c("Didn't complete COPING baseline before 1st follow-up",
@@ -1213,7 +1213,7 @@ GLAD_signup_first_invitation$joined_coping_first_invitation <- factor(
 
 #Check results
 GLAD_signup_first_invitation %>% 
-  group_by(joined_coping_first_invitation) %>% 
+  group_by(joined_coping_first_invitation_labelled) %>% 
   count()
 
 ```
@@ -2329,7 +2329,7 @@ glad_signup_final <- glad_signup_total_waves %>%
   filter(age_cleaned >= 16 &
            age_cleaned <= 117) %>%  #41,142, 28 pt's removed
   filter(!is.na(gender_recode_labelled)) %>% #40,271, 871 pt's removed
-  filter(joined_coping_first_invitation != "Not applicable") #34,285, 5,986 pt's removed
+  filter(joined_coping_first_invitation_labelled != "Not applicable") #34,285, 5,986 pt's removed
 
 #Check results
 glad_signup_total_waves %>% 
