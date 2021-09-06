@@ -303,6 +303,7 @@ sociodemographic_LR_model_tidy <- tidy(
 sociodemographic_LR_model_tidy %>% 
   head(7)
 
+#Create kable output
 sociodemographic_LR_model_kable <- kable(sociodemographic_LR_model_tidy[-c(1), ],
       digits = 2)
 
@@ -335,6 +336,59 @@ summary(psychiatric_and_health_LR_model)
 
 ```
 
+```{r Create tidy psychiatric and health LR model}
+
+#Put psychiatric and health variable names into vector in order that they appear in summary(model2)
+psychiatric_and_health_variable_names <- c(
+  "Intercept",
+  "gad.sum_score",
+  "phq.sum_score",
+  "audit.sum_score",
+  "dem.select_the_box_that_best_describes_you",
+  "physical_health_comorbidities",
+  "mental_health_comorbidities",
+  "depressive_and_anxiety_comorbidity",
+  "eating_disorders",
+  "OCRDs",
+  "psychotic_and_biploar_disorder",
+  "mhd.asd",
+  "mhd.addadhd",
+  "mhd.personality_disorder"
+  )
+
+#Create tidy model output
+psychiatric_and_health_LR_model_tidy <- tidy(
+  psychiatric_and_health_LR_model,
+  exponentiate = T,
+  conf.int = T) %>%
+  mutate(
+    Variable = psychiatric_and_health_variable_names,
+    Significance = if_else(
+      p.value < 0.05, 
+      1,
+      0
+      ) %>%
+    recode_factor(
+        "0" = "Not-significant",
+        "1" = "Significant"
+      )) %>%
+  select(
+    Variable,
+    OR = estimate,
+    `CI 95% lower` = conf.low,
+    `CI 95% upper` = conf.high,
+    `p value` = p.value,
+    Significance
+  )
+
+psychiatric_and_health_LR_model_tidy %>% 
+  head(14)
+
+#Create kable output
+psychiatric_and_health_LR_model_kable <- kable(psychiatric_and_health_LR_model_tidy[-c(1), ],
+      digits = 2)
+
+```
 
 
 ```{r Model 3: Study variables}
