@@ -1860,8 +1860,9 @@ glad_signup_total_MH_disorders %>%
 glad_signup_MH_comorbidity <- glad_signup_total_MH_disorders %>% 
   mutate(mental_health_comorbidities = 
            case_when(
-             MH_disorders_total_count <= 1 ~ 0,
-             MH_disorders_total_count > 1 ~ 1
+             MH_disorders_total_count == 0 ~ 0,
+             MH_disorders_total_count == 1 ~ 1,
+             MH_disorders_total_count > 1 ~ 2
            ))
 
 ```
@@ -1870,8 +1871,9 @@ glad_signup_MH_comorbidity <- glad_signup_total_MH_disorders %>%
 
 glad_signup_MH_comorbidity$mental_health_comorbidities_labelled <- factor(
   glad_signup_MH_comorbidity$mental_health_comorbidities,
-  levels = c(0, 1),
-  labels = c("No mental health comorbidity", "1+ mental health comorbidity"))
+  levels = c(0, 1, 2),
+  labels = c("No mental health disorders", "1 mental health disorder",
+             "2+ mental health disorders"))
 
 #Check results
 glad_signup_MH_comorbidity %>% 
