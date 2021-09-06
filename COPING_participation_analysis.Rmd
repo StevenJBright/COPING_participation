@@ -21,6 +21,7 @@ remove(list = ls())
 
 #install.packages("broom")
 #install.packages("knitr)
+#install.packages("car")
 #install.packages("tidyverse")
 
 ```
@@ -29,6 +30,7 @@ remove(list = ls())
 
 library(broom)
 library(knitr)
+library(car)
 library(tidyverse)
 
 ```
@@ -547,4 +549,19 @@ complete_LR_model_kable <- kable(complete_LR_model_tidy[-c(1), ],
       digits = 2)
 
 ```
+
+#Test assumptions of complete LR model
+##Multicollinearity
+
+Check that all IVs are not highly correlated.
+
+```{r Get VIF values of final model}
+
+complete_LR_model_VIF <- complete_LR_model %>% 
+  vif()
+
+complete_LR_model_VIF
+
+```
+
 
