@@ -1860,8 +1860,9 @@ glad_signup_total_MH_disorders %>%
 glad_signup_MH_comorbidity <- glad_signup_total_MH_disorders %>% 
   mutate(mental_health_comorbidities = 
            case_when(
-             MH_disorders_total_count <= 1 ~ 0,
-             MH_disorders_total_count > 1 ~ 1
+             MH_disorders_total_count == 0 ~ 0,
+             MH_disorders_total_count == 1 ~ 1,
+             MH_disorders_total_count > 1 ~ 2
            ))
 
 ```
@@ -1870,8 +1871,9 @@ glad_signup_MH_comorbidity <- glad_signup_total_MH_disorders %>%
 
 glad_signup_MH_comorbidity$mental_health_comorbidities_labelled <- factor(
   glad_signup_MH_comorbidity$mental_health_comorbidities,
-  levels = c(0, 1),
-  labels = c("No mental health comorbidity", "1+ mental health comorbidity"))
+  levels = c(0, 1, 2),
+  labels = c("No mental health disorders", "1 mental health disorder",
+             "2+ mental health disorders"))
 
 #Check results
 glad_signup_MH_comorbidity %>% 
@@ -1893,6 +1895,14 @@ high blood pressure, high blood cholesterol, stroke, and migraines.
 #Old physical health variables object doesn't have the recoded vars, so we need
 #a new object with the recoded variable names instead
 physical_health_comorbidity_variables_recode <- c(
+  "dem.asthma",
+  "dem.emphysema_or_chronic_bronchitis",
+  "dem.breast_cancer",
+  "dem.lung_cancer",
+  "dem.stomach_cancer",
+  "dem.colon_cancer",
+  "dem.uterus_cancer",
+  "dem.prostate_cancer",
   "dem.epilepsy_or_convulsions",
   "diabetes_type_I_or_II",
   "dem.high_blood_pressure",
@@ -1919,8 +1929,9 @@ glad_signup_total_phy_disorders %>%
 glad_signup_phy_comorbidities <- glad_signup_total_phy_disorders %>% 
   mutate(physical_health_comorbidities =
            case_when(
-             phy_disorders_total_count <= 1 ~ 0,
-             phy_disorders_total_count > 1 ~ 1
+             phy_disorders_total_count == 0 ~ 0,
+             phy_disorders_total_count == 1 ~ 1
+             phy_disorders_total_count > 1 ~ 2
            ))
 
 ```
@@ -1929,8 +1940,9 @@ glad_signup_phy_comorbidities <- glad_signup_total_phy_disorders %>%
 
 glad_signup_phy_comorbidities$physical_health_comorbidities_labelled <- factor(
  glad_signup_phy_comorbidities$physical_health_comorbidities,
- levels = c(0, 1),
- labels = c("No physical health comorbidities", "1+ physical health comorbidity")
+ levels = c(0, 1, 2),
+ labels = c("No physical health disorders", "1 physical health disorder",
+            "2+ physical health disorders")
  )
 
 #Check distribution
