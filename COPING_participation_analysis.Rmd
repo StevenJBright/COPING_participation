@@ -390,8 +390,9 @@ psychiatric_and_health_LR_model_kable <- kable(psychiatric_and_health_LR_model_t
 
 ```
 
+##Model 3: Study variables
 
-```{r Model 3: Study variables}
+```{r Run study variables LR model}
 
 glad_study_variables_LR_model <- glm(
   formula = completed_baseline ~ startDate + 
@@ -402,6 +403,50 @@ glad_study_variables_LR_model <- glm(
 
 #Check output
 summary(glad_study_variables_LR_model)
+
+```
+
+```{r Create clean GLAD study variables LR model}
+
+#Put glad study variable names into vector in order that they appear in summary(model3)
+glad_study_variable_names <- c(
+  "Intercept",
+  "startDate",
+  "kit_returned",
+  "joined_coping_first_invitation"
+)
+
+#Create tidy model output
+glad_study_variables_LR_model_tidy <- tidy(
+  glad_study_variables_LR_model,
+  exponentiate = T,
+  conf.int = T) %>%
+  mutate(
+    Variable = glad_study_variable_names,
+    Significance = if_else(
+      p.value < 0.05, 
+      1,
+      0
+      ) %>%
+    recode_factor(
+        "0" = "Not-significant",
+        "1" = "Significant"
+      )) %>%
+  select(
+    Variable,
+    OR = estimate,
+    `CI 95% lower` = conf.low,
+    `CI 95% upper` = conf.high,
+    `p value` = p.value,
+    Significance
+  )
+
+glad_study_variables_LR_model_tidy %>% 
+  head()
+
+#Create kable output
+glad_study_variables_LR_model_kable <- kable(glad_study_variables_LR_model_tidy[-c(1), ],
+      digits = 2)
 
 ```
 
