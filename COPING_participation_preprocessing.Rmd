@@ -1930,7 +1930,7 @@ glad_signup_phy_comorbidities <- glad_signup_total_phy_disorders %>%
   mutate(physical_health_comorbidities =
            case_when(
              phy_disorders_total_count == 0 ~ 0,
-             phy_disorders_total_count == 1 ~ 1
+             phy_disorders_total_count == 1 ~ 1,
              phy_disorders_total_count > 1 ~ 2
            ))
 
