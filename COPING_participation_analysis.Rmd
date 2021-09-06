@@ -450,9 +450,11 @@ glad_study_variables_LR_model_kable <- kable(glad_study_variables_LR_model_tidy[
 
 ```
 
-```{r Model 4: Combined model}
+##Complete LR model
 
-full_LR_model <- glm(
+```{r Run complete LR model}
+
+complete_LR_model <- glm(
   formula = completed_baseline ~ age_cleaned + 
     gender_recode +
     highest_education +
@@ -463,6 +465,7 @@ full_LR_model <- glm(
     gad.sum_score +
     audit.sum_score +
     dem.select_the_box_that_best_describes_you +
+    physical_health_comorbidities +
     mental_health_comorbidities +
     depressive_and_anxiety_comorbidity +
     eating_disorders +
@@ -478,6 +481,70 @@ full_LR_model <- glm(
   data = glad_coping_participation_raw)
 
 #Check output
-summary(full_LR_model)
+summary(complete_LR_model)
 
 ```
+
+```{r Create tidy complete LR model}
+
+#Put all LR variable names into vector in the order they appear in summary(model4)
+complete_LR_model_names <- c(
+  "Intercept",
+  "age_cleaned",
+  "gender_recode",
+  "highest_education",
+  "dem.questions_based_ethnic_origin",
+  "dem.what_is_your_current_employment_status",
+  "partnership_status",
+  "phq.sum_score",
+  "gad.sum_score",
+  "audit.sum_score",
+  "dem.select_the_box_that_best_describes_you",
+  "physical_health_comorbidities",
+  "mental_health_comorbidities",
+  "depressive_and_anxiety_comorbidity",
+  "eating_disorders",
+  "OCRDs",
+  "psychotic_and_biploar_disorder",
+  "mhd.asd",
+  "mhd.addadhd",
+  "mhd.personality_disorder",
+  "startDate",
+  "kit_returned",
+  "joined_coping_first_invitation"
+)
+
+#Create tidy model output
+complete_LR_model_tidy <- tidy(
+  complete_LR_model,
+  exponentiate = T,
+  conf.int = T) %>%
+  mutate(
+    Variable = complete_LR_model_names,
+    Significance = if_else(
+      p.value < 0.05, 
+      1,
+      0
+      ) %>%
+    recode_factor(
+        "0" = "Not-significant",
+        "1" = "Significant"
+      )) %>%
+  select(
+    Variable,
+    OR = estimate,
+    `CI 95% lower` = conf.low,
+    `CI 95% upper` = conf.high,
+    `p value` = p.value,
+    Significance
+  )
+
+complete_LR_model_tidy %>% 
+  head(23)
+
+#Create kable output
+complete_LR_model_kable <- kable(complete_LR_model_tidy[-c(1), ],
+      digits = 2)
+
+```
+
