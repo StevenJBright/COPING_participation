@@ -9,22 +9,312 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+```{r Clean global environment}
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+remove(list = ls())
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
 ```
 
-## Including Plots
+#Call libraries
 
-You can also embed plots, for example:
+```{r Install packages}
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+#install.packages("tidyverse")
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r Load libraries}
+
+library(tidyverse)
+
+```
+
+#Read in data
+
+```{r Source paths}
+
+source("..//COPING_participation_paths.r")
+
+```
+
+```{r Read in glad coping participation data}
+
+glad_coping_participation_raw <- read_rds(paste0(processed_data_path, processed_data_name))
+
+#Check data
+glad_coping_participation_raw %>% 
+  head()
+
+```
+
+#Create tables for chi2 tests
+
+Sociodemographic variables:
+
+Age (continuous - Not applicable)
+Gender
+Ethnicity
+Education
+Employment
+Partnership status
+
+```{r Create contingency table for gender}
+
+gender_contingency_table <- table(glad_coping_participation_raw$gender_recode_labelled,
+                                  glad_coping_participation_raw$completed_baseline_labelled)
+
+#Check output
+gender_contingency_table
+
+```
+
+```{r Create contingency table for ethnicity}
+
+ethnicity_contingency_table <- table(glad_coping_participation_raw$ethnicity_labelled,
+                                     glad_coping_participation_raw$completed_baseline_labelled)
+
+#Check output
+ethnicity_contingency_table
+
+```
+
+```{r Create contingency table for Education}
+
+education_contingency_table <- table(glad_coping_participation_raw$highest_education,
+                                     glad_coping_participation_raw$completed_baseline_labelled)
+
+#Check output
+education_contingency_table
+
+```
+
+```{r Create contingency table for employment}
+
+employment_contingency_table <- table(glad_coping_participation_raw$employment_labelled,
+                                      glad_coping_participation_raw$completed_baseline_labelled)
+
+#Check output
+employment_contingency_table
+
+```
+
+```{r Partnership status}
+
+partnership_contingency_table <- table(glad_coping_participation_raw$partnership_status_labelled,
+                                       glad_coping_participation_raw$completed_baseline_labelled)
+
+#Check output
+partnership_contingency_table
+
+```
+
+#Run Aim 1 tests
+
+The aim here is to see whether there are any significant differences between 
+the GLAD Study paticipants who did and did not take part in the COPING baseline.
+
+##Chi2 tests
+
+This will only focus on the sociodemographic variables.
+
+```{r Chi2 test for gender}
+
+gender_chi2_test <- chisq.test(gender_contingency_table,
+           correct = TRUE)
+
+#Check output
+gender_chi2_test
+
+```
+
+```{r Create post_hoc function for sig chi2 results}
+
+post_hoc_chi2_func <- function(contingency_table, correct_adj = FALSE, sig_level = 0.05){
+  
+  #Get the adjusted residuals
+  chi2_result <- chisq.test(contingency_table,
+             correct = correct_adj)$stdres
+  
+  #Make Bonferonni correction
+  print(bonferroni <- sig_level/(nrow(contingency_table) * ncol(contingency_table)))
+  
+  #Get critical z value
+  print(qnorm(bonferroni/2))
+
+  return(chi2_result)
+  
+}
+
+```
+
+```{r Post hoc testing for gender}
+
+post_hoc_chi2_func(gender_contingency_table,
+              correct_adj = TRUE)
+
+```
+
+
+```{r Chi2 test for ethnicity}
+
+ethnicity_chi2_test <- chisq.test(ethnicity_contingency_table,
+           correct = TRUE)
+
+#Check output
+ethnicity_chi2_test
+
+```
+
+```{r Post-hoc testing for ethnicity chi2}
+
+post_hoc_chi2_func(ethnicity_contingency_table,
+                   correct_adj = TRUE)
+
+```
+
+```{r Chi2 test for education}
+
+education_chi2_test <- chisq.test(education_contingency_table,
+           correct = TRUE)
+
+#Check output
+education_chi2_test
+
+```
+
+```{r Post-hoc testing for education chi2 test}
+
+post_hoc_chi2_func(education_contingency_table,
+                   correct_adj = TRUE)
+
+```
+
+```{r Chi2 test for employment}
+
+employment_chi2_test <- chisq.test(employment_contingency_table,
+           correct = TRUE)
+
+#Check output
+employment_chi2_test
+
+```
+
+```{r Post-hoc testing for employment chi2 test}
+
+post_hoc_chi2_func(employment_contingency_table,
+                   correct_adj = TRUE)
+
+```
+
+```{r Chi2 test for partnership status}
+
+partnership_chi2_test <- chisq.test(partnership_contingency_table,
+           correct = TRUE)
+
+#Check output
+partnership_chi2_test
+
+```
+
+```{r Post-hoc testing for partnership status chi2 test}
+
+post_hoc_chi2_func(partnership_contingency_table,
+                   correct_adj = TRUE)
+
+```
+
+##Logistic regression models
+
+We will run four logistic regression models for aim 1:
+
+Model 1: Sociodemographic variables
+Model 2: Psychiatric and health variables
+Model 3: Study variables
+Model 4: All variables together
+
+```{r Model 1: Sociodemographic variables}
+
+sociodemographic_LR_model <- glm(
+  formula = completed_baseline ~ age_cleaned + 
+    gender_recode +
+    highest_education +
+    dem.questions_based_ethnic_origin +
+    dem.what_is_your_current_employment_status +
+    partnership_status,
+  family = "binomial",
+  data = glad_coping_participation_raw)
+
+#Check output
+summary(sociodemographic_LR_model)
+
+```
+
+```{r Model 2: Psychiatric and health variables}
+
+#Need to add physcial health comorbidity variable
+psychiatric_and_health_LR_model <- glm(
+  formula = completed_baseline ~ phq.sum_score + 
+    gad.sum_score +
+    audit.sum_score +
+    dem.select_the_box_that_best_describes_you +
+    mental_health_comorbidities +
+    depressive_and_anxiety_comorbidity +
+    eating_disorders +
+    OCRDs +
+    psychotic_and_biploar_disorder +
+    mhd.asd +
+    mhd.addadhd +
+    mhd.personality_disorder,
+  family = "binomial",
+  data = glad_coping_participation_raw)
+
+#Check output
+summary(psychiatric_and_health_LR_model)
+
+```
+
+```{r Model 3: Study variables}
+
+glad_study_variables_LR_model <- glm(
+  formula = completed_baseline ~ startDate + 
+    kit_returned +
+    joined_coping_first_invitation,
+  family = "binomial",
+  data = glad_coping_participation_raw)
+
+#Check output
+summary(glad_study_variables_LR_model)
+
+```
+
+```{r Model 4: Combined model}
+
+full_LR_model <- glm(
+  formula = completed_baseline ~ age_cleaned + 
+    gender_recode +
+    highest_education +
+    dem.questions_based_ethnic_origin +
+    dem.what_is_your_current_employment_status +
+    partnership_status +
+    phq.sum_score + 
+    gad.sum_score +
+    audit.sum_score +
+    dem.select_the_box_that_best_describes_you +
+    mental_health_comorbidities +
+    depressive_and_anxiety_comorbidity +
+    eating_disorders +
+    OCRDs +
+    psychotic_and_biploar_disorder +
+    mhd.asd +
+    mhd.addadhd +
+    mhd.personality_disorder +
+    startDate + 
+    kit_returned +
+    joined_coping_first_invitation,
+  family = "binomial",
+  data = glad_coping_participation_raw)
+
+#Check output
+summary(full_LR_model)
+
+```
