@@ -19,12 +19,16 @@ remove(list = ls())
 
 ```{r Install packages}
 
+#install.packages("broom")
+#install.packages("knitr)
 #install.packages("tidyverse")
 
 ```
 
 ```{r Load libraries}
 
+library(broom)
+library(knitr)
 library(tidyverse)
 
 ```
@@ -230,7 +234,7 @@ post_hoc_chi2_func(partnership_contingency_table,
 
 ```
 
-##Logistic regression models
+#Run aim 1 Logistic regression models
 
 We will run four logistic regression models for aim 1:
 
@@ -238,6 +242,8 @@ Model 1: Sociodemographic variables
 Model 2: Psychiatric and health variables
 Model 3: Study variables
 Model 4: All variables together
+
+##Model 1: sociodemograhic variables
 
 ```{r Model 1: Sociodemographic variables}
 
@@ -253,6 +259,52 @@ sociodemographic_LR_model <- glm(
 
 #Check output
 summary(sociodemographic_LR_model)
+
+```
+
+```{r Create clean model output}
+
+#Put sociodemographic variable names into vector in order that they appear in summary(model1)
+sociodemographic_variable_names <- c(
+  "Intercept",
+  "age_cleaned",
+  "gender_recode",
+  "highest_education",
+  "dem.questions_based_ethnic_origin",
+  "dem.what_is_your_current_employment",
+  "partnership_status"
+  )
+
+#Create tidy model output
+sociodemographic_LR_model_tidy <- tidy(
+  sociodemographic_LR_model,
+  exponentiate = T,
+  conf.int = T) %>%
+  mutate(
+    Variable = sociodemographic_variable_names,
+    Significance = if_else(
+      p.value < 0.05, 
+      1,
+      0
+      ) %>%
+    recode_factor(
+        "0" = "Not-significant",
+        "1" = "Significant"
+      )) %>%
+  select(
+    Variable,
+    OR = estimate,
+    `CI 95% lower` = conf.low,
+    `CI 95% upper` = conf.high,
+    `p value` = p.value,
+    Significance
+  )
+
+sociodemographic_LR_model_tidy %>% 
+  head(7)
+
+sociodemographic_LR_model_kable <- kable(sociodemographic_LR_model_tidy[-c(1), ],
+      digits = 2)
 
 ```
 
