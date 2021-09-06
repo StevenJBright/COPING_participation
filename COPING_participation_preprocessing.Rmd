@@ -1963,7 +1963,7 @@ DV 2: How many waves did each COPING GLAD pt complete?
 
 ```{r Create binary variable for completed COPING baseline}
 
-glad_signup_completed_baseline <- glad_signup_MH_comorbidity %>% 
+glad_signup_completed_baseline <- glad_signup_phy_comorbidities %>% 
   mutate(completed_baseline = 
            case_when(
                externalDataReference %in% COPING_GLAD_invitations$participant_id &
