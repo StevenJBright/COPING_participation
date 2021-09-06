@@ -566,15 +566,16 @@ complete_LR_model_VIF
 
 ```{r Create correlation matrix}
 
+exclude_cols <- c(
+  "Intercept",
+  "startDate"
+)
+
 all.corr.mat <- glad_coping_participation_raw %>% 
-  select(age_cleaned,
-         gender_recode,
-         highest_education) %>% 
+  select(complete_LR_model_names[!complete_LR_model_names %in% exclude_cols]) %>% 
   cor(use = "pairwise.complete.obs") %>% 
   round(., 
         digits = 2)
-
-all.corr.mat
 
 ```
 
