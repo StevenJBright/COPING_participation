@@ -1895,6 +1895,14 @@ high blood pressure, high blood cholesterol, stroke, and migraines.
 #Old physical health variables object doesn't have the recoded vars, so we need
 #a new object with the recoded variable names instead
 physical_health_comorbidity_variables_recode <- c(
+  "dem.asthma",
+  "dem.emphysema_or_chronic_bronchitis",
+  "dem.breast_cancer",
+  "dem.lung_cancer",
+  "dem.stomach_cancer",
+  "dem.colon_cancer",
+  "dem.uterus_cancer",
+  "dem.prostate_cancer",
   "dem.epilepsy_or_convulsions",
   "diabetes_type_I_or_II",
   "dem.high_blood_pressure",
