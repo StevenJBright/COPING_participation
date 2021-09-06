@@ -318,6 +318,7 @@ psychiatric_and_health_LR_model <- glm(
     gad.sum_score +
     audit.sum_score +
     dem.select_the_box_that_best_describes_you +
+    physical_health_comorbidities +
     mental_health_comorbidities +
     depressive_and_anxiety_comorbidity +
     eating_disorders +
