@@ -23,6 +23,7 @@ remove(list = ls())
 #install.packages("knitr)
 #install.packages("car")
 #install.packages("corrplot")
+#install.packages("polycor")
 #install.packages("tidyverse")
 
 ```
@@ -33,6 +34,7 @@ library(broom)
 library(knitr)
 library(car)
 library(corrplot)
+library(polycor)
 library(tidyverse)
 
 ```
@@ -568,16 +570,14 @@ complete_LR_model_VIF
 
 ```{r Create correlation matrix}
 
-exclude_cols <- c(
-  "Intercept",
-  "startDate"
-)
+#Select correlation variables
+correlation_vars <- glad_coping_participation_raw %>% 
+  select(complete_LR_model_names[-1], #Remove "Intercept"
+         -startDate)
 
-all.corr.mat <- glad_coping_participation_raw %>% 
-  select(complete_LR_model_names[!complete_LR_model_names %in% exclude_cols]) %>% 
-  cor(use = "pairwise.complete.obs") %>% 
-  round(., 
-        digits = 2)
+#Get correlations
+all.corr.mat <- correlation_vars %>% 
+  hetcor(use = "pairwise.complete.obs")
 
 ```
 
