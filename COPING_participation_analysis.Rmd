@@ -245,7 +245,7 @@ Model 4: All variables together
 
 ##Model 1: sociodemograhic variables
 
-```{r Model 1: Sociodemographic variables}
+```{r Run sociodemographic LR model}
 
 sociodemographic_LR_model <- glm(
   formula = completed_baseline ~ age_cleaned + 
@@ -308,9 +308,11 @@ sociodemographic_LR_model_kable <- kable(sociodemographic_LR_model_tidy[-c(1), ]
 
 ```
 
-```{r Model 2: Psychiatric and health variables}
+##Model 2: Psychiatric and health
 
-#Need to add physcial health comorbidity variable
+```{r Run psychiatric and health LR model}
+
+#Need to add physical health comorbidity variable
 psychiatric_and_health_LR_model <- glm(
   formula = completed_baseline ~ phq.sum_score + 
     gad.sum_score +
@@ -331,6 +333,8 @@ psychiatric_and_health_LR_model <- glm(
 summary(psychiatric_and_health_LR_model)
 
 ```
+
+
 
 ```{r Model 3: Study variables}
 
