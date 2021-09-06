@@ -593,3 +593,22 @@ all.p.matrix <- as.matrix(all.corr.mat$tests)
 
 ```
 
+```{r Create correlation plot}
+
+all.corr.matrix %>%
+  corrplot(method = "color", # objects to represent the correlations on plot
+         type = "lower", # only use the lower triangle of the matrix
+         diag = FALSE, # do not show the correlations on the diagonal
+         addgrid.col = NA,
+         addCoef.col = "black", # colour for the correlation coefficients in the plot
+         tl.cex = 0.8, #size of text
+         tl.col = "black",
+         col=colorRampPalette(c("dodgerblue4",
+                                "white",
+                                "firebrick4"))(200), # colours for correlations
+         # Combine with significance
+         p.mat = all.p.matrix, # Matrix with p values
+         sig.level = 0.01, # Choose significant level
+         insig = "blank") # Nonsignificant correlations have no colour
+
+```
