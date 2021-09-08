@@ -689,3 +689,38 @@ summary(sociodemographic_MLR_model)
 
 ```
 
+```{r Create tidy sociodemographic MLR model output}
+
+#Create tidy model output
+sociodemographic_MLR_model_tidy <- tidy(
+  sociodemographic_MLR_model,
+  conf.int = T) %>%
+  mutate(
+    Variable = sociodemographic_variable_names,
+    Significance = if_else(
+      p.value < 0.05, 
+      1,
+      0
+      ) %>%
+    recode_factor(
+        "0" = "Not-significant",
+        "1" = "Significant"
+      )) %>%
+  select(
+    Variable,
+    estimate,
+    `CI 95% lower` = conf.low,
+    `CI 95% upper` = conf.high,
+    `p value` = p.value,
+    Significance
+  )
+
+sociodemographic_MLR_model_tidy %>% 
+  head(7)
+
+#Create kable output
+sociodemographic_MLR_model_kable <- kable(sociodemographic_MLR_model_tidy[-c(1), ],
+      digits = 2)
+
+```
+
