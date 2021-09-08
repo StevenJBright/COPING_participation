@@ -914,3 +914,12 @@ complete_MLR_model %>%
 
 ```
 
+##Diagnostic plots
+
+```{r Create diagnostic plots for complete MLR model}
+
+par(mfrow=c(2,2))
+plot(complete_MLR_model)
+
+```
+
