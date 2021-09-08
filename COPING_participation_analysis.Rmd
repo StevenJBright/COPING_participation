@@ -613,58 +613,6 @@ all.corr.matrix %>%
 
 ```
 
-#Multiple linear regression assumptions
-##Linearity
-
-The second aim is to investigate whether any of the sociodemographic, psychiatric
-and/or health factors explain any variance in the overall number of COPING follow-ups
-the GLAD participant take part in.
-
-```{r Create linear ggplot2 function}
-
-linear_plot <- function(df, IV, DV){
-  
-  IV_data <- df[[IV]]
-  IV_data_NA_removed <- IV_data %>% 
-    na.omit()
-  
-  DV_data <- df[[DV]]
-  DV_data_NA_removed <- DV_data %>% 
-    na.omit()
-  
-  df %>% 
-    ggplot(aes(y = DV_data, x = IV_data)) +
-    geom_point(position = position_jitter(w = 0.1, h = 0.1),
-            alpha = 0.3) +
-  geom_smooth(method = lm, se = TRUE, col="black") +
-    labs(y = DV,
-        x = IV) +
-    theme(panel.grid.major.y = element_line(size = 0.5,
-                                        linetype = 'dashed',
-                                        colour = "gray"),
-        axis.text.x = element_text(colour="black", size = 12),
-        axis.text.y = element_text(colour="black", size = 12),
-        axis.ticks.x = element_blank(),
-        axis.ticks.y = element_blank(),
-        panel.background = element_blank())
-
-}
-
-```
-
-```{r Check Linear relationships between IVs and DV}
-
-#Get IV variable names without Intercept and startDate
-linear_relationship_vars <- correlation_vars %>% 
-  colnames()
-
-linear_relationship_vars %>% 
-  map(linear_plot, 
-      df = glad_coping_participation_raw,
-      DV = "total_COPING_waves")
-
-```
-
 #Multiple Regression models
 
 There are x4 models to run:
@@ -905,3 +853,54 @@ complete_MLR_model_kable <- kable(complete_MLR_model_tidy[-c(1), ],
 
 ```
 
+#Multiple linear regression assumptions
+##Linearity
+
+The second aim is to investigate whether any of the sociodemographic, psychiatric
+and/or health factors explain any variance in the overall number of COPING follow-ups
+the GLAD participant take part in.
+
+```{r Create linear ggplot2 function}
+
+linear_plot <- function(df, IV, DV){
+  
+  IV_data <- df[[IV]]
+  IV_data_NA_removed <- IV_data %>% 
+    na.omit()
+  
+  DV_data <- df[[DV]]
+  DV_data_NA_removed <- DV_data %>% 
+    na.omit()
+  
+  df %>% 
+    ggplot(aes(y = DV_data, x = IV_data)) +
+    geom_point(position = position_jitter(w = 0.1, h = 0.1),
+            alpha = 0.3) +
+  geom_smooth(method = lm, se = TRUE, col="black") +
+    labs(y = DV,
+        x = IV) +
+    theme(panel.grid.major.y = element_line(size = 0.5,
+                                        linetype = 'dashed',
+                                        colour = "gray"),
+        axis.text.x = element_text(colour="black", size = 12),
+        axis.text.y = element_text(colour="black", size = 12),
+        axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank(),
+        panel.background = element_blank())
+
+}
+
+```
+
+```{r Check Linear relationships between IVs and DV}
+
+#Get IV variable names without Intercept and startDate
+linear_relationship_vars <- correlation_vars %>% 
+  colnames()
+
+linear_relationship_vars %>% 
+  map(linear_plot, 
+      df = glad_coping_participation_raw,
+      DV = "total_COPING_waves")
+
+```
