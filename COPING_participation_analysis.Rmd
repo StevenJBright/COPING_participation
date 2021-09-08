@@ -904,3 +904,13 @@ linear_relationship_vars %>%
       DV = "total_COPING_waves")
 
 ```
+
+##Homoscedasticity
+
+```{r Check VIF values for complete model}
+
+complete_MLR_model %>% 
+  vif()
+
+```
+
