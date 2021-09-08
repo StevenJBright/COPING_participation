@@ -665,3 +665,27 @@ linear_relationship_vars %>%
 
 ```
 
+#Multiple Regression models
+
+There are x4 models to run:
+
+Model 1: Sociodemographic variables
+Model 2: Psychiatric and health variables
+Model 3: Study variables
+Model 4: All variables together
+
+```{r Run sociodemographic MLR model}
+
+sociodemographic_MLR_model <- lm(total_COPING_waves ~ age_cleaned + 
+    gender_recode +
+    highest_education +
+    dem.questions_based_ethnic_origin +
+    dem.what_is_your_current_employment_status +
+    partnership_status,
+    data = glad_coping_participation_raw)
+
+#Check model output
+summary(sociodemographic_MLR_model)
+
+```
+
