@@ -456,7 +456,7 @@ glad_study_variables_LR_model_kable <- kable(glad_study_variables_LR_model_tidy[
 
 ```
 
-##Complete LR model
+##Model 4: Complete LR model
 
 ```{r Run complete LR model}
 
@@ -833,6 +833,40 @@ glad_study_variables_MLR_model_tidy %>%
 #Create kable output
 glad_study_variables_MLR_model_kable <- kable(glad_study_variables_MLR_model_tidy[-c(1), ],
       digits = 2)
+
+```
+
+##Model 4: Complete MLR model
+
+```{r Run complete MLR model}
+
+complete_MLR_model <- lm(
+  formula = completed_baseline ~ age_cleaned + 
+    gender_recode +
+    highest_education +
+    dem.questions_based_ethnic_origin +
+    dem.what_is_your_current_employment_status +
+    partnership_status +
+    phq.sum_score + 
+    gad.sum_score +
+    audit.sum_score +
+    dem.select_the_box_that_best_describes_you +
+    physical_health_comorbidities +
+    mental_health_comorbidities +
+    depressive_and_anxiety_comorbidity +
+    eating_disorders +
+    OCRDs +
+    psychotic_and_biploar_disorder +
+    mhd.asd +
+    mhd.addadhd +
+    mhd.personality_disorder +
+    startDate + 
+    kit_returned +
+    joined_coping_first_invitation,
+  data = glad_coping_participation_raw)
+
+#Check output
+summary(complete_MLR_model)
 
 ```
 
