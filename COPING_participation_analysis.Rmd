@@ -674,6 +674,8 @@ Model 2: Psychiatric and health variables
 Model 3: Study variables
 Model 4: All variables together
 
+##Model 1: Sociodemographic variables
+
 ```{r Run sociodemographic MLR model}
 
 sociodemographic_MLR_model <- lm(total_COPING_waves ~ age_cleaned + 
@@ -721,6 +723,30 @@ sociodemographic_MLR_model_tidy %>%
 #Create kable output
 sociodemographic_MLR_model_kable <- kable(sociodemographic_MLR_model_tidy[-c(1), ],
       digits = 2)
+
+```
+
+##Model 2: Psychiatric and health variables
+
+```{r Run psychiatric and health MLR model}
+
+psychiatric_and_health_MLR_model <- lm(total_COPING_waves ~ phq.sum_score + 
+    gad.sum_score +
+    audit.sum_score +
+    dem.select_the_box_that_best_describes_you +
+    physical_health_comorbidities +
+    mental_health_comorbidities +
+    depressive_and_anxiety_comorbidity +
+    eating_disorders +
+    OCRDs +
+    psychotic_and_biploar_disorder +
+    mhd.asd +
+    mhd.addadhd +
+    mhd.personality_disorder,
+  data = glad_coping_participation_raw)
+
+#Check model output
+summary(psychiatric_and_health_MLR_model)
 
 ```
 
