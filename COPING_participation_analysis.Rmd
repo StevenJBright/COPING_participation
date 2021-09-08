@@ -785,3 +785,19 @@ psychiatric_and_health_MLR_model_kable <- kable(psychiatric_and_health_MLR_model
       digits = 2)
 
 ```
+
+##Model 3: glad study variables model
+
+```{r Run glad study variables MLR model}
+
+glad_study_variables_MLR_model <- lm(
+  formula = completed_baseline ~ startDate + 
+    kit_returned +
+    joined_coping_first_invitation,
+  data = glad_coping_participation_raw)
+
+#Check output
+summary(glad_study_variables_MLR_model)
+
+```
+
