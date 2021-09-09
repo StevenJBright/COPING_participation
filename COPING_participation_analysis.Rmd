@@ -555,6 +555,10 @@ complete_LR_model_kable <- kable(complete_LR_model_tidy[-c(1), ],
 ```
 
 #Test assumptions of complete LR model
+
+LR regression assumptions listed here: 
+https://www.statology.org/assumptions-of-logistic-regression/
+
 ##Multicollinearity
 
 Check that all IVs are not highly correlated.
@@ -568,33 +572,39 @@ complete_LR_model_VIF
 
 ```
 
-```{r Create correlation matrix}
+##Correlation matrices
+
+This is an additional check for multicollinearity.
+
+###Sociodemographic correlation matrix
+
+```{r Create correlation matrix for sociodemographic variables}
 
 #Select correlation variables
-correlation_vars <- glad_coping_participation_raw %>% 
+sociodemographic_correlation_vars <- glad_coping_participation_raw %>% 
   select(sociodemographic_variable_names[-1]) #Remove "Intercept"
 
 #Get correlations
-all.corr.mat <- correlation_vars %>% 
+all.corr.mat_sociodemographic <- sociodemographic_correlation_vars %>% 
   hetcor(use = "pairwise.complete.obs")
 
 ```
 
 ```{r Save cormat as a matrix object}
 
-all.corr.matrix <- as.matrix(all.corr.mat)
+all.corr.matrix_sociodemographic <- as.matrix(all.corr.mat_sociodemographic)
 
 ```
 
 ```{r Save p values}
 
-all.p.matrix <- as.matrix(all.corr.mat$tests)
+all.p.matrix_sociodemographic <- as.matrix(all.corr.matrix_sociodemographic$tests)
 
 ```
 
 ```{r Create correlation plot}
 
-all.corr.matrix %>%
+all.corr.matrix_sociodemographic %>%
   corrplot(method = "color", # objects to represent the correlations on plot
          type = "lower", # only use the lower triangle of the matrix
          diag = FALSE, # do not show the correlations on the diagonal
@@ -609,6 +619,20 @@ all.corr.matrix %>%
          p.mat = all.p.matrix, # Matrix with p values
          sig.level = 0.01, # Choose significant level
          insig = "blank") # Nonsignificant correlations have no colour
+
+```
+
+###Psychiatric and health correlation matrix
+
+```{r Get the correlations for the psychiatric and health vars}
+
+#Select correlation variables
+psychiatric_and_health_correlation_vars <- glad_coping_participation_raw %>% 
+  select(psychiatric_and_health_variable_names[-1]) #Remove "Intercept"
+
+#Get correlations
+all.corr.mat_psychatric_and_health <- psychiatric_and_health_correlation_vars %>% 
+  hetcor(use = "pairwise.complete.obs")
 
 ```
 
