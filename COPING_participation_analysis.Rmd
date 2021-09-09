@@ -277,7 +277,7 @@ sociodemographic_variable_names <- c(
   "gender_recode",
   "highest_education",
   "dem.questions_based_ethnic_origin",
-  "dem.what_is_your_current_employment",
+  "dem.what_is_your_current_employment_status",
   "partnership_status"
   )
 
@@ -572,8 +572,7 @@ complete_LR_model_VIF
 
 #Select correlation variables
 correlation_vars <- glad_coping_participation_raw %>% 
-  select(complete_LR_model_names[-1], #Remove "Intercept"
-         -startDate)
+  select(sociodemographic_variable_names[-1]) #Remove "Intercept"
 
 #Get correlations
 all.corr.mat <- correlation_vars %>% 
