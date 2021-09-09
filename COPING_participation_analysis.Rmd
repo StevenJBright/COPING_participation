@@ -576,12 +576,16 @@ complete_LR_model_VIF
 
 ```{r Check linearity for sociodemographic model}
 
-# #Get log odds
-# sociodemographic_logodds <- sociodemographic_LR_model$linear.predictors
-# 
-# #Run box-Tidwell test
-# boxTidwell(sociodemographic_logodds ~ age_cleaned,
-#            data = glad_coping_participation_raw)
+# boxTidwell(sociodemographic_LR_model$linear.predictors ~ age_cleaned,
+#            data = sociodemographic_LR_model)
+
+sociodemographic_LR_linearity_test <- glm(
+  formula = completed_baseline ~ age_cleaned + age_cleaned * log(age_cleaned),
+  family = "binomial",
+  data = glad_coping_participation_raw)
+
+#Check output
+summary(sociodemographic_LR_linearity_test)
 
 ```
 
