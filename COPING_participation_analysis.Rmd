@@ -572,6 +572,22 @@ complete_LR_model_VIF
 
 ```
 
+##Linearity
+
+```{r Check linearity for sociodemographic model}
+
+# #Get log odds
+# sociodemographic_logodds <- sociodemographic_LR_model$linear.predictors
+# 
+# #Run box-Tidwell test
+# boxTidwell(sociodemographic_logodds ~ age_cleaned,
+#            data = glad_coping_participation_raw)
+
+```
+
+
+
+
 ##Outliers
 
 ```{r Create cooks distance plot function}
@@ -597,6 +613,20 @@ cooksD_plot <- function(data, model){
 
 cooksD_plot(data = glad_coping_participation_raw,
             model = sociodemographic_LR_model)
+
+```
+
+```{r Check for outliers in psychiatric and health model}
+
+cooksD_plot(data = glad_coping_participation_raw,
+            model = psychiatric_and_health_LR_model)
+
+```
+
+```{r Check for outliers in glad study variable model}
+
+cooksD_plot(data = glad_coping_participation_raw,
+            model = glad_study_variables_LR_model)
 
 ```
 
