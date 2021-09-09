@@ -574,23 +574,31 @@ complete_LR_model_VIF
 
 ##Outliers
 
-```{r Check for outliers in sociodemographic model}
+```{r Create cooks distance plot function}
 
-#Calculate cooks distance values
-sociodemographic_LR_model_cooksD <- cooks.distance(sociodemographic_LR_model)
-
-#Plot Cook's Distance with a horizontal line at 4/n to see which observations
-#exceed this thresdhold
-n <- glad_coping_participation_raw %>% 
-  nrow()
-
-plot(sociodemographic_LR_model_cooksD, 
+cooksD_plot <- function(data, model){
+  
+  #Calculate cooks distance in model
+  cooksD <- cooks.distance(model)
+  
+  #Get N of data
+  n <- nrow(data)
+  
+  #Create cooks distance plot
+  plot(cooksD, 
      main = "Cooks Distance for Influential Obs")
-
-abline(h = 4/n, lty = 2, col = "steelblue") #add cutoff line
+  abline(h = 4/n, lty = 2, col = "steelblue") #add cutoff line
+  
+}
 
 ```
 
+```{r Check for outliers in sociodemographic model}
+
+cooksD_plot(data = glad_coping_participation_raw,
+            model = sociodemographic_LR_model)
+
+```
 
 ##Correlation matrices
 
