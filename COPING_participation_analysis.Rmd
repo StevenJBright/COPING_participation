@@ -602,7 +602,7 @@ all.p.matrix_sociodemographic <- as.matrix(all.corr.mat_sociodemographic$tests)
 
 ```
 
-```{r Create correlation plot}
+```{r Create correlation plot for sociodemographic variables}
 
 all.corr.matrix_sociodemographic %>%
   corrplot(method = "color", # objects to represent the correlations on plot
@@ -648,7 +648,7 @@ all.p.matrix_psychiatric_and_health <- as.matrix(all.corr.mat_psychatric_and_hea
 
 ```
 
-```{r Create correlation plot}
+```{r Create correlation plot for psychiatric and health variables}
 
 all.corr.matrix_psychiatric_and_health %>%
   corrplot(method = "color", # objects to represent the correlations on plot
@@ -692,6 +692,26 @@ all.corr.matrix_glad_study_vars <- as.matrix(all.corr.mat_glad_study_variables)
 ```{r Save p values}
 
 all.p.matrix_glad_study_vars <- as.matrix(all.corr.mat_glad_study_variables$tests)
+
+```
+
+```{r Create correlation plot for glad study variables}
+
+all.corr.matrix_glad_study_vars %>%
+  corrplot(method = "color", # objects to represent the correlations on plot
+         type = "lower", # only use the lower triangle of the matrix
+         diag = FALSE, # do not show the correlations on the diagonal
+         addgrid.col = NA,
+         addCoef.col = "black", # colour for the correlation coefficients in the plot
+         tl.cex = 0.7, #size of text
+         tl.col = "black",
+         col=colorRampPalette(c("dodgerblue4",
+                                "white",
+                                "firebrick4"))(200), # colours for correlations
+         # Combine with significance
+         p.mat = all.p.matrix_glad_study_vars, # Matrix with p values
+         sig.level = 0.01, # Choose significant level
+         insig = "blank") # Nonsignificant correlations have no colour
 
 ```
 
