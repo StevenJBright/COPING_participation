@@ -610,7 +610,7 @@ all.corr.matrix_sociodemographic %>%
          diag = FALSE, # do not show the correlations on the diagonal
          addgrid.col = NA,
          addCoef.col = "black", # colour for the correlation coefficients in the plot
-         tl.cex = 0.8, #size of text
+         tl.cex = 0.7, #size of text
          tl.col = "black",
          col=colorRampPalette(c("dodgerblue4",
                                 "white",
@@ -656,7 +656,7 @@ all.corr.matrix_psychiatric_and_health %>%
          diag = FALSE, # do not show the correlations on the diagonal
          addgrid.col = NA,
          addCoef.col = "black", # colour for the correlation coefficients in the plot
-         tl.cex = 0.8, #size of text
+         tl.cex = 0.7, #size of text
          tl.col = "black",
          col=colorRampPalette(c("dodgerblue4",
                                 "white",
@@ -665,6 +665,21 @@ all.corr.matrix_psychiatric_and_health %>%
          p.mat = all.p.matrix_psychiatric_and_health, # Matrix with p values
          sig.level = 0.01, # Choose significant level
          insig = "blank") # Nonsignificant correlations have no colour
+
+```
+
+###glad study variables
+
+```{r Create correlation matrix for glad study variables}
+
+#Select correlation variables
+glad_study_variables_correlation_vars <- glad_coping_participation_raw %>% 
+  select(glad_study_variable_names[-1], #Remove Intercept
+         -startDate)
+
+#Get correlations
+all.corr.mat_glad_study_variables <- glad_study_variables_correlation_vars %>% 
+  hetcor(use = "pairwise.complete.obs")
 
 ```
 
