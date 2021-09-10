@@ -808,10 +808,16 @@ all.corr.matrix_psychiatric_and_health %>%
 
 ```{r Create correlation matrix for glad study variables}
 
+#Put GLAD study variables into a vector
+glad_study_variable_names <- c(
+  "startDate",
+  "kit_returned",
+  "joined_coping_first_invitation"
+)
+
 #Select correlation variables
 glad_study_variables_correlation_vars <- glad_coping_participation_raw %>% 
-  select(glad_study_variable_names[-1], #Remove Intercept
-         -startDate)
+  select(all_of(glad_study_variable_names[-1])) #Remove startDate
 
 #Get correlations
 all.corr.mat_glad_study_variables <- glad_study_variables_correlation_vars %>% 
