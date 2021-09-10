@@ -950,7 +950,7 @@ psychiatric_and_health_MLR_model_tidy <- tidy(
   exponentiate = T,
   conf.int = T) %>%
   mutate(
-    Variable = psychiatric_and_health_variable_names,
+    Variable = psychiatric_and_health_LR_variable_names,
     Significance = if_else(
       p.value < 0.05, 
       1,
