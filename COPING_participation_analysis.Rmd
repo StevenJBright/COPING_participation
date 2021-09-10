@@ -589,9 +589,6 @@ summary(sociodemographic_LR_linearity_test)
 
 ```
 
-
-
-
 ##Outliers
 
 ```{r Create cooks distance plot function}
@@ -1056,10 +1053,11 @@ linear_plot <- function(df, IV, DV){
 
 ```
 
-```{r Check Linear relationships between IVs and DV}
+```{r Check Linear relationships between sociodemographic IVs and DV}
 
 #Get IV variable names without Intercept and startDate
-linear_relationship_vars <- correlation_vars %>% 
+linear_relationship_vars <- glad_coping_participation_raw %>% 
+  select(sociodemographic_variable_names[-1]) %>% #Remove Intercept
   colnames()
 
 linear_relationship_vars %>% 
