@@ -1096,7 +1096,5 @@ Cook's distance values > 0.5 are worth investigating and > 1 are a real cause fo
 
 influenceIndexPlot(complete_MLR_model)
 
-outlierTest(complete_MLR_model)
-
 ```
 
