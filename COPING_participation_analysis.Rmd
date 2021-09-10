@@ -659,6 +659,9 @@ age_q4_prob <- glad_coping_participation_raw %>%
 #   group_by(completed_baseline) %>% 
 #   count()
 
+#Put probabilities into one object
+age_cleaned_probs <- c(age_q1_prob, age_q2_prob, age_q3_prob, age_q4_prob)
+
 ```
 
 
