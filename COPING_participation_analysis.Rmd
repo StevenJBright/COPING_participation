@@ -255,11 +255,11 @@ Model 4: All variables together
 
 sociodemographic_LR_model <- glm(
   formula = completed_baseline ~ age_cleaned + 
-    gender_recode +
-    highest_education +
-    dem.questions_based_ethnic_origin +
-    dem.what_is_your_current_employment_status +
-    partnership_status,
+    gender_recode_labelled +
+    highest_education_labelled +
+    ethnicity_labelled +
+    employment_labelled +
+    partnership_status_labelled,
   family = "binomial",
   data = glad_coping_participation_raw)
 
