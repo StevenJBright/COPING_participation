@@ -366,16 +366,23 @@ psychiatric_and_health_variable_names <- c(
   "gad.sum_score",
   "phq.sum_score",
   "audit.sum_score",
-  "dem.select_the_box_that_best_describes_you",
-  "physical_health_comorbidities",
-  "mental_health_comorbidities",
-  "depressive_and_anxiety_comorbidity",
-  "eating_disorders",
-  "OCRDs",
-  "psychotic_and_biploar_disorder",
-  "mhd.asd",
-  "mhd.addadhd",
-  "mhd.personality_disorder"
+  "smoking_status_labelledI smoke now",
+  "smoking_status_labelledI used to smoke",
+  "physical_health_comorbidities_labelled1 physical health disorder",
+  "physical_health_comorbidities_labelled2+ physical health disorders",
+  "mental_health_comorbidities_labelled1 mental health disorder",
+  "mental_health_comorbidities_labelled2+ mental health disorders",
+  "depressive_and_anxiety_comorbidity_labelledDepressive and anxiety disorder",
+  "depressive_and_anxiety_comorbidity_labelledDepressive disorder only",
+  "depressive_and_anxiety_comorbidity_labelledAnxiety disorder only",
+  "eating_disorders_labelledEating disorder",
+  "OCRDs_labelledOCRDs",
+  "psychotic_and_biploar_disorder_labelledPsychotic and bipolar disorder",
+  "psychotic_and_biploar_disorder_labelledOnly psychotic disorder",
+  "psychotic_and_biploar_disorder_labelledOnly bipolar disorder",
+  "autism_spectrum_disorderAutistic spectrum disorder",
+  "ADHD_ADD_labelledADHD or ADD disorder",
+  "mhd.personality_disorder_labelledPersonality disorder"
   )
 
 #Create tidy model output
@@ -404,7 +411,7 @@ psychiatric_and_health_LR_model_tidy <- tidy(
   )
 
 psychiatric_and_health_LR_model_tidy %>% 
-  head(14)
+  head(21)
 
 #Create kable output
 psychiatric_and_health_LR_model_kable <- kable(psychiatric_and_health_LR_model_tidy[-c(1), ],
