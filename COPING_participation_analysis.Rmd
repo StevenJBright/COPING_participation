@@ -624,6 +624,44 @@ complete_LR_model_VIF
 
 ##Linearity
 
+Checking linearity for LR:
+https://www.youtube.com/watch?v=5TW_wWeTOe0
+
+```{r Get quartiles and calculaties probabilities of completing baseline}
+
+#Get age quartiles
+age_quartiles <- summary(glad_coping_participation_raw$age_cleaned)
+
+#Calculate probabilities of completing survey within each age quartile
+age_q1_prob <- glad_coping_participation_raw %>% 
+  filter(age_cleaned < 26) %>%
+  pull(completed_baseline) %>% 
+  mean(.)
+
+age_q2_prob <- glad_coping_participation_raw %>% 
+  filter(age_cleaned >= 26 & age_cleaned < 36) %>% 
+  pull(completed_baseline) %>% 
+  mean(.)
+
+age_q3_prob <- glad_coping_participation_raw %>% 
+  filter(age_cleaned >= 36 & age_cleaned < 49) %>% 
+  pull(completed_baseline) %>% 
+  mean(.)
+
+age_q4_prob <- glad_coping_participation_raw %>% 
+  filter(age_cleaned >= 49) %>% 
+  pull(completed_baseline) %>% 
+  mean(.)
+
+#Check proportion is right
+# glad_coping_participation_raw %>% 
+#   filter(age_cleaned < 26) %>% 
+#   group_by(completed_baseline) %>% 
+#   count()
+
+```
+
+
 ```{r Check linearity for sociodemographic model}
 
 # boxTidwell(sociodemographic_LR_model$linear.predictors ~ age_cleaned,
