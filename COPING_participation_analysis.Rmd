@@ -254,7 +254,7 @@ Model 4: All variables together
 ```{r Run sociodemographic LR model}
 
 sociodemographic_LR_model <- glm(
-  formula = completed_baseline ~ age_cleaned + 
+  formula = completed_baseline_labelled ~ age_cleaned + 
     gender_recode_labelled +
     highest_education_labelled +
     ethnicity_labelled +
