@@ -1000,7 +1000,7 @@ glad_study_variables_MLR_model_tidy <- tidy(
   glad_study_variables_MLR_model,
   conf.int = T) %>%
   mutate(
-    Variable = glad_study_variable_names,
+    Variable = glad_study_LR_variable_names,
     Significance = if_else(
       p.value < 0.05, 
       1,
