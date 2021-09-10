@@ -1144,7 +1144,7 @@ linear_plot <- function(df, IV, DV){
 
 #Get IV variable names without Intercept and startDate
 linear_relationship_vars <- glad_coping_participation_raw %>% 
-  select(sociodemographic_variable_names[-1]) %>% #Remove Intercept
+  select(all_of(sociodemographic_variable_names)) %>% 
   colnames()
 
 linear_relationship_vars %>% 
