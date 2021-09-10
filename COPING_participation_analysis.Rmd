@@ -1089,7 +1089,7 @@ complete_MLR_model_tidy <- tidy(
   )
 
 complete_MLR_model_tidy %>% 
-  head(23)
+  head(46)
 
 #Create kable output
 complete_MLR_model_kable <- kable(complete_MLR_model_tidy[-c(1), ],
