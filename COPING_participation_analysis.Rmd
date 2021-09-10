@@ -1039,6 +1039,7 @@ complete_MLR_model <- lm(
     ethnicity_labelled +
     employment_labelled +
     partnership_status_labelled +
+    phq.sum_score +
     gad.sum_score +
     audit.sum_score +
     smoking_status_labelled +
