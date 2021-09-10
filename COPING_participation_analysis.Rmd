@@ -271,7 +271,7 @@ summary(sociodemographic_LR_model)
 ```{r Create clean model output}
 
 #Put sociodemographic variable names into vector in order that they appear in summary(model1)
-sociodemographic_variable_names <- c(
+sociodemographic_LR_variable_names <- c(
   "Intercept",
   "age_cleaned",
   "gender_recode_labelledFemale",
@@ -303,7 +303,7 @@ sociodemographic_LR_model_tidy <- tidy(
   exponentiate = T,
   conf.int = T) %>%
   mutate(
-    Variable = sociodemographic_variable_names,
+    Variable = sociodemographic_LR_variable_names,
     Significance = if_else(
       p.value < 0.05, 
       1,
@@ -361,7 +361,7 @@ summary(psychiatric_and_health_LR_model)
 ```{r Create tidy psychiatric and health LR model}
 
 #Put psychiatric and health variable names into vector in order that they appear in summary(model2)
-psychiatric_and_health_variable_names <- c(
+psychiatric_and_health_LR_variable_names <- c(
   "Intercept",
   "phq.sum_score",
   "gad.sum_score",
@@ -391,7 +391,7 @@ psychiatric_and_health_LR_model_tidy <- tidy(
   exponentiate = T,
   conf.int = T) %>%
   mutate(
-    Variable = psychiatric_and_health_variable_names,
+    Variable = psychiatric_and_health_LR_variable_names,
     Significance = if_else(
       p.value < 0.05, 
       1,
@@ -438,7 +438,7 @@ summary(glad_study_variables_LR_model)
 ```{r Create clean GLAD study variables LR model}
 
 #Put glad study variable names into vector in order that they appear in summary(model3)
-glad_study_variable_names <- c(
+glad_study_LR_variable_names <- c(
   "Intercept",
   "startDate",
   "kit_returnedPt has provided a saliva kit",
@@ -451,7 +451,7 @@ glad_study_variables_LR_model_tidy <- tidy(
   exponentiate = T,
   conf.int = T) %>%
   mutate(
-    Variable = glad_study_variable_names,
+    Variable = glad_study_LR_variable_names,
     Significance = if_else(
       p.value < 0.05, 
       1,
@@ -627,7 +627,7 @@ complete_LR_model_VIF
 ```{r Check linearity for sociodemographic model}
 
 # boxTidwell(sociodemographic_LR_model$linear.predictors ~ age_cleaned,
-#            data = sociodemographic_LR_model)
+#             data = glad_coping_participation_raw)
 
 sociodemographic_LR_linearity_test <- glm(
   formula = completed_baseline ~ age_cleaned + age_cleaned * log(age_cleaned),
@@ -689,9 +689,19 @@ This is an additional check for multicollinearity.
 
 ```{r Create correlation matrix for sociodemographic variables}
 
+#Create character vector of sociodemographic variables
+sociodemographic_variables <- c(
+  "age_cleaned",
+  "gender_recode",
+  "highest_education",
+  "dem.questions_based_ethnic_origin",
+  "dem.what_is_your_current_employment_status",
+  "dem.what_is_your_current_maritalrelationship_status"
+)
+
 #Select correlation variables
 sociodemographic_correlation_vars <- glad_coping_participation_raw %>% 
-  select(sociodemographic_variable_names[-1]) #Remove "Intercept"
+  select(all_of(sociodemographic_variables))
 
 #Get correlations
 all.corr.mat_sociodemographic <- sociodemographic_correlation_vars %>% 
