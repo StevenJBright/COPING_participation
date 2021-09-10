@@ -425,8 +425,8 @@ psychiatric_and_health_LR_model_kable <- kable(psychiatric_and_health_LR_model_t
 
 glad_study_variables_LR_model <- glm(
   formula = completed_baseline ~ startDate + 
-    kit_returned +
-    joined_coping_first_invitation,
+    kit_returned_labelled +
+    joined_coping_first_invitation_labelled,
   family = "binomial",
   data = glad_coping_participation_raw)
 
@@ -441,8 +441,8 @@ summary(glad_study_variables_LR_model)
 glad_study_variable_names <- c(
   "Intercept",
   "startDate",
-  "kit_returned",
-  "joined_coping_first_invitation"
+  "kit_returnedPt has provided a saliva kit",
+  "joined_coping_first_invitationCompleted COPING baseline before 1st follow-up"
 )
 
 #Create tidy model output
