@@ -1015,6 +1015,10 @@ complete_MLR_model_kable <- kable(complete_MLR_model_tidy[-c(1), ],
 ```
 
 #Multiple linear regression assumptions
+
+Linear regression assumptions:
+https://thatdatatho.com/assumption-checking-for-multiple-linear-regression/
+
 ##Linearity
 
 The second aim is to investigate whether any of the sociodemographic, psychiatric
@@ -1071,7 +1075,7 @@ linear_relationship_vars %>%
 
 ```{r Check VIF values for complete model}
 
-complete_MLR_model %>% 
+sociodemographic_MLR_model %>% 
   vif()
 
 ```
@@ -1080,8 +1084,7 @@ complete_MLR_model %>%
 
 ```{r Create diagnostic plots for complete MLR model}
 
-par(mfrow=c(2,2))
-plot(complete_MLR_model)
+plot(sociodemographic_MLR_model, which = 1:4)
 
 ```
 
@@ -1094,7 +1097,7 @@ Cook's distance values > 0.5 are worth investigating and > 1 are a real cause fo
 
 ```{r Check for outliers in the complete MLR model}
 
-influenceIndexPlot(complete_MLR_model)
+influenceIndexPlot(sociodemographic_MLR_model)
 
 ```
 
