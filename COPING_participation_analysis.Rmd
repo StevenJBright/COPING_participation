@@ -274,11 +274,27 @@ summary(sociodemographic_LR_model)
 sociodemographic_variable_names <- c(
   "Intercept",
   "age_cleaned",
-  "gender_recode",
-  "highest_education",
-  "dem.questions_based_ethnic_origin",
-  "dem.what_is_your_current_employment_status",
-  "partnership_status"
+  "gender_recode_labelledFemale",
+  "gender_recode_labelledNon-binary/prefer to self-define",
+  "highest_education_labelledA levels/AS levels or equivalent",
+  "highest_education_labelledO levels/GCSEs or equivalent",
+  "highest_education_labelledCSEs or equivalent",
+  "highest_education_labelledNVQ or HND or HNC or equivalent",
+  "highest_education_labelledNone of the above",
+  "ethnicity_labelledMixed",
+  "ethnicity_labelledAsian or Asian British",
+  "ethnicity_labelledBlack or Black British",
+  "ethnicity_labelledArab",
+  "ethnicity_labelledOther",
+  "employment_labelledRetired",
+  "employment_labelledLooking after home and/or family",
+  "employment_labelledUnable to work because of sickness or disability",
+  "employment_labelledUnemployed",
+  "employment_labelledDoing unpaid or voluntary work",
+  "employment_labelledFull or part-time_student",
+  "employment_labelledNone of the above",
+  "partnership_status_labelledRelationship or married/civil partnership",
+  "partnership_status_labelledDivorced/widowed/separated"
   )
 
 #Create tidy model output
@@ -307,7 +323,7 @@ sociodemographic_LR_model_tidy <- tidy(
   )
 
 sociodemographic_LR_model_tidy %>% 
-  head(7)
+  head(23)
 
 #Create kable output
 sociodemographic_LR_model_kable <- kable(sociodemographic_LR_model_tidy[-c(1), ],
