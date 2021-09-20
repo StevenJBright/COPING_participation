@@ -664,6 +664,40 @@ age_cleaned_probs <- c(age_q1_prob, age_q2_prob, age_q3_prob, age_q4_prob)
 
 ```
 
+```{r Plot completed baseline ~ age}
+
+#Get logits
+age_logits <- log(age_cleaned_probs/(1-age_cleaned_probs))
+
+#Get medians
+age_log_quartiles <- quantile(glad_coping_participation_raw$age_cleaned,
+                              probs = seq(0, 1, 0.25))
+
+age_q1_median <- glad_coping_participation_raw %>% 
+  filter(age_cleaned < 26) %>% 
+  pull(age_cleaned) %>% 
+  median(.)
+
+age_q2_median <- glad_coping_participation_raw %>% 
+  filter(age_cleaned >= 26 &
+           age_cleaned < 36) %>% 
+  pull(age_cleaned) %>% 
+  median(.)
+
+age_q3_median <- glad_coping_participation_raw %>% 
+  filter(age_cleaned >= 36 &
+           age_cleaned < 49) %>% 
+  pull(age_cleaned) %>% 
+  median(.)
+
+age_q4_median <- glad_coping_participation_raw %>% 
+  filter(age_cleaned >= 49) %>% 
+  pull(age_cleaned) %>% 
+  median(.)
+
+age_medians <- c(age_q1_median, age_q2_median, age_q3_median, age_q4_median)
+
+```
 
 ```{r Check linearity for sociodemographic model}
 
