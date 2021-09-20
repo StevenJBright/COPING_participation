@@ -699,6 +699,17 @@ age_medians <- c(age_q1_median, age_q2_median, age_q3_median, age_q4_median)
 
 ```
 
+```{r Make linear check plot for age}
+
+plot(age_medians,
+     age_logits,
+     main = "Should look linear if age is linear with log age",
+     xlab = "age",
+     ylab = "log-odds(com base|age)",
+     las = 1)
+
+```
+
 ```{r Check linearity for sociodemographic model}
 
 # boxTidwell(sociodemographic_LR_model$linear.predictors ~ age_cleaned,
