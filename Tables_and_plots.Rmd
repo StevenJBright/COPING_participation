@@ -19,7 +19,7 @@ remove(list = ls())
 
 ```{r Install packages}
 
-#install.packages("lubridate")
+#install.packages("tidyverse")
 
 ```
 
@@ -54,3 +54,22 @@ glad_coping_participation %>%
   head()
 
 ```
+
+#Plots
+
+Will create individual plots of demographic variables before combining them into
+one plot. This includes:
+
+- Age
+- Gender
+- Employment
+- Ethnic identity
+
+##Age
+
+```{r Plot age within the GLAD sign up}
+
+
+
+```
+
