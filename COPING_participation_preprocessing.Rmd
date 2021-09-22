@@ -56,7 +56,6 @@ source("..//COPING_participation_functions.r")
 
 ```
 
-
 #Read in data
 ##GLAD sign up
 
@@ -1082,6 +1081,7 @@ physical_health_comorbidity_variables %>%
 
 The IVs that need to be created are:
 
+-Age groups
 -Provided a saliva kit
 -Joined COPING after first invitation
 -GAD sum score
@@ -1090,6 +1090,30 @@ The IVs that need to be created are:
 -MH self-reported diagnosis groups (based on Young et al. 2021)
 -MH comorbidity
 -Physical health comorbidity
+
+##Age groups
+
+```{r Create age groups variable}
+
+GLAD_signup_cancer_recode <- GLAD_signup_cancer_recode %>% 
+  mutate(age_groups = 
+           case_when(
+             age_cleaned >= 16 & age_cleaned <= 18 ~ 1,
+             age_cleaned >= 19 & age_cleaned <= 25 ~ 2,
+             age_cleaned >= 26 & age_cleaned <= 35 ~ 3,
+             age_cleaned >= 36 & age_cleaned <= 45 ~ 4,
+             age_cleaned >= 46 & age_cleaned <= 55 ~ 5,
+             age_cleaned >= 56 & age_cleaned <= 65 ~ 6,
+             age_cleaned >= 66 & age_cleaned <= 70 ~ 7,
+             age_cleaned >= 71 & age_cleaned <= 75 ~ 8,
+             age_cleaned >= 76 ~ 9
+           ))
+
+#Check output
+GLAD_signup_cancer_recode %>% 
+  freq(age_groups)
+
+```
 
 ##Provided a saliva kit
 
