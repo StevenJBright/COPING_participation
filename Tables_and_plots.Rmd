@@ -149,3 +149,26 @@ ethnicity_plot <- glad_coping_participation %>%
 ethnicity_plot
 
 ```
+
+```{r Plot ethnic minorities in the GLAD sign up}
+
+ethnic_minority_plot <- glad_coping_participation %>% 
+  drop_na(ethnicity_labelled) %>% 
+  filter(ethnicity_labelled != "White") %>% 
+  drop_na(ethnicity_labelled) %>% 
+  ggplot(aes(x = ethnicity_labelled, fill = completed_baseline_labelled)) +
+  geom_bar(position = "dodge") +
+  labs(x = "Ethnic minority identity",
+       y = "N participants") +
+  scale_fill_manual(values = glad_coping_palette2) +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  theme_classic() +
+  theme(legend.position = "none")
+
+#Check plot
+ethnic_minority_plot
+
+```
+
