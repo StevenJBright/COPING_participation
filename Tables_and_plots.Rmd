@@ -69,7 +69,19 @@ one plot. This includes:
 
 ```{r Plot age within the GLAD sign up}
 
+age_group_plot <- glad_coping_participation %>% 
+  ggplot(aes(x = age_groups_labelled, fill = completed_baseline_labelled)) +
+  geom_bar(position = "dodge") +
+  labs(x = "Age (years)",
+       y = "N participants") +
+  theme(legend.position = "bottom") + 
+  theme(legend.title = element_blank()) +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  theme_classic()
 
+#Check plot
+age_group_plot
 
 ```
 
