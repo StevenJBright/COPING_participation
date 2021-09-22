@@ -178,3 +178,25 @@ ethnic_minority_plot
 
 ```
 
+##Create a combined plot
+
+```{r Create plot layout matrix}
+
+plot_layout_matrix <- matrix(c(1, 1, 2, 3, 3, 4), nrow = 2, byrow = TRUE)
+
+#See matrix
+plot_layout_matrix
+
+```
+
+```{r Create combined demograhics plot}
+
+demographics_completed_baseline_plot <- grid.arrange(ethnic_minority_plot,
+                                                     age_group_plot,
+                                                     employment_plot,
+                                                     gender_plot,
+                                                     layout_matrix = plot_layout_matrix,
+                                                     nrow = 2)
+
+```
+
