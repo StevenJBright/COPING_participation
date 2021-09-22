@@ -9,3 +9,48 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r Clean global environment}
+
+remove(list = ls())
+
+```
+
+#Call libraries
+
+```{r Install packages}
+
+#install.packages("lubridate")
+
+```
+
+```{r Load libraries}
+
+library(tidyverse)
+
+```
+
+#Source data paths
+
+```{r Source paths}
+
+source("..//COPING_participation_paths.r")
+
+```
+
+#Source functions
+
+```{r Source functions}
+
+source("..//COPING_participation_functions.r")
+
+```
+
+```{r Read in glad coping participation data}
+
+glad_coping_participation <- read_rds(paste0(processed_data_path, processed_data_name))
+
+#Check data
+glad_coping_participation %>% 
+  head()
+
+```
