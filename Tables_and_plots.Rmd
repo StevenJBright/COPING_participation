@@ -74,8 +74,6 @@ one plot. This includes:
 - Employment
 - Ethnic identity
 
-##Age
-
 ```{r Plot age within the GLAD sign up}
 
 age_group_plot <- glad_coping_participation %>% 
@@ -91,6 +89,24 @@ age_group_plot <- glad_coping_participation %>%
 
 #Check plot
 age_group_plot
+
+```
+
+```{r Plot gender within the glad sign up}
+
+gender_plot <- glad_coping_participation %>% 
+  ggplot(aes(x = gender_recode_labelled, fill = completed_baseline_labelled)) +
+  geom_bar(position = "dodge") +
+  labs(x = "Gender",
+       y = "N participants") +
+  scale_fill_manual(values = glad_coping_palette2) +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  theme_classic() +
+  theme(legend.position = "none")
+
+#Check plot
+gender_plot
 
 ```
 
