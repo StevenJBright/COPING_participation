@@ -212,7 +212,7 @@ participants who completed the follow-ups/baseline only participants
 
 ##COPING baseline participation table
 
-```{r Get N mean and SD for COPING baseline participation table}
+```{r Get N counts for COPING baseline participation table}
 
 glad_coping_participation %>% 
   select(
@@ -235,7 +235,13 @@ glad_coping_participation %>%
     personality_disorder_labelled,
     kit_returned_labelled,
     joined_coping_first_invitation_labelled,
-  )
+  ) %>% 
+  colnames() %>% 
+  map(function(x){
+    glad_coping_participation %>% 
+      group_by_at(x) %>%
+      count()
+  })
 
 ```
 
