@@ -61,12 +61,22 @@ glad_coping_participation_raw %>%
 
 Sociodemographic variables:
 
-Age (continuous - Not applicable)
+Age (age groups)
 Gender
 Ethnicity
 Education
 Employment
 Partnership status
+
+```{r Create contingency table for age}
+
+age_groups_contingency_table <- table(glad_coping_participation_raw$age_groups_labelled,
+                                      glad_coping_participation_raw$completed_baseline_labelled)
+
+#Check output
+age_groups_contingency_table
+
+```
 
 ```{r Create contingency table for gender}
 
