@@ -29,6 +29,15 @@ library(tidyverse)
 
 ```
 
+#Add colour palette
+
+```{r Create colour palettes}
+
+glad_coping_palette2 <- c("#EFC10B", "#B7DEE8")
+
+```
+
+
 #Source data paths
 
 ```{r Source paths}
@@ -74,6 +83,7 @@ age_group_plot <- glad_coping_participation %>%
   geom_bar(position = "dodge") +
   labs(x = "Age (years)",
        y = "N participants") +
+  scale_fill_manual(values = glad_coping_palette2) +
   theme(legend.position = "bottom") + 
   theme(legend.title = element_blank()) +
   theme(axis.text.x = element_text(colour = "black"),
