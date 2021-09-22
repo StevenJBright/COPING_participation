@@ -200,3 +200,42 @@ demographics_completed_baseline_plot <- grid.arrange(ethnic_minority_plot,
 
 ```
 
+#Summary tables
+
+Want to create x2 tables
+
+- One summarising the sociodemographic and psychiatric characteristics of those
+participants who did/didn't complete the COPING baseline
+
+- One summarising the sociodemographics and psychiatric characteristics of those
+participants who completed the follow-ups/baseline only participants
+
+##COPING baseline participation table
+
+```{r Get N mean and SD for COPING baseline participation table}
+
+glad_coping_participation %>% 
+  select(
+    age_groups_labelled, 
+    gender_recode_labelled,
+    highest_education_labelled,
+    ethnicity_labelled,
+    employment_labelled,
+    partnership_status_labelled,
+    smoking_status_labelled,
+    physical_health_comorbidities_labelled,
+    mental_health_comorbidities_labelled,
+    depressive_and_anxiety_comorbidity_labelled,
+    eating_disorders_labelled,
+    OCRDs_labelled,
+    psychotic_and_biploar_disorder_labelled,
+    PTSD_labelled,
+    autistic_spectrum_disorder,
+    ADHD_ADD_labelled,
+    personality_disorder_labelled,
+    kit_returned_labelled,
+    joined_coping_first_invitation_labelled,
+  )
+
+```
+
