@@ -110,3 +110,23 @@ gender_plot
 
 ```
 
+```{r Plot employment in the GLAD sign up}
+
+employment_plot <- glad_coping_participation %>% 
+  drop_na(employment_labelled) %>% 
+  ggplot(aes(x = employment_labelled, fill = completed_baseline_labelled)) +
+  geom_bar(position = "dodge") +
+  labs(x = "Employment status",
+       y = "N participants") +
+  scale_fill_manual(values = glad_coping_palette2) +
+  scale_x_discrete(guide = guide_axis(n.dodge = 3)) +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  theme_classic() +
+  theme(legend.position = "none")
+
+#Check plot
+employment_plot
+
+```
+
