@@ -133,17 +133,15 @@ partnership_contingency_table
 The aim here is to see whether there are any significant differences between 
 the GLAD Study paticipants who did and did not take part in the COPING baseline.
 
-##Gender
+##Age
 
-This will only focus on the sociodemographic variables.
+```{r Chi2 test for age}
 
-```{r Chi2 test for gender}
-
-gender_chi2_test <- chisq.test(gender_contingency_table,
+age_groups_chi2_test <- chisq.test(age_groups_contingency_table,
            correct = TRUE)
 
 #Check output
-gender_chi2_test
+age_groups_chi2_test
 
 ```
 
@@ -164,6 +162,25 @@ post_hoc_chi2_func <- function(contingency_table, correct_adj = FALSE, sig_level
   return(chi2_result)
   
 }
+
+```
+
+```{r Run follow-up tests for age groups}
+
+post_hoc_chi2_func(age_groups_contingency_table,
+              correct_adj = TRUE)
+
+```
+
+##Gender
+
+```{r Chi2 test for gender}
+
+gender_chi2_test <- chisq.test(gender_contingency_table,
+           correct = TRUE)
+
+#Check output
+gender_chi2_test
 
 ```
 
