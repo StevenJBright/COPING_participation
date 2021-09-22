@@ -1111,7 +1111,24 @@ GLAD_signup_cancer_recode <- GLAD_signup_cancer_recode %>%
 
 #Check output
 GLAD_signup_cancer_recode %>% 
-  freq(age_groups)
+  group_by(age_groups) %>% 
+  count()
+
+```
+
+```{r Created a labelled factor of age groups}
+
+GLAD_signup_cancer_recode$age_groups_labelled <- factor(
+  GLAD_signup_cancer_recode$age_groups,
+  levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9),
+  labels = c("16-18", "19-25", "26-35", "36-45", "46-55", "56-65", "66-70",
+             "71-75", "76+")
+  )
+
+#Check output
+GLAD_signup_cancer_recode %>% 
+  group_by(age_groups_labelled) %>% 
+  count()
 
 ```
 
