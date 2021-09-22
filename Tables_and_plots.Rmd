@@ -19,12 +19,18 @@ remove(list = ls())
 
 ```{r Install packages}
 
+#install.packages("cowplot")
+#install.packages("grid")
+#install.packages("gridExtra")
 #install.packages("tidyverse")
 
 ```
 
 ```{r Load libraries}
 
+library(cowplot)
+library(grid)
+library(gridExtra)
 library(tidyverse)
 
 ```
