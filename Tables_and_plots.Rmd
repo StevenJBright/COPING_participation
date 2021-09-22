@@ -124,13 +124,12 @@ employment_plot <- glad_coping_participation %>%
   geom_bar(position = "dodge") +
   labs(x = "Employment status",
        y = "N participants") +
-  guides(fill = guide_legend(title = "COPING baseline status")) +
   scale_fill_manual(values = glad_coping_palette2) +
   scale_x_discrete(guide = guide_axis(n.dodge = 3)) +
   theme(axis.text.x = element_text(colour = "black"),
         axis.text.y = element_text(colour = "black")) +
   theme_classic() +
-  theme(legend.position = "bottom")
+  theme(legend.position = "none")
 
 #Check plot
 employment_plot
