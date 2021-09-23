@@ -216,11 +216,23 @@ participants who completed the follow-ups/baseline only participants
 
 ```{r Get N counts for COPING baseline participation table}
 
-#Note: "Autistic spectrum disorder" is missing because it doesn't have "_labelled"
 glad_coping_participation %>% 
-  select(all_of(ends_with("_labelled"))) %>% 
+  select(all_of(ends_with("_labelled")),
+         -total_COPING_waves_labelled) %>% 
   tbl_summary(missing_text = "Missing",
               by = "completed_baseline_labelled")
+
+```
+
+##COPING follow-ups
+
+```{r Get N and percentage values for COPING follow-ups}
+
+glad_coping_participation %>% 
+  select(all_of(ends_with("_labelled")),
+         -completed_baseline_labelled) %>% 
+  tbl_summary(missing_text = "Missing",
+              by = "total_COPING_waves_labelled")
 
 ```
 
