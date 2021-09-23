@@ -738,27 +738,6 @@ GLAD_signup_gender_recode %>%
 
 ```
 
-```{r Create factor variable for partnership status}
-
-GLAD_signup_gender_recode$dem.what_is_your_current_maritalrelationship_status_labelled <- factor(
-  GLAD_signup_gender_recode$dem.what_is_your_current_maritalrelationship_status,
-  levels = c(1, 2, 3, 4, 5, 6, 7, 8),
-  labels = c("Single",
-             "Relationship (not living together)",
-             "Relationship (Living together)",
-             "Married/civil partnership",
-             "Separated",
-             "Divorced",
-             "Widowed",
-             "Other")
-  )
-
-#Check distribution
-GLAD_signup_gender_recode %>% 
-  freq(dem.what_is_your_current_maritalrelationship_status_labelled)
-
-```
-
 ```{r Create Recoded partnership status variable}
 
 GLAD_signup_gender_recode <- GLAD_signup_gender_recode %>% 
