@@ -42,6 +42,7 @@ library(tidyverse)
 ```{r Create colour palettes}
 
 glad_coping_palette2 <- c("#EFC10B", "#B7DEE8")
+glad_coping_palette3 <- c("#EFC10B", "#B7DEE8", "#0403ff")
 
 ```
 
@@ -82,7 +83,7 @@ one plot. This includes:
 - Employment
 - Ethnic identity
 
-```{r Plot age within the GLAD sign up}
+```{r Plot age within the GLAD sign up for baseline completion}
 
 age_group_plot <- glad_coping_participation %>% 
   ggplot(aes(x = age_groups_labelled, fill = completed_baseline_labelled)) +
@@ -100,7 +101,7 @@ age_group_plot
 
 ```
 
-```{r Plot gender within the glad sign up}
+```{r Plot gender within the glad sign up for baseline completion}
 
 gender_plot <- glad_coping_participation %>% 
   ggplot(aes(x = gender_recode_labelled, fill = completed_baseline_labelled)) +
@@ -118,7 +119,7 @@ gender_plot
 
 ```
 
-```{r Plot employment in the GLAD sign up}
+```{r Plot employment in the GLAD sign up for baseline completion}
 
 employment_plot <- glad_coping_participation %>% 
   drop_na(employment_labelled) %>% 
@@ -138,7 +139,7 @@ employment_plot
 
 ```
 
-```{r Plot ethnicity in the GLAD sign up}
+```{r Plot ethnicity in the GLAD sign up for baseline compeltion}
 
 ethnicity_plot <- glad_coping_participation %>% 
   drop_na(ethnicity_labelled) %>% 
@@ -158,7 +159,7 @@ ethnicity_plot
 
 ```
 
-```{r Plot ethnic minorities in the GLAD sign up}
+```{r Plot ethnic minorities in the GLAD sign up for baseline completion}
 
 ethnic_minority_plot <- glad_coping_participation %>% 
   drop_na(ethnicity_labelled) %>% 
@@ -191,7 +192,7 @@ plot_layout_matrix
 
 ```
 
-```{r Create combined demograhics plot}
+```{r Create combined demograhics plot for baseline completion}
 
 demographics_completed_baseline_plot <- grid.arrange(ethnic_minority_plot,
                                                      age_group_plot,
@@ -211,6 +212,25 @@ of the full count variable. Following plots will be created and then merged:
 - Gender
 - Employment
 - Ethnicity
+
+```{r Create age plot for COPING surveys completion}
+
+age_group_COPING_waves_plot <- glad_coping_participation %>% 
+  ggplot(aes(x = age_groups_labelled, fill = total_COPING_waves_3levels_labelled)) +
+  geom_bar(position = "dodge") +
+  labs(x = "Age (years)",
+       y = "N participants") +
+  scale_fill_manual(values = glad_coping_palette3) +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  theme_classic() +
+  theme(legend.position = "none")
+
+#Check plot
+age_group_COPING_waves_plot
+
+```
+
 
 #Summary tables
 
