@@ -249,6 +249,25 @@ gender_COPING_waves_plot
 
 ```
 
+```{r Create employment plot for COPING follow-up completion}
+
+employment_COPING_waves_plot <- glad_coping_participation %>% 
+  drop_na(employment_labelled) %>% 
+  ggplot(aes(x = employment_labelled, fill = total_COPING_waves_binary_labelled)) +
+  geom_bar(position = "dodge") +
+  labs(x = "Employment status",
+       y = "N participants") +
+  scale_fill_manual(values = glad_coping_palette2) +
+  scale_x_discrete(guide = guide_axis(n.dodge = 3)) +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  theme_classic() +
+  theme(legend.position = "none")
+
+#Check plot
+employment_COPING_waves_plot
+
+```
 
 
 #Summary tables
