@@ -345,13 +345,26 @@ participants who completed the follow-ups/baseline only participants
 
 ##COPING baseline participation table
 
+```{r Add exclude cols for COPING baseline table plot}
+
+COPING_baseline_table_variable_exclusions <- c(
+  "sex_labelled",
+  "depressive_disorder_labelled",
+  "anxiety_disorder_labelled",
+  "psychotic_disorder_labelled",
+  "bipolar_disorder_labelled",
+  "total_COPING_waves_labelled",
+  "total_COPING_waves_binary_labelled"
+)
+
+```
+
 ```{r Get N counts for COPING baseline participation table}
 
 #Note: Gender appears twice and sex also appears. Only gender should appear!
 glad_coping_participation %>% 
-  select(all_of(ends_with("_labelled")),
-         -total_COPING_waves_labelled,
-         -total_COPING_waves_binary_labelled) %>% 
+  select(all_of(ends_with("_labelled"))) %>%
+  select(-all_of(COPING_baseline_table_variable_exclusions)) %>% 
   tbl_summary(missing_text = "Missing",
               by = "completed_baseline_labelled")
 
@@ -359,13 +372,25 @@ glad_coping_participation %>%
 
 ##COPING follow-ups
 
+```{r Add exclude cols for COPING baseline table plot}
+
+COPING_waves_table_variable_exclusions <- c(
+  "sex_labelled",
+  "depressive_disorder_labelled",
+  "anxiety_disorder_labelled",
+  "psychotic_disorder_labelled",
+  "bipolar_disorder_labelled",
+  "completed_baseline_labelled",
+  "total_COPING_waves_labelled"
+)
+
+```
+
 ```{r Get N and percentage values for COPING follow-ups}
 
-#Note: Marital status appears twice: fix this!
 glad_coping_participation %>% 
-  select(all_of(ends_with("_labelled")),
-         -completed_baseline_labelled,
-         -total_COPING_waves_labelled) %>% 
+  select(all_of(ends_with("_labelled"))) %>%
+  select(-all_of(COPING_waves_table_variable_exclusions)) %>% 
   tbl_summary(missing_text = "Missing",
               by = "total_COPING_waves_binary_labelled")
 
