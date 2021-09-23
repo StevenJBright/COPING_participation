@@ -22,6 +22,7 @@ remove(list = ls())
 #install.packages("cowplot")
 #install.packages("grid")
 #install.packages("gridExtra")
+#install.packages("gtsummary")
 #install.packages("tidyverse")
 
 ```
@@ -31,6 +32,7 @@ remove(list = ls())
 library(cowplot)
 library(grid)
 library(gridExtra)
+library(gtsummary)
 library(tidyverse)
 
 ```
@@ -214,34 +216,11 @@ participants who completed the follow-ups/baseline only participants
 
 ```{r Get N counts for COPING baseline participation table}
 
+#Note: "Autistic spectrum disorder" is missing because it doesn't have "_labelled"
 glad_coping_participation %>% 
-  select(
-    age_groups_labelled, 
-    gender_recode_labelled,
-    highest_education_labelled,
-    ethnicity_labelled,
-    employment_labelled,
-    partnership_status_labelled,
-    smoking_status_labelled,
-    physical_health_comorbidities_labelled,
-    mental_health_comorbidities_labelled,
-    depressive_and_anxiety_comorbidity_labelled,
-    eating_disorders_labelled,
-    OCRDs_labelled,
-    psychotic_and_biploar_disorder_labelled,
-    PTSD_labelled,
-    autistic_spectrum_disorder,
-    ADHD_ADD_labelled,
-    personality_disorder_labelled,
-    kit_returned_labelled,
-    joined_coping_first_invitation_labelled,
-  ) %>% 
-  colnames() %>% 
-  map(function(x){
-    glad_coping_participation %>% 
-      group_by_at(x) %>%
-      count()
-  })
+  select(all_of(ends_with("_labelled"))) %>% 
+  tbl_summary(missing_text = "Missing",
+              by = "completed_baseline_labelled")
 
 ```
 
