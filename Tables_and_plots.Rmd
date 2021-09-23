@@ -311,6 +311,27 @@ ethnic_minority_plot
 
 ```
 
+##Combined COPING waves participation plot
+
+```{r Create plot layout matrix}
+
+COPING_waves_layout_matrix <- matrix(c(1, 1, 2, 3, 3, 4), nrow = 2, byrow = TRUE)
+
+#See matrix
+COPING_waves_layout_matrix
+
+```
+
+```{r Create combined COPING waves participation plot}
+
+demographics_COPING_waves_plot <- grid.arrange(ethnic_minority_COPING_waves_plot,
+                                                     age_group_COPING_waves_plot,
+                                                     employment_COPING_waves_plot,
+                                                     gender_COPING_waves_plot,
+                                                     layout_matrix = COPING_waves_layout_matrix,
+                                                     nrow = 2)
+
+```
 
 #Summary tables
 
