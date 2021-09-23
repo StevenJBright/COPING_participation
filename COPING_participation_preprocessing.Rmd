@@ -2361,7 +2361,7 @@ glad_signup_total_waves %>%
 glad_signup_total_waves$total_COPING_waves_labelled <- factor(
   glad_signup_total_waves$total_COPING_waves,
   levels = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14),
-  labels = c("1 survey", "2 surveys", "3 surveys", "4 surveys",
+  labels = c("0 surveys", "1 survey", "2 surveys", "3 surveys", "4 surveys",
              "5 surveys", "6 surveys", "7 Surveys", "8 surveys",
              "9 surveys", "10 surveys", "11 surveys", "12 surveys",
              "13 surveys", "14 surveys")
