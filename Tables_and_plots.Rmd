@@ -90,10 +90,11 @@ age_group_plot <- glad_coping_participation %>%
   labs(x = "Age (years)",
        y = "N participants") +
   scale_fill_manual(values = glad_coping_palette2) +
-  theme(axis.text.x = element_text(colour = "black"),
-        axis.text.y = element_text(colour = "black")) +
   theme_classic() +
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 70, vjust = 0.5)) +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"))
 
 #Check plot
 age_group_plot
