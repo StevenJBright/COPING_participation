@@ -216,7 +216,7 @@ of the full count variable. Following plots will be created and then merged:
 ```{r Create age plot for COPING surveys completion}
 
 age_group_COPING_waves_plot <- glad_coping_participation %>% 
-  ggplot(aes(x = age_groups_labelled, fill = total_COPING_waves_3levels_labelled)) +
+  ggplot(aes(x = age_groups_labelled, fill = total_COPING_waves_binary_labelled)) +
   geom_bar(position = "dodge") +
   labs(x = "Age (years)",
        y = "N participants") +
