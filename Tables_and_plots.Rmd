@@ -110,7 +110,6 @@ gender_completed_baseline_plot <- glad_coping_participation %>%
   labs(x = "Gender",
        y = "N participants") +
   scale_fill_manual(values = glad_coping_palette2) +
-  scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
   theme_classic() +
   theme(legend.position = "none") +
   theme(axis.text.x = element_text(colour = "black"),
@@ -174,10 +173,11 @@ ethnic_minority_plot <- glad_coping_participation %>%
        y = "N participants") +
   scale_fill_manual(values = glad_coping_palette2) +
   scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
-  theme(axis.text.x = element_text(colour = "black"),
-        axis.text.y = element_text(colour = "black")) +
   theme_classic() +
-  theme(legend.position = "none")
+  theme(legend.position = "top",
+        legend.title = element_blank()) +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"))
 
 #Check plot
 ethnic_minority_plot
