@@ -246,10 +246,11 @@ participants who completed the follow-ups/baseline only participants
 
 ```{r Get N counts for COPING baseline participation table}
 
+#Note: Gender appears twice and sex also appears. Only gender should appear!
 glad_coping_participation %>% 
   select(all_of(ends_with("_labelled")),
          -total_COPING_waves_labelled,
-         -total_COPING_waves_3levels_labelled) %>% 
+         -total_COPING_waves_binary_labelled) %>% 
   tbl_summary(missing_text = "Missing",
               by = "completed_baseline_labelled")
 
@@ -265,7 +266,7 @@ glad_coping_participation %>%
          -completed_baseline_labelled,
          -total_COPING_waves_labelled) %>% 
   tbl_summary(missing_text = "Missing",
-              by = "total_COPING_waves_3levels_labelled")
+              by = "total_COPING_waves_binary_labelled")
 
 ```
 
