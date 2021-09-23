@@ -46,20 +46,19 @@ glad_coping_palette3 <- c("#EFC10B", "#B7DEE8", "#0403ff")
 
 ```
 
+#Source functions
+
+```{r Source functions}
+
+source("..//COPING_participation_functions.r")
+
+```
 
 #Source data paths
 
 ```{r Source paths}
 
 source("..//COPING_participation_paths.r")
-
-```
-
-#Source functions
-
-```{r Source functions}
-
-source("..//COPING_participation_functions.r")
 
 ```
 
