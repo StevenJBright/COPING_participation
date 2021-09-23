@@ -2382,7 +2382,7 @@ glad_signup_total_waves <- glad_signup_total_waves %>%
   mutate(total_COPING_waves_binary = 
            case_when(
          total_COPING_waves <= 1 ~ 0,
-         total_COPING_waves > 1 ~ 2
+         total_COPING_waves > 1 ~ 1
            )
          )
 
@@ -2398,8 +2398,8 @@ glad_signup_total_waves %>%
 
 glad_signup_total_waves$total_COPING_waves_binary_labelled <- factor(
   glad_signup_total_waves$total_COPING_waves_binary,
-  levels = c(0, 1, 2),
-  labels = c("0 surveys", "1 survey", "2+ surveys")
+  levels = c(0, 1),
+  labels = c("0-1 surveys", "2+ surveys")
   )
 
 #Check output
