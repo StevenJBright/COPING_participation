@@ -72,7 +72,7 @@ glad_coping_participation %>%
 
 ```
 
-#Plots
+#Plots: Participation in the COPING baseline
 
 Will create individual plots of demographic variables before combining them into
 one plot. This includes:
@@ -201,6 +201,16 @@ demographics_completed_baseline_plot <- grid.arrange(ethnic_minority_plot,
                                                      nrow = 2)
 
 ```
+
+#Plots: Participation in the COPING follow-ups
+
+For the plots, we will use a categorical N COPING surveys variable instead 
+of the full count variable. Following plots will be created and then merged:
+
+- Age
+- Gender
+- Employment
+- Ethnicity
 
 #Summary tables
 
