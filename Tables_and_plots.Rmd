@@ -84,7 +84,7 @@ one plot. This includes:
 
 ```{r Plot age within the GLAD sign up for baseline completion}
 
-age_group_plot <- glad_coping_participation %>% 
+age_completed_baseline_plot <- glad_coping_participation %>% 
   ggplot(aes(x = age_groups_labelled, fill = completed_baseline_labelled)) +
   geom_bar(position = "dodge") +
   labs(x = "Age (years)",
@@ -97,25 +97,28 @@ age_group_plot <- glad_coping_participation %>%
         axis.text.y = element_text(colour = "black"))
 
 #Check plot
-age_group_plot
+age_completed_baseline_plot
 
 ```
 
 ```{r Plot gender within the glad sign up for baseline completion}
 
-gender_plot <- glad_coping_participation %>% 
+gender_completed_baseline_plot <- glad_coping_participation %>% 
+  filter(gender_recode_labelled != "Non-binary/prefer to self-define") %>% 
   ggplot(aes(x = gender_recode_labelled, fill = completed_baseline_labelled)) +
   geom_bar(position = "dodge") +
   labs(x = "Gender",
        y = "N participants") +
   scale_fill_manual(values = glad_coping_palette2) +
-  theme(axis.text.x = element_text(colour = "black"),
-        axis.text.y = element_text(colour = "black")) +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
   theme_classic() +
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"))
+  
 
 #Check plot
-gender_plot
+gender_completed_baseline_plot
 
 ```
 
@@ -195,11 +198,14 @@ plot_layout_matrix
 ```{r Create combined demograhics plot for baseline completion}
 
 demographics_completed_baseline_plot <- grid.arrange(ethnic_minority_plot,
-                                                     age_group_plot,
+                                                     age_completed_baseline_plot,
                                                      employment_plot,
-                                                     gender_plot,
+                                                     gender_completed_baseline_plot,
                                                      layout_matrix = plot_layout_matrix,
-                                                     nrow = 2)
+                                                     nrow = 2,
+  bottom = textGrob("Non-binary/Self-defined: Did/Did not complete baseline (244; 457)", x = 1,
+                            hjust = 1,
+                            gp = gpar(fontface = 3L, fontsize = 9)))
 
 ```
 
