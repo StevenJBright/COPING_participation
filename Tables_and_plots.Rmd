@@ -213,7 +213,7 @@ of the full count variable. Following plots will be created and then merged:
 - Employment
 - Ethnicity
 
-```{r Create age plot for COPING surveys completion}
+```{r Create age plot for COPING follow-up completion}
 
 age_group_COPING_waves_plot <- glad_coping_participation %>% 
   ggplot(aes(x = age_groups_labelled, fill = total_COPING_waves_binary_labelled)) +
@@ -230,6 +230,25 @@ age_group_COPING_waves_plot <- glad_coping_participation %>%
 age_group_COPING_waves_plot
 
 ```
+
+```{r Create Gender plot for COPING follow-up completion}
+
+gender_COPING_waves_plot <- glad_coping_participation %>% 
+  ggplot(aes(x = gender_recode_labelled, fill = total_COPING_waves_binary_labelled)) +
+  geom_bar(position = "dodge") +
+  labs(x = "Gender",
+       y = "N participants") +
+  scale_fill_manual(values = glad_coping_palette2) +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  theme_classic() +
+  theme(legend.position = "none")
+
+#Check plot
+gender_COPING_waves_plot
+
+```
+
 
 
 #Summary tables
