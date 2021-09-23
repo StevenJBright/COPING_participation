@@ -269,6 +269,48 @@ employment_COPING_waves_plot
 
 ```
 
+```{r Create ethnicity plot for COPING follow-up completion}
+
+ethnicity_COPING_waves_plot <- glad_coping_participation %>% 
+  drop_na(ethnicity_labelled) %>% 
+  ggplot(aes(x = ethnicity_labelled, fill = total_COPING_waves_binary_labelled)) +
+  geom_bar(position = "dodge") +
+  labs(x = "Ethnic identity",
+       y = "N participants") +
+  scale_fill_manual(values = glad_coping_palette2) +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  theme_classic() +
+  theme(legend.position = "none")
+
+#Check plot
+ethnicity_COPING_waves_plot
+
+```
+
+```{r Create ethnic minorities plot for COPING follow-up completion}
+
+ethnic_minority_COPING_waves_plot <- glad_coping_participation %>% 
+  drop_na(ethnicity_labelled) %>% 
+  filter(ethnicity_labelled != "White") %>% 
+  drop_na(ethnicity_labelled) %>% 
+  ggplot(aes(x = ethnicity_labelled, fill = total_COPING_waves_binary_labelled)) +
+  geom_bar(position = "dodge") +
+  labs(x = "Ethnic minority identity",
+       y = "N participants") +
+  scale_fill_manual(values = glad_coping_palette2) +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  theme_classic() +
+  theme(legend.position = "none")
+
+#Check plot
+ethnic_minority_plot
+
+```
+
 
 #Summary tables
 
