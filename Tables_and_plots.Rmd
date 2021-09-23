@@ -228,7 +228,8 @@ participants who completed the follow-ups/baseline only participants
 
 glad_coping_participation %>% 
   select(all_of(ends_with("_labelled")),
-         -total_COPING_waves_labelled) %>% 
+         -total_COPING_waves_labelled,
+         -total_COPING_waves_3levels_labelled) %>% 
   tbl_summary(missing_text = "Missing",
               by = "completed_baseline_labelled")
 
@@ -238,11 +239,13 @@ glad_coping_participation %>%
 
 ```{r Get N and percentage values for COPING follow-ups}
 
+#Note: Marital status appears twice: fix this!
 glad_coping_participation %>% 
   select(all_of(ends_with("_labelled")),
-         -completed_baseline_labelled) %>% 
+         -completed_baseline_labelled,
+         -total_COPING_waves_labelled) %>% 
   tbl_summary(missing_text = "Missing",
-              by = "total_COPING_waves_labelled")
+              by = "total_COPING_waves_3levels_labelled")
 
 ```
 
