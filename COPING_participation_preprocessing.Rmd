@@ -2374,6 +2374,41 @@ glad_signup_total_waves %>%
 
 ```
 
+For plots and tables, we will create a collapsed COPING surveys variable.
+
+```{r Create a 0 1 or 2+ COPING surveys completed variable}
+
+glad_signup_total_waves <- glad_signup_total_waves %>% 
+  mutate(total_COPING_waves_3levels = 
+           case_when(
+         total_COPING_waves == 0 ~ 0,
+         total_COPING_waves == 1 ~ 1,
+         total_COPING_waves > 1 ~ 2
+           )
+         )
+
+#Check output
+glad_signup_total_waves %>% 
+  group_by(total_COPING_waves_3levels) %>% 
+  count()
+
+```
+
+
+```{r Add labelled version of total_COPING_waves_3levels}
+
+glad_signup_total_waves$total_COPING_waves_3levels_labelled <- factor(
+  glad_signup_total_waves$total_COPING_waves_3levels,
+  levels = c(0, 1, 2),
+  labels = c("0 surveys", "1 survey", "2+ surveys")
+  )
+
+#Check output
+glad_signup_total_waves %>% 
+  group_by(total_COPING_waves_3levels_labelled) %>% 
+  count()
+
+```
 
 #Exclusions
 
