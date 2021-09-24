@@ -123,6 +123,9 @@ gender_completed_baseline_plot
 
 ```{r Plot employment in the GLAD sign up for baseline completion}
 
+#labels <- c()
+#scale_x_discrete(labels= SoilSciGuylabs)
+
 employment_plot <- glad_coping_participation %>% 
   drop_na(employment_labelled) %>% 
   ggplot(aes(x = employment_labelled, fill = completed_baseline_labelled)) +
@@ -176,6 +179,7 @@ ethnic_minority_plot <- ethnic_minortiy_COPING_baseline_table %>%
   geom_bar(stat = "identity", position = "dodge") +
   labs(x = "Ethnic minority identity",
        y = "N participants") +
+  ylim(0, 600) +
   scale_fill_manual(values = glad_coping_palette2) +
   scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
   theme_classic() +
@@ -185,7 +189,8 @@ ethnic_minority_plot <- ethnic_minortiy_COPING_baseline_table %>%
         axis.text.y = element_text(colour = "black")) +
        geom_text(aes(label = n), 
                  position = position_dodge(width=0.9), 
-                 vjust=-0.25)
+                 vjust=-0.25,
+                 size = 3)
 
 #Check plot
 ethnic_minority_plot
