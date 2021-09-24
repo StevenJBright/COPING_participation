@@ -163,12 +163,17 @@ ethnicity_plot
 
 ```{r Plot ethnic minorities in the GLAD sign up for baseline completion}
 
-ethnic_minority_plot <- glad_coping_participation %>% 
-  drop_na(ethnicity_labelled) %>% 
+#Create ethnicity minority table grouped by COPING baseline completion status
+ethnic_minortiy_COPING_baseline_table <- glad_coping_participation %>% 
+  select(ethnicity_labelled, completed_baseline_labelled) %>% 
   filter(ethnicity_labelled != "White") %>% 
-  drop_na(ethnicity_labelled) %>% 
-  ggplot(aes(x = ethnicity_labelled, fill = completed_baseline_labelled)) +
-  geom_bar(position = "dodge") +
+  group_by(ethnicity_labelled, completed_baseline_labelled) %>% 
+  count()
+
+#Create plot
+ethnic_minority_plot <- ethnic_minortiy_COPING_baseline_table %>% 
+  ggplot(aes(x = ethnicity_labelled, y = n, fill = completed_baseline_labelled)) +
+  geom_bar(stat = "identity", position = "dodge") +
   labs(x = "Ethnic minority identity",
        y = "N participants") +
   scale_fill_manual(values = glad_coping_palette2) +
@@ -177,7 +182,10 @@ ethnic_minority_plot <- glad_coping_participation %>%
   theme(legend.position = "top",
         legend.title = element_blank()) +
   theme(axis.text.x = element_text(colour = "black"),
-        axis.text.y = element_text(colour = "black"))
+        axis.text.y = element_text(colour = "black")) +
+       geom_text(aes(label = n), 
+                 position = position_dodge(width=0.9), 
+                 vjust=-0.25)
 
 #Check plot
 ethnic_minority_plot
