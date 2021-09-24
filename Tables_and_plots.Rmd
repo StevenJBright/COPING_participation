@@ -123,7 +123,17 @@ gender_completed_baseline_plot
 
 ```{r Plot employment in the GLAD sign up for baseline completion}
 
-#labels <- c()
+employment_labels <- c(
+  "Employed",
+  "Retired",
+  "Looking after home/family",
+  "NA (disability/sickness)",
+  "Unemployed",
+  "Unpaid/voluntary work",
+  "Student",
+  "None"
+)
+
 #scale_x_discrete(labels= SoilSciGuylabs)
 
 employment_plot <- glad_coping_participation %>% 
@@ -133,11 +143,12 @@ employment_plot <- glad_coping_participation %>%
   labs(x = "Employment status",
        y = "N participants") +
   scale_fill_manual(values = glad_coping_palette2) +
-  scale_x_discrete(guide = guide_axis(n.dodge = 3)) +
-  theme(axis.text.x = element_text(colour = "black"),
-        axis.text.y = element_text(colour = "black")) +
+  scale_x_discrete(guide = guide_axis(n.dodge = 3),
+                   labels = employment_labels) +
   theme_classic() +
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"))
 
 #Check plot
 employment_plot
