@@ -195,6 +195,7 @@ ethnic_minority_plot <- ethnic_minortiy_COPING_baseline_table %>%
   scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
   theme_classic() +
   theme(legend.position = "top",
+        legend.margin = margin(0),
         legend.title = element_blank()) +
   theme(axis.text.x = element_text(colour = "black"),
         axis.text.y = element_text(colour = "black")) +
