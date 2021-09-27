@@ -267,15 +267,16 @@ age_group_COPING_waves_plot
 ```{r Create Gender plot for COPING follow-up completion}
 
 gender_COPING_waves_plot <- glad_coping_participation %>% 
+  filter(gender_recode_labelled != "Non-binary/prefer to self-define") %>% 
   ggplot(aes(x = gender_recode_labelled, fill = total_COPING_waves_binary_labelled)) +
   geom_bar(position = "dodge") +
   labs(x = "Gender",
        y = "N participants") +
   scale_fill_manual(values = glad_coping_palette2) +
-  theme(axis.text.x = element_text(colour = "black"),
-        axis.text.y = element_text(colour = "black")) +
   theme_classic() +
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"))
 
 #Check plot
 gender_COPING_waves_plot
