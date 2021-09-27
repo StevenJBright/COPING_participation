@@ -352,7 +352,9 @@ ethnic_minority_COPING_waves_plot <- ethnic_minortiy_COPING_followups_table %>%
        geom_text(aes(label = n), 
                  position = position_dodge(width=0.9), 
                  vjust=-0.25,
-                 size = 3)
+                 size = 3) +
+  theme(plot.margin = margin(t = 10, unit = "pt")) + ## pad "t"op region of the plot
+  coord_cartesian(clip = "off")
 
 #Check plot
 ethnic_minority_COPING_waves_plot
