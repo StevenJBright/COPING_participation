@@ -134,8 +134,6 @@ employment_labels <- c(
   "None"
 )
 
-#scale_x_discrete(labels= SoilSciGuylabs)
-
 employment_plot <- glad_coping_participation %>% 
   drop_na(employment_labelled) %>% 
   ggplot(aes(x = employment_labelled, fill = completed_baseline_labelled)) +
@@ -292,11 +290,12 @@ employment_COPING_waves_plot <- glad_coping_participation %>%
   labs(x = "Employment status",
        y = "N participants") +
   scale_fill_manual(values = glad_coping_palette2) +
-  scale_x_discrete(guide = guide_axis(n.dodge = 3)) +
-  theme(axis.text.x = element_text(colour = "black"),
-        axis.text.y = element_text(colour = "black")) +
+  scale_x_discrete(guide = guide_axis(n.dodge = 3),
+                   labels = employment_labels) +
   theme_classic() +
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"))
 
 #Check plot
 employment_COPING_waves_plot
