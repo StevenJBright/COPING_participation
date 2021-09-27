@@ -163,10 +163,10 @@ ethnicity_plot <- glad_coping_participation %>%
        y = "N participants") +
   scale_fill_manual(values = glad_coping_palette2) +
   scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
-  theme(axis.text.x = element_text(colour = "black"),
-        axis.text.y = element_text(colour = "black")) +
   theme_classic() +
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"))
 
 #Check plot
 ethnicity_plot
@@ -312,10 +312,10 @@ ethnicity_COPING_waves_plot <- glad_coping_participation %>%
        y = "N participants") +
   scale_fill_manual(values = glad_coping_palette2) +
   scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
-  theme(axis.text.x = element_text(colour = "black"),
-        axis.text.y = element_text(colour = "black")) +
   theme_classic() +
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"))
 
 #Check plot
 ethnicity_COPING_waves_plot
@@ -324,23 +324,38 @@ ethnicity_COPING_waves_plot
 
 ```{r Create ethnic minorities plot for COPING follow-up completion}
 
-ethnic_minority_COPING_waves_plot <- glad_coping_participation %>% 
-  drop_na(ethnicity_labelled) %>% 
+#Get ethnic minority table grouped by total COPING waves group
+ethnic_minortiy_COPING_followups_table <- glad_coping_participation %>% 
+  select(ethnicity_labelled, total_COPING_waves_binary_labelled) %>% 
   filter(ethnicity_labelled != "White") %>% 
-  drop_na(ethnicity_labelled) %>% 
-  ggplot(aes(x = ethnicity_labelled, fill = total_COPING_waves_binary_labelled)) +
-  geom_bar(position = "dodge") +
+  group_by(ethnicity_labelled, total_COPING_waves_binary_labelled) %>% 
+  count()
+
+#Create ethnic minority/total COPING waves group plot
+ethnic_minority_COPING_waves_plot <- ethnic_minortiy_COPING_followups_table %>% 
+  ggplot(aes(x = ethnicity_labelled, y = n, fill = total_COPING_waves_binary_labelled)) +
+  geom_bar(stat = "identity", position = "dodge") +
   labs(x = "Ethnic minority identity",
        y = "N participants") +
   scale_fill_manual(values = glad_coping_palette2) +
   scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+  theme_classic() +
+  theme(legend.position = "none") +
   theme(axis.text.x = element_text(colour = "black"),
         axis.text.y = element_text(colour = "black")) +
-  theme_classic() +
-  theme(legend.position = "none")
+  theme(legend.position = "top",
+        legend.margin = margin(0),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 8.5)) +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+       geom_text(aes(label = n), 
+                 position = position_dodge(width=0.9), 
+                 vjust=-0.25,
+                 size = 3)
 
 #Check plot
-ethnic_minority_plot
+ethnic_minority_COPING_waves_plot
 
 ```
 
