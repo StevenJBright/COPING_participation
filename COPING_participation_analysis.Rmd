@@ -22,8 +22,6 @@ remove(list = ls())
 #install.packages("broom")
 #install.packages("knitr)
 #install.packages("car")
-#install.packages("corrplot")
-#install.packages("polycor")
 #install.packages("tidyverse")
 
 ```
@@ -33,8 +31,6 @@ remove(list = ls())
 library(broom)
 library(knitr)
 library(car)
-library(corrplot)
-library(polycor)
 library(tidyverse)
 
 ```

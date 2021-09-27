@@ -23,6 +23,8 @@ remove(list = ls())
 #install.packages("grid")
 #install.packages("gridExtra")
 #install.packages("gtsummary")
+#install.packages("corrplot")
+#install.packages("polycor")
 #install.packages("tidyverse")
 
 ```
@@ -33,6 +35,8 @@ library(cowplot)
 library(grid)
 library(gridExtra)
 library(gtsummary)
+library(corrplot)
+library(polycor)
 library(tidyverse)
 
 ```
@@ -463,7 +467,7 @@ sociodemographic_variable_names <- c(
 )
 
 #Select correlation variables
-sociodemographic_correlation_vars <- glad_coping_participation_raw %>% 
+sociodemographic_correlation_vars <- glad_coping_participation %>% 
   select(all_of(sociodemographic_variable_names))
 
 #Get correlations
@@ -526,7 +530,7 @@ psychiatric_and_health_variable_names <- c(
 )
 
 #Select correlation variables
-psychiatric_and_health_correlation_vars <- glad_coping_participation_raw %>% 
+psychiatric_and_health_correlation_vars <- glad_coping_participation %>% 
   select(all_of(psychiatric_and_health_variable_names))
 
 #Get correlations
@@ -579,7 +583,7 @@ glad_study_variable_names <- c(
 )
 
 #Select correlation variables
-glad_study_variables_correlation_vars <- glad_coping_participation_raw %>% 
+glad_study_variables_correlation_vars <- glad_coping_participation %>% 
   select(all_of(glad_study_variable_names[-1])) #Remove startDate
 
 #Get correlations
