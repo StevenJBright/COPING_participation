@@ -572,3 +572,75 @@ all.corr.matrix_psychiatric_and_health %>%
          insig = "blank") # Nonsignificant correlations have no colour
 
 ```
+
+#Testing 
+
+```{r Correlation variables}
+
+correlation_vars <- c(
+  "age_cleaned",
+  "gender_recode",
+  "highest_education",
+  "dem.questions_based_ethnic_origin",
+  "dem.what_is_your_current_employment_status",
+  "dem.what_is_your_current_maritalrelationship_status",
+  "kit_returned",
+  "joined_coping_first_invitation",
+  "phq.sum_score",
+  "gad.sum_score",
+  "audit.sum_score",
+  "dem.select_the_box_that_best_describes_you",
+  "physical_health_comorbidities",
+  "mental_health_comorbidities",
+  "depressive_and_anxiety_comorbidity",
+  "eating_disorders",
+  "OCRDs",
+  "psychotic_and_biploar_disorder",
+  "mhd.ptsd",
+  "mhd.asd",
+  "mhd.addadhd",
+  "mhd.personality_disorder"
+)
+
+#Select correlation variables
+correlation_vars_data <- glad_coping_participation %>% 
+  select(all_of(correlation_vars))
+
+#Get correlations
+all.corr.mat <- correlation_vars_data %>% 
+  hetcor(use = "pairwise.complete.obs")
+
+```
+
+```{r Save cormat as a matrix object}
+
+all.corr.matrix <- as.matrix(all.corr.mat)
+
+```
+
+```{r Save p values}
+
+all.p.matrix <- as.matrix(all.corr.mat$tests)
+
+```
+
+```{r Create corrplot of all variables}
+
+all.corr.matrix %>%
+  corrplot(method = "color", # objects to represent the correlations on plot
+         type = "lower", # only use the lower triangle of the matrix
+         diag = FALSE, # do not show the correlations on the diagonal
+         addgrid.col = NA,
+         addCoef.col = "black", # colour for the correlation coefficients in the plot
+         tl.cex = 0.5, #size of text
+         number.cex = 0.5,
+         tl.col = "black",
+         col=colorRampPalette(c("dodgerblue4",
+                                "white",
+                                "firebrick4"))(200), # colours for correlations
+         # Combine with significance
+         p.mat = all.p.matrix, # Matrix with p values
+         sig.level = 0.01, # Choose significant level
+         insig = "blank")
+
+```
