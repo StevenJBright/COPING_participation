@@ -442,9 +442,16 @@ COPING_waves_table_variable_exclusions <- c(
 
 ```
 
+```{r Filter for participants who completed the COPING baseline}
+
+completed_COPING_baseline_pts <- glad_coping_participation %>% 
+  filter(completed_baseline == 1)
+
+```
+
 ```{r Get N and percentage values for COPING follow-ups}
 
-glad_coping_participation %>% 
+completed_COPING_baseline_pts %>% 
   select(all_of(ends_with("_labelled"))) %>%
   select(-all_of(COPING_waves_table_variable_exclusions)) %>% 
   tbl_summary(missing_text = "Missing",
