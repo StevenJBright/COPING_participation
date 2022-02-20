@@ -15,16 +15,31 @@ remove(list = ls())
 
 ```
 
+```{r Turn scientific notation off}
+
+#Change it to "= 0" to turn it back on
+options(scipen = 999)
+
+```
+
 #Call libraries
 
 ```{r Install packages}
 
+#install.packages("broom")
+#install.packages("knitr)
+#install.packages("car")
 #install.packages("tidyverse")
+#install.packages("rstatix")
 
 ```
 
 ```{r Load libraries}
 
+library(broom)
+library(knitr)
+library(car)
+library(rstatix)
 library(tidyverse)
 
 ```
@@ -51,12 +66,65 @@ glad_coping_participation_raw %>%
 
 Sociodemographic variables:
 
-Age (continuous - Not applicable)
+Age (age groups)
 Gender
 Ethnicity
 Education
 Employment
 Partnership status
+
+```{r Run chi2 test for gender and participation in the COPING baseline}
+
+#NOTE: Topher suggests running chi2 tests like this.
+
+# gender_recode_baseline_participation_chi2_test <- glad_coping_participation_raw %>%
+#   count(gender_recode, completed_baseline) %>%
+#   spread(key = completed_baseline, value = n) %>%
+#   select(-gender_recode) %>% 
+#   chisq.test() %>%
+#   glance() %>%
+#   add_column(
+#     Variable = "gender_recode", # Change variable name here -> use nice label
+#     .before = 1)
+
+```
+
+```{r Run pairwise chi2 tests for gender and participation in the COPING baseline}
+
+# pairwise_gender_chi2_tests <- glad_coping_participation_raw %>%
+#   count(gender_recode, completed_baseline) %>%
+#   spread(key = gender_recode, value = n) %>%
+#   select(-completed_baseline) %>% 
+#   pairwise_chisq_gof_test(
+#     p.adjust.method = "BH"
+#   ) %>%
+#   mutate(
+#     Comparison = paste(group1,"vs.",group2, sep = " "),
+#     Effect = p.adj.signif
+#   ) %>%
+#   select(
+#     Comparison,
+#     Effect
+#   ) %>%
+#   pivot_longer(
+#     cols = c("Effect"),
+#     values_to = "Difference") %>%
+#   select(-name) %>%
+#   pivot_wider(
+#     names_from = "Comparison",
+#     values_from = "Difference")
+
+```
+
+```{r Create contingency table for age}
+
+age_groups_contingency_table <- table(glad_coping_participation_raw$age_groups_labelled,
+                                      glad_coping_participation_raw$completed_baseline_labelled)
+
+#Check output
+age_groups_contingency_table
+
+```
 
 ```{r Create contingency table for gender}
 
@@ -108,22 +176,20 @@ partnership_contingency_table
 
 ```
 
-#Run Aim 1 tests
+#Run aim 1 chi2 tests
 
 The aim here is to see whether there are any significant differences between 
 the GLAD Study paticipants who did and did not take part in the COPING baseline.
 
-##Chi2 tests
+##Age
 
-This will only focus on the sociodemographic variables.
+```{r Chi2 test for age}
 
-```{r Chi2 test for gender}
-
-gender_chi2_test <- chisq.test(gender_contingency_table,
+age_groups_chi2_test <- chisq.test(age_groups_contingency_table,
            correct = TRUE)
 
 #Check output
-gender_chi2_test
+age_groups_chi2_test
 
 ```
 
@@ -147,6 +213,25 @@ post_hoc_chi2_func <- function(contingency_table, correct_adj = FALSE, sig_level
 
 ```
 
+```{r Run follow-up tests for age groups}
+
+post_hoc_chi2_func(age_groups_contingency_table,
+              correct_adj = TRUE)
+
+```
+
+##Gender
+
+```{r Chi2 test for gender}
+
+gender_chi2_test <- chisq.test(gender_contingency_table,
+           correct = TRUE)
+
+#Check output
+gender_chi2_test
+
+```
+
 ```{r Post hoc testing for gender}
 
 post_hoc_chi2_func(gender_contingency_table,
@@ -154,6 +239,7 @@ post_hoc_chi2_func(gender_contingency_table,
 
 ```
 
+##Ethnicity
 
 ```{r Chi2 test for ethnicity}
 
@@ -172,6 +258,8 @@ post_hoc_chi2_func(ethnicity_contingency_table,
 
 ```
 
+##Education
+
 ```{r Chi2 test for education}
 
 education_chi2_test <- chisq.test(education_contingency_table,
@@ -188,6 +276,8 @@ post_hoc_chi2_func(education_contingency_table,
                    correct_adj = TRUE)
 
 ```
+
+##Employment
 
 ```{r Chi2 test for employment}
 
@@ -206,6 +296,8 @@ post_hoc_chi2_func(employment_contingency_table,
 
 ```
 
+##Partnership status
+
 ```{r Chi2 test for partnership status}
 
 partnership_chi2_test <- chisq.test(partnership_contingency_table,
@@ -223,98 +315,697 @@ post_hoc_chi2_func(partnership_contingency_table,
 
 ```
 
-##Logistic regression models
+#Aim 1 Logistic regression model
 
-We will run four logistic regression models for aim 1:
+Our first aim is to see whether participation in the COPING baseline is 
+explained by the sociodemographic, mental and physical health characteristics
+of the GLAD Study participants.
+
+```{r Run complete LR model}
+
+#Note: Have left out the "depressive_and_anxiety_comorbidity_labelled" variable
+#because this is acting as the reference group for MH diagnoses.
+
+complete_LR_model <- glm(
+  formula = completed_baseline_labelled ~ age_cleaned + 
+    gender_recode_labelled +
+    highest_education_labelled +
+    ethnicity_labelled +
+    employment_labelled +
+    partnership_status_labelled +
+    phq.sum_score + 
+    gad.sum_score +
+    audit.sum_score +
+    smoking_status_labelled +
+    physical_health_comorbidities_labelled +
+    mental_health_comorbidities_labelled +
+    eating_disorders_labelled +
+    OCRDs_labelled +
+    psychotic_and_biploar_disorder_labelled +
+    asd_labelled +
+    ADHD_ADD_labelled +
+    personality_disorder_labelled +
+    startDate + 
+    kit_returned_labelled +
+    joined_coping_first_invitation_labelled,
+  family = "binomial",
+  data = glad_coping_participation_raw)
+
+#Check output
+summary(complete_LR_model)
+
+```
+
+```{r Put complete LR model names into a vector}
+
+#Put all LR variable names into vector in the order they appear in summary(model4)
+complete_LR_model_names <- c(
+  "Intercept",
+  "age_cleaned",
+  "gender_recode_labelledFemale",
+  "gender_recode_labelledNon-binary/prefer to self-define",
+  "highest_education_labelledA levels/AS levels or equivalent",
+  "highest_education_labelledO levels/GCSEs or equivalent",
+  "highest_education_labelledCSEs or equivalent",
+  "highest_education_labelledNVQ or HND or HNC or equivalent",
+  "highest_education_labelledNone of the above",
+  "ethnicity_labelledMixed",
+  "ethnicity_labelledAsian or Asian British",
+  "ethnicity_labelledBlack or Black British",
+  "ethnicity_labelledArab",
+  "ethnicity_labelledOther",
+  "employment_labelledRetired",
+  "employment_labelledLooking after home and/or family",
+  "employment_labelledUnable to work because of sickness or disability",
+  "employment_labelledUnemployed",
+  "employment_labelledDoing unpaid or voluntary work",
+  "employment_labelledFull or part-time_student",
+  "employment_labelledNone of the above",
+  "partnership_status_labelledRelationship or married/civil partnership",
+  "partnership_status_labelledDivorced/widowed/separated",
+  "phq.sum_score",
+  "gad.sum_score",
+  "audit.sum_score",
+  "smoking_status_labelledI smoke now",
+  "smoking_status_labelledI used to smoke",
+  "physical_health_comorbidities_labelled1 physical health disorder",
+  "physical_health_comorbidities_labelled2+ physical health disorders",
+  "mental_health_comorbidities_labelled1 mental health disorder",
+  "mental_health_comorbidities_labelled2+ mental health disorders",
+  "eating_disorders_labelledEating disorder",
+  "OCRDs_labelledOCRDs",
+  "psychotic_and_biploar_disorder_labelledPsychotic and bipolar disorder",
+  "psychotic_and_biploar_disorder_labelledOnly psychotic disorder",
+  "psychotic_and_biploar_disorder_labelledOnly bipolar disorder",
+  "asd_labelledAutistic spectrum disorder",
+  "ADHD_ADD_labelledADHD or ADD disorder",
+  "mhd.personality_disorder_labelledPersonality disorder",
+  "startDate",
+  "kit_returnedPt has provided saliva kit",
+  "joined_coping_first_invitationCompleted COPING baseline before 1st follow-up"
+)
+
+```
+
+```{r Create tidy output for complete LR model}
+
+#Create tidy model output
+complete_LR_model_tidy <- tidy(
+  complete_LR_model,
+  exponentiate = T,
+  conf.int = T) %>%
+  mutate(
+    Variable = complete_LR_model_names,
+    Significance = if_else(
+      p.value < 0.05, 
+      1,
+      0
+      ) %>%
+    recode_factor(
+        "0" = "Not-significant",
+        "1" = "Significant"
+      )) %>%
+  select(
+    Variable,
+    OR = estimate,
+    `CI 95% lower` = conf.low,
+    `CI 95% upper` = conf.high,
+    `p value` = p.value,
+    Significance
+  )
+
+complete_LR_model_tidy %>% 
+  head(nrow(complete_LR_model_tidy))
+
+#Create kable output
+#complete_LR_model_kable <- kable(complete_LR_model_tidy[-c(1), ],
+#      digits = 2)
+
+```
+
+#Test assumptions of complete LR model
+
+Checking LR assumptions in R: 
+http://www.sthda.com/english/articles/36-classification-methods-essentials/148-logistic-regression-assumptions-and-diagnostics-in-r/
+
+##Multicollinearity
+
+Check that all IVs are not highly correlated.
+
+```{r Get VIF values of final model}
+
+complete_LR_model_VIF <- complete_LR_model %>% 
+  vif()
+
+complete_LR_model_VIF
+
+```
+
+##Linearity
+
+Check the relationship between the continuous predictor variables and the logit
+of the DV. This can be inspected visually by creating scatterplots between each
+predictor and the logit values.
+
+```{r Predict the probability (p) of participating in COPING baseline}
+
+COPING_baseline_probabilities <- complete_LR_model %>% 
+  predict(type = "response")
+
+#Create predicted COPING baseline case variable
+predicted_COPING_baseline_cases <- ifelse(COPING_baseline_probabilities > 0.5,
+                                          "positive",
+                                          "negative")
+#Check output
+predicted_COPING_baseline_cases %>% 
+  head()
+
+```
+
+```{r Create character vector with all the continuous predictors}
+
+continuous_predictors <- c(
+  "age_cleaned", 
+  "phq.sum_score", 
+  "gad.sum_score",
+  "audit.sum_score"
+    )
+
+```
+
+```{r Create data with no NAs on the LR predictors}
+
+LR_predictors_without_NAs <- glad_coping_participation_raw %>% 
+  select(
+    age_cleaned, 
+    gender_recode_labelled,
+    highest_education_labelled,
+    ethnicity_labelled,
+    employment_labelled,
+    partnership_status_labelled,
+    phq.sum_score, 
+    gad.sum_score,
+    audit.sum_score,
+    smoking_status_labelled,
+    physical_health_comorbidities_labelled,
+    mental_health_comorbidities_labelled,
+    eating_disorders_labelled,
+    OCRDs_labelled,
+    psychotic_and_biploar_disorder_labelled,
+    asd_labelled,
+    ADHD_ADD_labelled,
+    personality_disorder_labelled,
+    startDate,
+    kit_returned_labelled,
+    joined_coping_first_invitation_labelled
+  ) %>% 
+  na.omit(.)
+
+#Check rows match the predict model
+COPING_baseline_probabilities %>% 
+  length()
+
+LR_predictors_without_NAs %>% 
+  nrow()
+
+```
+
+```{r Prepare data for linearity plot}
+
+#Select the continuous variables from the non-NA data
+continuous_LR_predictors_without_NA <- LR_predictors_without_NAs %>% 
+  select(all_of(continuous_predictors))
+
+LR_linearity_check <- continuous_LR_predictors_without_NA %>% 
+  mutate(logit = log(COPING_baseline_probabilities/(1-COPING_baseline_probabilities))) %>% 
+  gather(key = "predictors", value = "predictor.value", -logit)
+
+#Check output
+LR_linearity_check %>% 
+  glimpse()
+
+```
+
+```{r Create linearity scatterplots}
+
+LR_linearity_check %>% 
+  ggplot(aes(logit, predictor.value)) +
+  geom_point(size = 0.5, alpha = 0.5) +
+  geom_smooth(method = "loess") +
+  theme_minimal() +
+  facet_wrap(~predictors, scales = "free_y")
+
+```
+
+Checking linearity for LR: (Old video)
+https://www.youtube.com/watch?v=5TW_wWeTOe0
+
+```{r Get quartiles and calculaties probabilities of completing baseline}
+
+#Get age quartiles
+age_quartiles <- summary(glad_coping_participation_raw$age_cleaned)
+
+#Calculate probabilities of completing survey within each age quartile
+age_q1_prob <- glad_coping_participation_raw %>% 
+  filter(age_cleaned < 26) %>%
+  pull(completed_baseline) %>% 
+  mean(.)
+
+age_q2_prob <- glad_coping_participation_raw %>% 
+  filter(age_cleaned >= 26 & age_cleaned < 36) %>% 
+  pull(completed_baseline) %>% 
+  mean(.)
+
+age_q3_prob <- glad_coping_participation_raw %>% 
+  filter(age_cleaned >= 36 & age_cleaned < 49) %>% 
+  pull(completed_baseline) %>% 
+  mean(.)
+
+age_q4_prob <- glad_coping_participation_raw %>% 
+  filter(age_cleaned >= 49) %>% 
+  pull(completed_baseline) %>% 
+  mean(.)
+
+#Check proportion is right
+# glad_coping_participation_raw %>% 
+#   filter(age_cleaned < 26) %>% 
+#   group_by(completed_baseline) %>% 
+#   count()
+
+#Put probabilities into one object
+age_cleaned_probs <- c(age_q1_prob, age_q2_prob, age_q3_prob, age_q4_prob)
+
+```
+
+```{r Plot completed baseline ~ age}
+
+#Get logits
+age_logits <- log(age_cleaned_probs/(1-age_cleaned_probs))
+
+#Get medians
+age_log_quartiles <- quantile(glad_coping_participation_raw$age_cleaned,
+                              probs = seq(0, 1, 0.25))
+
+age_q1_median <- glad_coping_participation_raw %>% 
+  filter(age_cleaned < 26) %>% 
+  pull(age_cleaned) %>% 
+  median(.)
+
+age_q2_median <- glad_coping_participation_raw %>% 
+  filter(age_cleaned >= 26 &
+           age_cleaned < 36) %>% 
+  pull(age_cleaned) %>% 
+  median(.)
+
+age_q3_median <- glad_coping_participation_raw %>% 
+  filter(age_cleaned >= 36 &
+           age_cleaned < 49) %>% 
+  pull(age_cleaned) %>% 
+  median(.)
+
+age_q4_median <- glad_coping_participation_raw %>% 
+  filter(age_cleaned >= 49) %>% 
+  pull(age_cleaned) %>% 
+  median(.)
+
+age_medians <- c(age_q1_median, age_q2_median, age_q3_median, age_q4_median)
+
+```
+
+```{r Make linear check plot for age}
+
+plot(age_medians,
+     age_logits,
+     main = "Should look linear if age is linear with log age",
+     xlab = "age",
+     ylab = "log-odds(com base|age)",
+     las = 1)
+
+```
+
+```{r Check linearity for sociodemographic model}
+
+# boxTidwell(sociodemographic_LR_model$linear.predictors ~ age_cleaned,
+#             data = glad_coping_participation_raw)
+
+# sociodemographic_LR_linearity_test <- glm(
+#   formula = completed_baseline ~ age_cleaned + age_cleaned * log(age_cleaned),
+#   family = "binomial",
+#   data = glad_coping_participation_raw)
+# 
+# #Check output
+# summary(sociodemographic_LR_linearity_test)
+
+```
+
+##Outliers
+
+Anything > 1 is a cause for concern.
+
+```{r Check cooks distance values in LR model}
+
+plot(complete_LR_model,
+     which = 4)
+
+```
+
+```{r Extract model results}
+
+LR.model_data <- augment(complete_LR_model) %>% 
+  mutate(index = 1:n())
+
+#Check output
+LR.model_data %>% 
+  glimpse()
+
+```
+
+```{r Plot standardised residuals}
+
+LR.model_data %>% 
+  ggplot(aes(index, .std.resid)) +
+  geom_point(aes(colour = completed_baseline_labelled), alpha = .5) +
+  theme_minimal()
+
+```
+
+```{r Check standardised residuals > 3.3}
+
+LR.model_data %>% 
+  filter(abs(.std.resid) > 3.3)
+
+```
+
+#Multiple Regression models
+
+There are x4 models to run:
 
 Model 1: Sociodemographic variables
 Model 2: Psychiatric and health variables
 Model 3: Study variables
 Model 4: All variables together
 
-```{r Model 1: Sociodemographic variables}
+##Model 1: Sociodemographic variables
 
-sociodemographic_LR_model <- glm(
-  formula = completed_baseline ~ age_cleaned + 
-    gender_recode +
-    highest_education +
-    dem.questions_based_ethnic_origin +
-    dem.what_is_your_current_employment_status +
-    partnership_status,
-  family = "binomial",
-  data = glad_coping_participation_raw)
+```{r Run sociodemographic MLR model}
 
-#Check output
-summary(sociodemographic_LR_model)
+sociodemographic_MLR_model <- lm(total_COPING_waves ~ age_cleaned + 
+    gender_recode_labelled +
+    highest_education_labelled +
+    ethnicity_labelled +
+    employment_labelled +
+    partnership_status_labelled,
+    data = glad_coping_participation_raw)
+
+#Check model output
+summary(sociodemographic_MLR_model)
 
 ```
 
-```{r Model 2: Psychiatric and health variables}
+```{r Create tidy sociodemographic MLR model output}
 
-#Need to add physcial health comorbidity variable
-psychiatric_and_health_LR_model <- glm(
-  formula = completed_baseline ~ phq.sum_score + 
+#Create tidy model output
+sociodemographic_MLR_model_tidy <- tidy(
+  sociodemographic_MLR_model,
+  conf.int = T) %>%
+  mutate(
+    Variable = sociodemographic_variable_names,
+    Significance = if_else(
+      p.value < 0.05, 
+      1,
+      0
+      ) %>%
+    recode_factor(
+        "0" = "Not-significant",
+        "1" = "Significant"
+      )) %>%
+  select(
+    Variable,
+    estimate,
+    `CI 95% lower` = conf.low,
+    `CI 95% upper` = conf.high,
+    `p value` = p.value,
+    Significance
+  )
+
+sociodemographic_MLR_model_tidy %>% 
+  head(23)
+
+#Create kable output
+sociodemographic_MLR_model_kable <- kable(sociodemographic_MLR_model_tidy[-c(1), ],
+      digits = 2)
+
+```
+
+##Model 2: Psychiatric and health variables
+
+```{r Run psychiatric and health MLR model}
+
+psychiatric_and_health_MLR_model <- lm(total_COPING_waves ~ phq.sum_score + 
     gad.sum_score +
     audit.sum_score +
-    dem.select_the_box_that_best_describes_you +
-    mental_health_comorbidities +
-    depressive_and_anxiety_comorbidity +
-    eating_disorders +
-    OCRDs +
-    psychotic_and_biploar_disorder +
-    mhd.asd +
-    mhd.addadhd +
-    mhd.personality_disorder,
-  family = "binomial",
+    smoking_status_labelled +
+    physical_health_comorbidities_labelled +
+    mental_health_comorbidities_labelled +
+    depressive_and_anxiety_comorbidity_labelled +
+    eating_disorders_labelled +
+    OCRDs_labelled +
+    psychotic_and_biploar_disorder_labelled +
+    autistic_spectrum_disorder +
+    ADHD_ADD_labelled +
+    personality_disorder_labelled,
   data = glad_coping_participation_raw)
 
-#Check output
-summary(psychiatric_and_health_LR_model)
+#Check model output
+summary(psychiatric_and_health_MLR_model)
 
 ```
 
-```{r Model 3: Study variables}
+```{r Create tidy output for psychiatric and health MLR}
 
-glad_study_variables_LR_model <- glm(
-  formula = completed_baseline ~ startDate + 
-    kit_returned +
-    joined_coping_first_invitation,
-  family = "binomial",
-  data = glad_coping_participation_raw)
+#Create tidy model output
+psychiatric_and_health_MLR_model_tidy <- tidy(
+  psychiatric_and_health_MLR_model,
+  exponentiate = T,
+  conf.int = T) %>%
+  mutate(
+    Variable = psychiatric_and_health_LR_variable_names,
+    Significance = if_else(
+      p.value < 0.05, 
+      1,
+      0
+      ) %>%
+    recode_factor(
+        "0" = "Not-significant",
+        "1" = "Significant"
+      )) %>%
+  select(
+    Variable,
+    estimate,
+    `CI 95% lower` = conf.low,
+    `CI 95% upper` = conf.high,
+    `p value` = p.value,
+    Significance
+  )
 
-#Check output
-summary(glad_study_variables_LR_model)
+psychiatric_and_health_MLR_model_tidy %>% 
+  head(14)
+
+#Create kable output
+psychiatric_and_health_MLR_model_kable <- kable(psychiatric_and_health_MLR_model_tidy[-c(1), ],
+      digits = 2)
 
 ```
 
-```{r Model 4: Combined model}
+##Model 3: glad study variables model
 
-full_LR_model <- glm(
+```{r Run glad study variables MLR model}
+
+glad_study_variables_MLR_model <- lm(
+  formula = total_COPING_waves ~ startDate + 
+    kit_returned_labelled +
+    joined_coping_first_invitation_labelled,
+  data = glad_coping_participation_raw)
+
+#Check output
+summary(glad_study_variables_MLR_model)
+
+```
+
+```{r Create tidy output for glad study variable MLR}
+
+#Create tidy model output
+glad_study_variables_MLR_model_tidy <- tidy(
+  glad_study_variables_MLR_model,
+  conf.int = T) %>%
+  mutate(
+    Variable = glad_study_LR_variable_names,
+    Significance = if_else(
+      p.value < 0.05, 
+      1,
+      0
+      ) %>%
+    recode_factor(
+        "0" = "Not-significant",
+        "1" = "Significant"
+      )) %>%
+  select(
+    Variable,
+    estimate,
+    `CI 95% lower` = conf.low,
+    `CI 95% upper` = conf.high,
+    `p value` = p.value,
+    Significance
+  )
+
+glad_study_variables_MLR_model_tidy %>% 
+  head()
+
+#Create kable output
+glad_study_variables_MLR_model_kable <- kable(glad_study_variables_MLR_model_tidy[-c(1), ],
+      digits = 2)
+
+```
+
+##Model 4: Complete MLR model
+
+```{r Run complete MLR model}
+
+complete_MLR_model <- lm(
   formula = completed_baseline ~ age_cleaned + 
-    gender_recode +
-    highest_education +
-    dem.questions_based_ethnic_origin +
-    dem.what_is_your_current_employment_status +
-    partnership_status +
-    phq.sum_score + 
+    gender_recode_labelled +
+    highest_education_labelled +
+    ethnicity_labelled +
+    employment_labelled +
+    partnership_status_labelled +
+    phq.sum_score +
     gad.sum_score +
     audit.sum_score +
-    dem.select_the_box_that_best_describes_you +
-    mental_health_comorbidities +
-    depressive_and_anxiety_comorbidity +
-    eating_disorders +
-    OCRDs +
-    psychotic_and_biploar_disorder +
-    mhd.asd +
-    mhd.addadhd +
-    mhd.personality_disorder +
+    smoking_status_labelled +
+    physical_health_comorbidities_labelled +
+    mental_health_comorbidities_labelled +
+    depressive_and_anxiety_comorbidity_labelled +
+    eating_disorders_labelled +
+    OCRDs_labelled +
+    psychotic_and_biploar_disorder_labelled +
+    autistic_spectrum_disorder +
+    ADHD_ADD_labelled +
+    personality_disorder_labelled +
     startDate + 
-    kit_returned +
-    joined_coping_first_invitation,
-  family = "binomial",
+    kit_returned_labelled +
+    joined_coping_first_invitation_labelled,
   data = glad_coping_participation_raw)
 
 #Check output
-summary(full_LR_model)
+summary(complete_MLR_model)
+
+```
+
+```{r Create tidy output for complete MLR model}
+
+#Create tidy model output
+complete_MLR_model_tidy <- tidy(
+  complete_MLR_model,
+  conf.int = T) %>%
+  mutate(
+    Variable = complete_LR_model_names,
+    Significance = if_else(
+      p.value < 0.05, 
+      1,
+      0
+      ) %>%
+    recode_factor(
+        "0" = "Not-significant",
+        "1" = "Significant"
+      )) %>%
+  select(
+    Variable,
+    estimate,
+    `CI 95% lower` = conf.low,
+    `CI 95% upper` = conf.high,
+    `p value` = p.value,
+    Significance
+  )
+
+complete_MLR_model_tidy %>% 
+  head(46)
+
+#Create kable output
+complete_MLR_model_kable <- kable(complete_MLR_model_tidy[-c(1), ],
+      digits = 2)
+
+```
+
+#Multiple linear regression assumptions
+
+Linear regression assumptions:
+https://thatdatatho.com/assumption-checking-for-multiple-linear-regression/
+
+##Linearity
+
+The second aim is to investigate whether any of the sociodemographic, psychiatric
+and/or health factors explain any variance in the overall number of COPING follow-ups
+the GLAD participant take part in.
+
+```{r Create linear ggplot2 function}
+
+linear_plot <- function(df, IV, DV){
+  
+  IV_data <- df[[IV]]
+  IV_data_NA_removed <- IV_data %>% 
+    na.omit()
+  
+  DV_data <- df[[DV]]
+  DV_data_NA_removed <- DV_data %>% 
+    na.omit()
+  
+  df %>% 
+    ggplot(aes(y = DV_data, x = IV_data)) +
+    geom_point(position = position_jitter(w = 0.1, h = 0.1),
+            alpha = 0.3) +
+  geom_smooth(method = lm, se = TRUE, col="black") +
+    labs(y = DV,
+        x = IV) +
+    theme(panel.grid.major.y = element_line(size = 0.5,
+                                        linetype = 'dashed',
+                                        colour = "gray"),
+        axis.text.x = element_text(colour="black", size = 12),
+        axis.text.y = element_text(colour="black", size = 12),
+        axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank(),
+        panel.background = element_blank())
+
+}
+
+```
+
+```{r Check Linear relationships between sociodemographic IVs and DV}
+
+#Get IV variable names without Intercept and startDate
+linear_relationship_vars <- glad_coping_participation_raw %>% 
+  select(all_of(sociodemographic_variable_names)) %>% 
+  colnames()
+
+linear_relationship_vars %>% 
+  map(linear_plot, 
+      df = glad_coping_participation_raw,
+      DV = "total_COPING_waves")
+
+```
+
+##Homoscedasticity
+
+```{r Check VIF values for complete model}
+
+sociodemographic_MLR_model %>% 
+  vif()
+
+```
+
+##Diagnostic plots
+
+```{r Create diagnostic plots for complete MLR model}
+
+plot(sociodemographic_MLR_model, which = 1:4)
 
 ```
