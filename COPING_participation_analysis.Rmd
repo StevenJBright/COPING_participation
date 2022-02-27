@@ -29,8 +29,9 @@ options(scipen = 999)
 #install.packages("broom")
 #install.packages("knitr)
 #install.packages("car")
-#install.packages("tidyverse")
 #install.packages("rstatix")
+#install.packages("pscl")
+#install.packages("tidyverse")
 
 ```
 
@@ -40,6 +41,7 @@ library(broom)
 library(knitr)
 library(car)
 library(rstatix)
+library(pscl)
 library(tidyverse)
 
 ```
@@ -546,9 +548,9 @@ LR.model_data %>%
 
 #Zero-inflated negative binomial regression
 
-```{r Run complete MLR model}
+```{r Run complete ZINB model}
 
-complete_MLR_model <- lm(
+ZINB_model <- lm(
   formula = completed_baseline ~ age_cleaned + 
     gender_recode_labelled +
     highest_education_labelled +
