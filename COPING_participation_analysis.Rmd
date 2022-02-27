@@ -466,15 +466,37 @@ Check the relationship between the continuous predictor variables and the logit
 of the DV. This can be inspected visually by creating scatterplots between each
 predictor and the logit values.
 
+
+Note: We have to remove values that have 0 because when you log transform
+a variable, it throws an error if there are any 0's in the variable. See:
+https://stackoverflow.com/questions/31177795/error-in-glm-in-r
+
+```{r Remove observations that have 0 on the continuous variables}
+
+glad_coping_participation_lin <- glad_coping_participation_raw %>% 
+  filter(gad.sum_score != 0,
+         phq.sum_score != 0,
+         audit.sum_score != 0)
+
+#Check new dimensions
+glad_coping_participation_raw %>% 
+  dim()
+
+glad_coping_participation_lin %>% 
+  dim()
+
+```
+
+
 ```{r LR model with interaction terms for continuous variables}
 
 linearity_model <- glm(
   formula = completed_baseline_labelled ~ age_cleaned*log(age_cleaned) +
-    #gad.sum_score*log(gad.sum_score),
-    #phq.sum_score*log(phq.sum_score),
-    #audit.sum_score*log(audit.sum_score),
+    gad.sum_score*log(gad.sum_score) +
+    phq.sum_score*log(phq.sum_score) +
+    audit.sum_score*log(audit.sum_score),
   family = "binomial",
-  data = glad_coping_participation_raw
+  data = glad_coping_participation_lin
 )
 
 linearity_model %>% 
