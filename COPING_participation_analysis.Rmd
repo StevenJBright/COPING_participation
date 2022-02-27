@@ -31,6 +31,7 @@ options(scipen = 999)
 #install.packages("car")
 #install.packages("rstatix")
 #install.packages("pscl")
+#install.packages("stargazer")
 #install.packages("tidyverse")
 
 ```
@@ -42,6 +43,7 @@ library(knitr)
 library(car)
 library(rstatix)
 library(pscl)
+library(stargazer)
 library(tidyverse)
 
 ```
@@ -582,3 +584,12 @@ ZINB_model <- zeroinfl(
 summary(ZINB_model)
 
 ```
+
+```{r Inspect tidy output from ZINB model}
+
+stargazer(ZINB_model, 
+          zero.component = FALSE, 
+          type = "text")
+
+```
+
