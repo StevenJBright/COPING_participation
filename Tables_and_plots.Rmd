@@ -409,7 +409,8 @@ continuous_variables <- c(
   "age_cleaned",
   "gad.sum_score",
   "phq.sum_score",
-  "audit.sum_score"
+  "audit.sum_score",
+  "MH_disorders_total_count"
 )
 
 ```
