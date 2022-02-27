@@ -418,8 +418,8 @@ continuous_variables <- c(
 
 glad_coping_participation_desc <- glad_coping_participation %>% 
   select(all_of(continuous_variables),
-         completed_baseline,
-         total_COPING_waves)
+         completed_baseline_labelled,
+         total_COPING_waves_binary_labelled)
 
 glad_coping_participation_desc %>% 
   summarise(across(all_of(continuous_variables),
@@ -432,7 +432,7 @@ glad_coping_participation_desc %>%
 ```{r Calculate descriptive statistics grouped by COPING baseline completion}
 
 glad_coping_participation_desc %>% 
-  group_by(completed_baseline) %>% 
+  group_by(completed_baseline_labelled) %>% 
   summarise(
     across(all_of(continuous_variables), 
            list(m = mean, 
@@ -442,6 +442,18 @@ glad_coping_participation_desc %>%
 
 ```
 
+```{r Calculate descriptive statistics grouped by binary follow-up survey count}
+
+glad_coping_participation_desc %>% 
+  group_by(total_COPING_waves_binary_labelled) %>% 
+  summarise(
+    across(all_of(continuous_variables), 
+           list(m = mean, 
+                std_d = sd), 
+           na.rm = TRUE)
+    )
+
+```
 
 ##COPING baseline participation table
 
