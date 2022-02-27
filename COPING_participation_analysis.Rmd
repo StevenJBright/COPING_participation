@@ -466,6 +466,25 @@ Check the relationship between the continuous predictor variables and the logit
 of the DV. This can be inspected visually by creating scatterplots between each
 predictor and the logit values.
 
+```{r LR model with interaction terms for continuous variables}
+
+linearity_model <- glm(
+  formula = completed_baseline_labelled ~ age_cleaned*log(age_cleaned) +
+    #gad.sum_score*log(gad.sum_score),
+    #phq.sum_score*log(phq.sum_score),
+    #audit.sum_score*log(audit.sum_score),
+  family = "binomial",
+  data = glad_coping_participation_raw
+)
+
+linearity_model %>% 
+  summary()
+
+```
+
+
+
+
 ```{r Predict the probability (p) of participating in COPING baseline}
 
 COPING_baseline_probabilities <- complete_LR_model %>% 
