@@ -403,20 +403,42 @@ of those participants who completed the follow-ups/baseline only participants
 
 ##Descriptive statistics
 
+```{r Create vector of continuous variables}
+
+continuous_variables <- c(
+  "age_cleaned",
+  "gad.sum_score",
+  "phq.sum_score",
+  "audit.sum_score"
+)
+
+```
+
 ```{r Calculate descriptive statistics for continous variables}
 
 glad_coping_participation_desc <- glad_coping_participation %>% 
-  select(age_cleaned,
-         gad.sum_score,
-         phq.sum_score,
-         audit.sum_score)
+  select(all_of(continuous_variables),
+         completed_baseline,
+         total_COPING_waves)
 
 glad_coping_participation_desc %>% 
-  map(function(x){
-    mean_v = mean(x)
-    standard_d = sd(x)
-    return(list(mean = mean_v, sd = standard_d))
-  })
+  summarise(across(all_of(continuous_variables),
+                   list(m = mean,
+                        std_d = sd),
+                   na.rm = TRUE))
+
+```
+
+```{r Calculate descriptive statistics grouped by COPING baseline completion}
+
+glad_coping_participation_desc %>% 
+  group_by(completed_baseline) %>% 
+  summarise(
+    across(all_of(continuous_variables), 
+           list(m = mean, 
+                std_d = sd), 
+           na.rm = TRUE)
+    )
 
 ```
 
