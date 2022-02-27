@@ -338,7 +338,7 @@ complete_LR_model <- glm(
     audit.sum_score +
     smoking_status_labelled +
     physical_health_comorbidities_labelled +
-    mental_health_comorbidities_labelled +
+    MH_disorders_total_count +
     eating_disorders_labelled +
     OCRDs_labelled +
     psychotic_and_biploar_disorder_labelled +
