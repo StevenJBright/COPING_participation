@@ -391,13 +391,35 @@ demographics_COPING_waves_plot <- grid.arrange(ethnic_minority_COPING_waves_plot
 
 #Summary tables
 
-Want to create x2 tables
+We want to caclucate/create three things:
 
-- One summarising the sociodemographic and psychiatric characteristics of those
-participants who did/didn't complete the COPING baseline
+- Descriptive statistics for continuous variables
 
-- One summarising the sociodemographics and psychiatric characteristics of those
-participants who completed the follow-ups/baseline only participants
+- Create a table summarising the sociodemographic and psychiatric characteristics 
+of those participants who did/didn't complete the COPING baseline
+
+- Create a table summarising the sociodemographics and psychiatric characteristics 
+of those participants who completed the follow-ups/baseline only participants
+
+##Descriptive statistics
+
+```{r Calculate descriptive statistics for continous variables}
+
+glad_coping_participation_desc <- glad_coping_participation %>% 
+  select(age_cleaned,
+         gad.sum_score,
+         phq.sum_score,
+         audit.sum_score)
+
+glad_coping_participation_desc %>% 
+  map(function(x){
+    mean_v = mean(x)
+    standard_d = sd(x)
+    return(list(mean = mean_v, sd = standard_d))
+  })
+
+```
+
 
 ##COPING baseline participation table
 
