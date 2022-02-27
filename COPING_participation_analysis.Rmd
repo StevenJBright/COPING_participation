@@ -32,6 +32,7 @@ options(scipen = 999)
 #install.packages("rstatix")
 #install.packages("pscl")
 #install.packages("stargazer")
+#install.packages("boot")
 #install.packages("tidyverse")
 
 ```
@@ -44,6 +45,7 @@ library(car)
 library(rstatix)
 library(pscl)
 library(stargazer)
+library(boot)
 library(tidyverse)
 
 ```
@@ -585,6 +587,24 @@ summary(ZINB_model)
 
 ```
 
+```{r exponentiate the ZINB coefficients}
+exp(coef((ZINB_model)))
+```
+
+```{r ZINB as percentage}
+round((exp(coef(ZINB_model))-1)*100)
+```
+
+Pseudo r-squared 
+- use Nagelkerke (Cragg and Uhler) in the output regression summary table
+```{r ZINB model nagelkerke}
+nagelkerke(ZINB_model)
+```
+
+```{r Calculate confidence intervals for ZINB model}
+confint(ZINB_model)
+```
+
 ```{r Inspect tidy output from ZINB model}
 
 stargazer(ZINB_model, 
@@ -601,45 +621,73 @@ https://stackoverflow.com/questions/58002334/how-to-add-confidence-intervals-for
 
 ```{r Get predicted ZINB values}
 
-ZINB_predict <- ZINB_model %>% 
-  predict()
+#ZINB_predict <- ZINB_model %>% 
+#  predict()
 
 #Check output
-ZINB_predict %>% 
-  head()
+#ZINB_predict %>% 
+#  head()
 
 ```
 
 ```{r Define stat function}
 
-stat <- function(df, inds) {
-    model <- formula(total_COPING_waves ~ age_cleaned + 
-    gender_recode_labelled +
-    highest_education_labelled +
-    ethnicity_labelled +
-    employment_labelled +
-    partnership_status_labelled +
-    phq.sum_score +
-    gad.sum_score +
-    audit.sum_score +
-    smoking_status_labelled +
-    physical_health_comorbidities_labelled +
-    MH_disorders_total_count +
-    eating_disorders_labelled +
-    OCRDs_labelled +
-    psychotic_and_biploar_disorder_labelled +
-    asd_labelled +
-    ADHD_ADD_labelled +
-    personality_disorder_labelled +
-    PTSD_labelled +
-    kit_returned_labelled +
-    joined_coping_first_invitation_labelled)
-    predict(
-        zeroinfl(model, 
-                 dist = "negbin", 
-                 link = "logit", 
-                 data = df[inds, ]),
-        newdata = df)
-}
+#stat <- function(df, inds) {
+#    model <- formula(total_COPING_waves ~ age_cleaned + 
+#    gender_recode_labelled +
+#    highest_education_labelled +
+#    ethnicity_labelled +
+#    employment_labelled +
+#    partnership_status_labelled +
+#    phq.sum_score +
+#    gad.sum_score +
+#    audit.sum_score +
+#    smoking_status_labelled +
+#    physical_health_comorbidities_labelled +
+#    MH_disorders_total_count +
+#    eating_disorders_labelled +
+#    OCRDs_labelled +
+#    psychotic_and_biploar_disorder_labelled +
+#    asd_labelled +
+#    ADHD_ADD_labelled +
+#    personality_disorder_labelled +
+#    PTSD_labelled +
+#    kit_returned_labelled +
+#    joined_coping_first_invitation_labelled)
+#    predict(
+#        zeroinfl(model, 
+#                 dist = "negbin", 
+#                 link = "logit", 
+#                 data = df[inds, ]),
+#        newdata = df)
+#}
 
 ```
+
+```{r Run bootstrapping with stat function}
+
+#set.seed(2018)
+#res <- boot(glad_coping_participation_raw, 
+#            stat, 
+#            R = 100)
+
+```
+
+```{r Calculate confidence intervals}
+
+#CI <- setNames(
+#  as.data.frame(
+#    t(
+#      sapply(1:nrow(glad_coping_participation_raw), 
+#             function(row)
+#               boot.ci(res, 
+#                       conf = 0.95, 
+#                       type = "basic", 
+#                       index = row)$basic[, 4:5])
+#      )
+#    ),
+#    c("lower", "upper")
+#  )
+
+```
+
