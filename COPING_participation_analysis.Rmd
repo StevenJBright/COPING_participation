@@ -548,10 +548,10 @@ LR.model_data %>%
 
 #Zero-inflated negative binomial regression
 
-```{r Run complete ZINB model}
+```{r Run simplified ZINB model}
 
 ZINB_model <- zeroinfl(
-  formula = completed_baseline ~ age_cleaned + 
+  formula = total_COPING_waves ~ age_cleaned + 
     gender_recode_labelled +
     highest_education_labelled +
     ethnicity_labelled +
@@ -563,7 +563,6 @@ ZINB_model <- zeroinfl(
     smoking_status_labelled +
     physical_health_comorbidities_labelled +
     MH_disorders_total_count +
-    depressive_and_anxiety_comorbidity_labelled +
     eating_disorders_labelled +
     OCRDs_labelled +
     psychotic_and_biploar_disorder_labelled +
@@ -571,7 +570,7 @@ ZINB_model <- zeroinfl(
     ADHD_ADD_labelled +
     personality_disorder_labelled +
     PTSD_labelled +
-    startDate + 
+    #startDate + 
     kit_returned_labelled +
     joined_coping_first_invitation_labelled,
   data = glad_coping_participation_raw,
