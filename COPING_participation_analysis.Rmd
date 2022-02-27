@@ -593,3 +593,20 @@ stargazer(ZINB_model,
 
 ```
 
+##Get confidence intervals for ZINB model
+
+This stackoverflow page walks through how you can get CIs for a ZINB model
+via boostrapping:
+https://stackoverflow.com/questions/58002334/how-to-add-confidence-intervals-for-a-zero-inflated-negative-binomial-function-i
+
+```{r Get predicted ZINB values}
+
+ZINB_predict <- ZINB_model %>% 
+  predict()
+
+#Check output
+ZINB_predict %>% 
+  head()
+
+```
+
