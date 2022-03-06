@@ -509,6 +509,13 @@ summary(exploratory_LR_model)
 
 ```
 
+```{r Calculate nagelkerke effect size}
+
+exploratory_LR_model %>% 
+  nagelkerke()
+
+```
+
 ```{r Put complete LR model names into a vector}
 
 #Put all LR variable names into vector in the order they appear in summary(model4)
