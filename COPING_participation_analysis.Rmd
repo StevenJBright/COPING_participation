@@ -706,7 +706,23 @@ LR.model_data %>%
 
 ```
 
-#Zero-inflated negative binomial regression
+#Aim 2 regression models
+
+For aim 2, we want to see which variables are associated with participating
+in the COPING follow-up surveys. We will run a zero-inflated negative binomial
+regression to test for this. However, we will also run a negative binomial 
+regression for comparison purposes as they're often reported together in a 
+single table.
+
+##Negative binomial regression
+
+```{r Run negative binomial regression}
+
+
+
+```
+
+##Zero-inflated negative binomial regression
 
 ```{r Run ZINB model}
 
