@@ -750,6 +750,10 @@ summary(negative_binomial_model)
 
 ```
 
+```{r Exponentiate the negative binomial coefficients}
+negative_binomial_model$family$linkinv(coef(negative_binomial_model))
+```
+
 ##Zero-inflated negative binomial regression
 
 ```{r Run ZINB model}
