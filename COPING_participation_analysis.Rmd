@@ -729,7 +729,7 @@ summary(ZINB_model)
 
 ```
 
-```{r exponentiate the ZINB coefficients}
+```{r Exponentiate the zero-inflated coefficients}
 exp(coef((ZINB_model)))
 ```
 
