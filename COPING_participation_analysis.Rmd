@@ -64,6 +64,12 @@ source("..//COPING_participation_paths.r")
 
 ```
 
+```{r Source functions}
+
+source("..//COPING_participation_functions.r")
+
+```
+
 ```{r Read in glad coping participation data}
 
 glad_coping_participation_raw <- read_rds(paste0(processed_data_path, processed_data_name))
@@ -764,6 +770,46 @@ round((negative_binomial_model$family$linkinv(coef(negative_binomial_model))-1)*
 
 negative_binomial_model %>% 
   nagelkerke()
+
+```
+
+```{r}
+
+complete_negative_binomial_names <- complete_LR_model_names[!("startDate" %in% complete_LR_model_names)]
+
+#Check startDate has been removed
+complete_negative_binomial_names
+
+```
+
+
+```{r Create tidy output for the NB model}
+
+negative_binomial_model_tidy <- negative_binomial_model %>% 
+   tidy(
+    conf.int = TRUE,
+    exponentiate = TRUE
+    ) %>% 
+  mutate(
+    Variable =
+  recode_factor(
+    term,
+    "patients_biological_sexFemale" = "Female",
+    "child.parent.pre.age_yrs" = "Age [years]"
+    )
+  ) %>%  
+  select( 
+    Variable,
+    Estimate = estimate,
+    SE = std.error,
+    z_value = statistic, 
+    p_value = p.value,
+    CI_low = conf.low, 
+    CI_high = conf.high
+  )
+
+negative_binomial_model_tidy %>% 
+  head(nrow(negative_binomial_model_tidy))
 
 ```
 
