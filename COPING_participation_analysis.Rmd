@@ -755,7 +755,16 @@ negative_binomial_model$family$linkinv(coef(negative_binomial_model))
 ```
 
 ```{r COPING follow-up waves NB percentage}
+
 round((negative_binomial_model$family$linkinv(coef(negative_binomial_model))-1)*100)
+
+```
+
+```{r Caclulate nagelkerke effect size for NB model}
+
+negative_binomial_model %>% 
+  nagelkerke()
+
 ```
 
 ##Zero-inflated negative binomial regression
