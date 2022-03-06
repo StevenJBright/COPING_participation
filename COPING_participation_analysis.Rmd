@@ -754,6 +754,10 @@ summary(negative_binomial_model)
 negative_binomial_model$family$linkinv(coef(negative_binomial_model))
 ```
 
+```{r COPING follow-up waves NB percentage}
+round((negative_binomial_model$family$linkinv(coef(negative_binomial_model))-1)*100)
+```
+
 ##Zero-inflated negative binomial regression
 
 ```{r Run ZINB model}
