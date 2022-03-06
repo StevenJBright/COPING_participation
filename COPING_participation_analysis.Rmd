@@ -550,6 +550,46 @@ exploratory_LR_model_names <- c(
 
 ```
 
+```{r Create tidy output for complete LR model}
+
+#Create tidy model output
+exploratory_LR_model_tidy <- tidy(
+  exploratory_LR_model,
+  exponentiate = T,
+  conf.int = T) %>%
+  mutate(
+    Variable = exploratory_LR_model_names,
+    Significance = if_else(
+      p.value < 0.05, 
+      1,
+      0
+      ) %>%
+    recode_factor(
+        "0" = "Not-significant",
+        "1" = "Significant"
+      )) %>%
+  select(
+    Variable,
+    OR = estimate,
+    `CI 95% lower` = conf.low,
+    `CI 95% upper` = conf.high,
+     p.value,
+    Significance
+  ) %>% 
+  mutate(
+    adj.p.value = p.adjust(p.value, 
+                           "bonferroni"),
+    adj.significance = case_when(
+      adj.p.value < 0.05 ~ "Significant",
+      adj.p.value >= 0.05 ~ "Not-significant"
+    )
+  )
+
+exploratory_LR_model_tidy %>% 
+  head(nrow(exploratory_LR_model_tidy))
+
+```
+
 #Test assumptions of complete LR model
 
 Checking LR assumptions in R: 
