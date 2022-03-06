@@ -33,6 +33,7 @@ options(scipen = 999)
 #install.packages("pscl")
 #install.packages("stargazer")
 #install.packages("boot")
+#install.packages("stats")
 #install.packages("tidyverse")
 
 ```
@@ -46,6 +47,7 @@ library(rstatix)
 library(pscl)
 library(stargazer)
 library(boot)
+library(stats)
 library(tidyverse)
 
 ```
