@@ -773,9 +773,9 @@ negative_binomial_model %>%
 
 ```
 
-```{r}
+```{r Get names of the predictors in the negative binomial model}
 
-complete_negative_binomial_names <- complete_LR_model_names[!("startDate" %in% complete_LR_model_names)]
+complete_negative_binomial_names <- complete_LR_model_names[complete_LR_model_names %not_in% "startDate"]
 
 #Check startDate has been removed
 complete_negative_binomial_names
