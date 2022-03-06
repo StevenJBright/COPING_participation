@@ -500,6 +500,56 @@ summary(exploratory_LR_model)
 
 ```
 
+```{r Put complete LR model names into a vector}
+
+#Put all LR variable names into vector in the order they appear in summary(model4)
+exploratory_LR_model_names <- c(
+  "Intercept",
+  "age_cleaned",
+  "gender_recode_labelledFemale",
+  "gender_recode_labelledNon-binary/prefer to self-define",
+  "highest_education_labelledA levels/AS levels or equivalent",
+  "highest_education_labelledO levels/GCSEs or equivalent",
+  "highest_education_labelledCSEs or equivalent",
+  "highest_education_labelledNVQ or HND or HNC or equivalent",
+  "highest_education_labelledNone of the above",
+  "ethnicity_labelledMixed",
+  "ethnicity_labelledAsian or Asian British",
+  "ethnicity_labelledBlack or Black British",
+  "ethnicity_labelledArab",
+  "ethnicity_labelledOther",
+  "employment_labelledRetired",
+  "employment_labelledLooking after home and/or family",
+  "employment_labelledUnable to work because of sickness or disability",
+  "employment_labelledUnemployed",
+  "employment_labelledDoing unpaid or voluntary work",
+  "employment_labelledFull or part-time_student",
+  "employment_labelledNone of the above",
+  "partnership_status_labelledRelationship or married/civil partnership",
+  "partnership_status_labelledDivorced/widowed/separated",
+  "phq.sum_score",
+  "gad.sum_score",
+  "audit.sum_score",
+  "smoking_status_labelledI smoke now",
+  "smoking_status_labelledI used to smoke",
+  "physical_health_comorbidities_labelled1 physical health disorder",
+  "physical_health_comorbidities_labelled2+ physical health disorders",
+  "MH_disorders_total_count",
+  "eating_disorders_labelledEating disorder",
+  "OCRDs_labelledOCRDs",
+  "psychotic_and_biploar_disorder_labelledPsychotic and bipolar disorder",
+  "psychotic_and_biploar_disorder_labelledOnly psychotic disorder",
+  "psychotic_and_biploar_disorder_labelledOnly bipolar disorder",
+  "asd_labelledAutistic spectrum disorder",
+  "ADHD_ADD_labelledADHD or ADD disorder",
+  "mhd.personality_disorder_labelledPersonality disorder",
+  "PTSD_labelledPost-traumatic stress disorder",
+  "startDate",
+  "joined_coping_first_invitationCompleted COPING baseline before 1st follow-up"
+)
+
+```
+
 #Test assumptions of complete LR model
 
 Checking LR assumptions in R: 
