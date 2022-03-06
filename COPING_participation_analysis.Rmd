@@ -439,8 +439,16 @@ complete_LR_model_tidy <- tidy(
     OR = estimate,
     `CI 95% lower` = conf.low,
     `CI 95% upper` = conf.high,
-    `p value` = p.value,
+     p.value,
     Significance
+  ) %>% 
+  mutate(
+    adj.p.value = p.adjust(p.value, 
+                           "bonferroni"),
+    adj.significance = case_when(
+      adj.p.value < 0.05 ~ "Significant",
+      adj.p.value >= 0.05 ~ "Not-significant"
+    )
   )
 
 complete_LR_model_tidy %>% 
