@@ -450,6 +450,46 @@ complete_LR_model_tidy %>%
 
 ```
 
+##Run exploratory LR model
+
+During the analysis, we began to think that it may be circular to include
+a measure of participation (providing a saliva kit for the GLAD study) as 
+a predictor of participation. Therefore, we want to re-run the LR model
+without the saliva kit predictor to see to what extent this influences the 
+results.
+
+```{r Run complete LR model}
+
+exploratory_LR_model <- glm(
+  formula = completed_baseline_labelled ~ age_cleaned + 
+    gender_recode_labelled +
+    highest_education_labelled +
+    ethnicity_labelled +
+    employment_labelled +
+    partnership_status_labelled +
+    phq.sum_score + 
+    gad.sum_score +
+    audit.sum_score +
+    smoking_status_labelled +
+    physical_health_comorbidities_labelled +
+    MH_disorders_total_count +
+    eating_disorders_labelled +
+    OCRDs_labelled +
+    psychotic_and_biploar_disorder_labelled +
+    asd_labelled +
+    ADHD_ADD_labelled +
+    personality_disorder_labelled +
+    PTSD_labelled +
+    startDate + 
+    joined_coping_first_invitation_labelled,
+  family = "binomial",
+  data = glad_coping_participation_raw)
+
+#Check output
+summary(exploratory_LR_model)
+
+```
+
 #Test assumptions of complete LR model
 
 Checking LR assumptions in R: 
