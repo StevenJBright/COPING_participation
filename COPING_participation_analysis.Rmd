@@ -775,10 +775,10 @@ negative_binomial_model %>%
 
 ```{r Get names of the predictors in the negative binomial model}
 
-complete_negative_binomial_names <- complete_LR_model_names[complete_LR_model_names %not_in% "startDate"]
+negative_binomial_names <- complete_LR_model_names[complete_LR_model_names %not_in% "startDate"]
 
 #Check startDate has been removed
-complete_negative_binomial_names
+negative_binomial_names
 
 ```
 
@@ -791,21 +791,25 @@ negative_binomial_model_tidy <- negative_binomial_model %>%
     exponentiate = TRUE
     ) %>% 
   mutate(
-    Variable =
-  recode_factor(
-    term,
-    "patients_biological_sexFemale" = "Female",
-    "child.parent.pre.age_yrs" = "Age [years]"
-    )
-  ) %>%  
-  select( 
-    Variable,
-    Estimate = estimate,
-    SE = std.error,
-    z_value = statistic, 
-    p_value = p.value,
-    CI_low = conf.low, 
-    CI_high = conf.high
+    Variable = negative_binomial_names,
+    Significance = if_else(
+      p.value < 0.05,
+      1,
+      0
+    ) %>% 
+      recode_factor(
+        "0" = "Not-significant",
+        "1" = "Significant"
+      )
+    )  %>% 
+  dplyr::select(Variable,
+    estimate,
+    conf.low,
+    conf.high,
+    std.error,
+    statistic, #Z value
+    p.value,
+    Significance
   )
 
 negative_binomial_model_tidy %>% 
