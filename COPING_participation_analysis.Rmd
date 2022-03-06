@@ -34,6 +34,7 @@ options(scipen = 999)
 #install.packages("stargazer")
 #install.packages("boot")
 #install.packages("stats")
+#install.packages("rcompanion")
 #install.packages("tidyverse")
 
 ```
@@ -48,6 +49,7 @@ library(pscl)
 library(stargazer)
 library(boot)
 library(stats)
+library(rcompanion)
 library(tidyverse)
 
 ```
@@ -692,7 +694,7 @@ LR.model_data %>%
 
 #Zero-inflated negative binomial regression
 
-```{r Run simplified ZINB model}
+```{r Run ZINB model}
 
 ZINB_model <- zeroinfl(
   formula = total_COPING_waves ~ age_cleaned + 
