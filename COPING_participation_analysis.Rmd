@@ -806,10 +806,10 @@ negative_binomial_model_tidy <- negative_binomial_model %>%
     estimate,
     conf.low,
     conf.high,
-    std.error,
-    statistic, #Z value
     p.value,
-    Significance
+    Significance,
+    std.error,
+    statistic #Z value
   )
 
 negative_binomial_model_tidy %>% 
