@@ -754,7 +754,7 @@ adj_exploratory_ZINB_model_p_values <- exploratory_ZINB_model_p_values$p %>%
 
 #Create a tibble with a 'signficiant' character column
 adj_exploratory_ZINB_model_p_values_tib <- tibble(
-  adj_p = adj_ZINB_model_p_values,
+  adj_p = adj_exploratory_ZINB_model_p_values,
   adj_significance = if_else(
     adj_p < 0.05,
     1,
