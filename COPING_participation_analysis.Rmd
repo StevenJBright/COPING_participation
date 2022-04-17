@@ -732,3 +732,37 @@ nagelkerke(exploratory_ZINB_model)
 ```{r Calculate confidence intervals for ZINB model}
 confint(exploratory_ZINB_model)
 ```
+
+```{r Get p-values of exploratory ZINB model}
+
+exploratory_ZINB_model_p_values <- parameters::p_value(exploratory_ZINB_model)
+
+#Remove all the rows referring to the negative binomial ("count") model
+exploratory_ZINB_model_p_values <- exploratory_ZINB_model_p_values %>% 
+  select(Parameter, p) %>% 
+  filter(str_detect(Parameter, "count_"))
+
+#Check results
+exploratory_ZINB_model_p_values
+
+```
+
+```{r Adjust the exploratory ZINB model p-values for multiple testing}
+
+adj_exploratory_ZINB_model_p_values <- exploratory_ZINB_model_p_values$p %>% 
+  p.adjust("bonferroni")
+
+#Create a tibble with a 'signficiant' character column
+adj_exploratory_ZINB_model_p_values_tib <- tibble(
+  adj_p = adj_ZINB_model_p_values,
+  adj_significance = if_else(
+    adj_p < 0.05,
+    1,
+    0
+    )
+  )
+
+#Check results
+adj_exploratory_ZINB_model_p_values_tib
+
+```
