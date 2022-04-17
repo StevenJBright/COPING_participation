@@ -645,6 +645,27 @@ ZINB_model_p_values
 
 ```
 
+```{r Adjust the ZINB model p-values for multiple testing}
+
+adj_ZINB_model_p_values <- ZINB_model_p_values$p %>% 
+  p.adjust("bonferroni")
+
+#Create a tibble with a 'signficiant' character column
+adj_ZINB_model_p_values_tib <- tibble(
+  adj_p = adj_ZINB_model_p_values,
+  adj_significance = if_else(
+    adj_p < 0.05,
+    1,
+    0
+    )
+  )
+
+#Check results
+adj_ZINB_model_p_values_tib
+
+```
+
+
 ```{r Inspect tidy output from ZINB model}
 
 stargazer(ZINB_model, 
