@@ -638,7 +638,7 @@ ZINB_model_p_values <- parameters::p_value(ZINB_model)
 #Remove all the rows referring to the negative binomial ("count") model
 ZINB_model_p_values <- ZINB_model_p_values %>% 
   select(Parameter, p) %>% 
-  filter(str_detect(Parameter, "count_"))
+  filter(str_detect(Parameter, "zero_"))
 
 #Check results
 ZINB_model_p_values
@@ -674,7 +674,6 @@ ZINB_model_p_values <- ZINB_model_p_values %>%
 ZINB_model_p_values
 
 ```
-
 
 ```{r Inspect tidy output from ZINB model}
 
