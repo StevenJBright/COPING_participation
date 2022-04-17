@@ -233,7 +233,7 @@ a predictor of participation. Therefore, we want to re-run the LR model
 without the saliva kit predictor to see to what extent this influences the 
 results.
 
-```{r Run complete LR model}
+```{r Run exploratory  LR model}
 
 exploratory_LR_model <- glm(
   formula = completed_baseline_labelled ~ age_cleaned + 
