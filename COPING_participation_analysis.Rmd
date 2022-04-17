@@ -647,21 +647,31 @@ ZINB_model_p_values
 
 ```{r Adjust the ZINB model p-values for multiple testing}
 
-adj_ZINB_model_p_values <- ZINB_model_p_values$p %>% 
+adj_ZINB_p_values <- ZINB_model_p_values$p %>% 
   p.adjust("bonferroni")
 
-#Create a tibble with a 'signficiant' character column
-adj_ZINB_model_p_values_tib <- tibble(
-  adj_p = adj_ZINB_model_p_values,
-  adj_significance = if_else(
-    adj_p < 0.05,
+#Add the adjusted p-values to the p-value model
+ZINB_model_p_values <- cbind(ZINB_model_p_values,
+                             adj_ZINB_p_values)
+
+#Create a significant label variable based on the adjusted p-values
+ZINB_model_p_values <- ZINB_model_p_values %>% 
+  mutate(
+    adj_significance = if_else(
+    adj_ZINB_p_values < 0.05,
     1,
     0
     )
+  ) %>% 
+  select(
+    Parameter,
+    adj_significance,
+    p,
+    adj_ZINB_p_values
   )
 
 #Check results
-adj_ZINB_model_p_values_tib
+ZINB_model_p_values
 
 ```
 
