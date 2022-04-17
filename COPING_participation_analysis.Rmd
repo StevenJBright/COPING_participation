@@ -600,8 +600,8 @@ ZINB_model <- zeroinfl(
     personality_disorder_labelled +
     PTSD_labelled +
     #startDate + 
-    kit_returned_labelled +
-    joined_coping_first_invitation_labelled,
+    kit_returned_labelled,
+    #joined_coping_first_invitation_labelled,
   data = glad_coping_participation_raw,
   dist = "negbin",
   #zero.dist = "binomial",
