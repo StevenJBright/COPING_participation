@@ -36,6 +36,7 @@ options(scipen = 999)
 #install.packages("stats")
 #install.packages("rcompanion")
 #install.packages("MASS")
+#install.packages("sjstats")
 #install.packages("tidyverse")
 
 ```
@@ -52,6 +53,7 @@ library(boot)
 library(stats)
 library(rcompanion)
 library(MASS)
+library(sjstats)
 library(tidyverse)
 
 ```
