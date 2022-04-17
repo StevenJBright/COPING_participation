@@ -36,7 +36,6 @@ options(scipen = 999)
 #install.packages("stats")
 #install.packages("rcompanion")
 #install.packages("MASS")
-#install.packages("sjstats")
 #install.packages("tidyverse")
 
 ```
@@ -53,7 +52,6 @@ library(boot)
 library(stats)
 library(rcompanion)
 library(MASS)
-library(sjstats)
 library(tidyverse)
 
 ```
@@ -631,6 +629,20 @@ nagelkerke(ZINB_model)
 
 ```{r Calculate confidence intervals for ZINB model}
 confint(ZINB_model)
+```
+
+```{r Get p-values of ZINB model}
+
+ZINB_model_p_values <- parameters::p_value(ZINB_model)
+
+#Remove all the rows referring to the negative binomial ("count") model
+ZINB_model_p_values <- ZINB_model_p_values %>% 
+  select(Parameter, p) %>% 
+  filter(str_detect(Parameter, "count_"))
+
+#Check results
+ZINB_model_p_values
+
 ```
 
 ```{r Inspect tidy output from ZINB model}
