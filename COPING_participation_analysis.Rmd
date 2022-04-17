@@ -659,3 +659,21 @@ exploratory_ZINB_model <- zeroinfl(
 summary(exploratory_ZINB_model)
 
 ```
+
+```{r Exponentiate the zero-inflated coefficients}
+exp(coef((exploratory_ZINB_model)))
+```
+
+```{r ZINB as percentage}
+round((exp(coef(exploratory_ZINB_model))-1)*100)
+```
+
+Pseudo r-squared 
+- use Nagelkerke (Cragg and Uhler) in the output regression summary table
+```{r ZINB model nagelkerke}
+nagelkerke(exploratory_ZINB_model)
+```
+
+```{r Calculate confidence intervals for ZINB model}
+confint(exploratory_ZINB_model)
+```
