@@ -208,7 +208,12 @@ complete_LR_model_tidy <- tidy(
   ) %>% 
   mutate(
     adj.p.value = p.adjust(p.value, 
-                           "bonferroni")
+                           "bonferroni"),
+    adj_significance = if_else(
+      adj.p.value < 0.05,
+      1,
+      0
+    )
   )
 
 complete_LR_model_tidy %>% 
