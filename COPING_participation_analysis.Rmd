@@ -256,6 +256,7 @@ exploratory_LR_model <- glm(
     personality_disorder_labelled +
     PTSD_labelled +
     startDate,
+    #kit_returned_labelled,
     #joined_coping_first_invitation_labelled,
   family = "binomial",
   data = glad_coping_participation_raw)
