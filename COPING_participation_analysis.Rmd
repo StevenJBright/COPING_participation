@@ -496,8 +496,8 @@ negative_binomial_model <-
                  personality_disorder_labelled +
                  PTSD_labelled +
                  #startDate + 
-                 kit_returned_labelled +
-                 joined_coping_first_invitation_labelled,
+                 kit_returned_labelled,
+                 #joined_coping_first_invitation_labelled,
                data = glad_coping_participation_raw
                )
 
@@ -559,6 +559,15 @@ negative_binomial_model_tidy <- negative_binomial_model %>%
     Significance,
     std.error,
     statistic #Z value
+  ) %>% 
+  mutate(
+    adj.p.value = p.adjust(p.value, 
+                           "bonferroni"),
+    adj_significance = if_else(
+      adj.p.value < 0.05,
+      1,
+      0
+    )
   )
 
 negative_binomial_model_tidy %>% 
