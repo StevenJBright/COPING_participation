@@ -523,129 +523,9 @@ completed_COPING_baseline_pts %>%
 
 ```
 
-#Correlation matrices
+#Correlations
 
-```{r Create correlation matrix for sociodemographic variables}
-
-#Create character vector of sociodemographic variables
-sociodemographic_variable_names <- c(
-  "age_cleaned",
-  "gender_recode",
-  "highest_education",
-  "dem.questions_based_ethnic_origin",
-  "dem.what_is_your_current_employment_status",
-  "dem.what_is_your_current_maritalrelationship_status",
-  "kit_returned"
-)
-
-#Select correlation variables
-sociodemographic_correlation_vars <- glad_coping_participation %>% 
-  select(all_of(sociodemographic_variable_names))
-
-#Get correlations
-all.corr.mat_sociodemographic <- sociodemographic_correlation_vars %>% 
-  hetcor(use = "pairwise.complete.obs")
-
-```
-
-```{r Save cormat as a matrix object}
-
-all.corr.matrix_sociodemographic <- as.matrix(all.corr.mat_sociodemographic)
-
-```
-
-```{r Save p values}
-
-all.p.matrix_sociodemographic <- as.matrix(all.corr.mat_sociodemographic$tests)
-
-```
-
-```{r Create correlation plot for sociodemographic variables}
-
-all.corr.matrix_sociodemographic %>%
-  corrplot(method = "color", # objects to represent the correlations on plot
-         type = "lower", # only use the lower triangle of the matrix
-         diag = FALSE, # do not show the correlations on the diagonal
-         addgrid.col = NA,
-         addCoef.col = "black", # colour for the correlation coefficients in the plot
-         tl.cex = 0.7, #size of text
-         tl.col = "black",
-         col=colorRampPalette(c("dodgerblue4",
-                                "white",
-                                "firebrick4"))(200), # colours for correlations
-         # Combine with significance
-         p.mat = all.p.matrix_sociodemographic, # Matrix with p values
-         sig.level = 0.01, # Choose significant level
-         insig = "blank") # Nonsignificant correlations have no colour
-
-```
-
-###Psychiatric and health correlation matrix
-
-```{r Get the correlations for the psychiatric and health vars}
-
-#Create character vector of psychiatric and health variables
-psychiatric_and_health_variable_names <- c(
-  "phq.sum_score",
-  "gad.sum_score",
-  "audit.sum_score",
-  "dem.select_the_box_that_best_describes_you",
-  "physical_health_comorbidities",
-  "mental_health_comorbidities",
-  "depressive_and_anxiety_comorbidity",
-  "eating_disorders",
-  "OCRDs",
-  "psychotic_and_biploar_disorder",
-  "mhd.asd",
-  "mhd.addadhd",
-  "mhd.personality_disorder"
-)
-
-#Select correlation variables
-psychiatric_and_health_correlation_vars <- glad_coping_participation %>% 
-  select(all_of(psychiatric_and_health_variable_names))
-
-#Get correlations
-all.corr.mat_psychatric_and_health <- psychiatric_and_health_correlation_vars %>% 
-  hetcor(use = "pairwise.complete.obs")
-
-```
-
-```{r Save cormat as a matrix object}
-
-all.corr.matrix_psychiatric_and_health <- as.matrix(all.corr.mat_psychatric_and_health)
-
-```
-
-```{r Save p values}
-
-all.p.matrix_psychiatric_and_health <- as.matrix(all.corr.mat_psychatric_and_health$tests)
-
-```
-
-```{r Create correlation plot for psychiatric and health variables}
-
-all.corr.matrix_psychiatric_and_health %>%
-  corrplot(method = "color", # objects to represent the correlations on plot
-         type = "lower", # only use the lower triangle of the matrix
-         diag = FALSE, # do not show the correlations on the diagonal
-         addgrid.col = NA,
-         addCoef.col = "black", # colour for the correlation coefficients in the plot
-         tl.cex = 0.7, #size of text
-         tl.col = "black",
-         col=colorRampPalette(c("dodgerblue4",
-                                "white",
-                                "firebrick4"))(200), # colours for correlations
-         # Combine with significance
-         p.mat = all.p.matrix_psychiatric_and_health, # Matrix with p values
-         sig.level = 0.01, # Choose significant level
-         insig = "blank") # Nonsignificant correlations have no colour
-
-```
-
-#Testing 
-
-```{r Correlation variables}
+```{r Calculate correlations}
 
 correlation_vars <- c(
   "age_cleaned",
@@ -654,22 +534,22 @@ correlation_vars <- c(
   "dem.questions_based_ethnic_origin",
   "dem.what_is_your_current_employment_status",
   "dem.what_is_your_current_maritalrelationship_status",
-  "kit_returned",
-  "joined_coping_first_invitation",
   "phq.sum_score",
   "gad.sum_score",
   "audit.sum_score",
   "dem.select_the_box_that_best_describes_you",
   "physical_health_comorbidities",
-  "mental_health_comorbidities",
-  "depressive_and_anxiety_comorbidity",
+  "MH_disorders_total_count",
   "eating_disorders",
   "OCRDs",
   "psychotic_and_biploar_disorder",
-  "mhd.ptsd",
   "mhd.asd",
   "mhd.addadhd",
-  "mhd.personality_disorder"
+  "mhd.personality_disorder",
+  "mhd.ptsd",
+  "kit_returned",
+  "completed_baseline",
+  "total_COPING_waves"
 )
 
 #Select correlation variables
@@ -678,39 +558,17 @@ correlation_vars_data <- glad_coping_participation %>%
 
 #Get correlations
 all.corr.mat <- correlation_vars_data %>% 
-  hetcor(use = "pairwise.complete.obs")
+  cor(use = "pairwise.complete.obs")
 
 ```
 
-```{r Save cormat as a matrix object}
+```{r Plot the correlations}
 
-all.corr.matrix <- as.matrix(all.corr.mat)
-
-```
-
-```{r Save p values}
-
-all.p.matrix <- as.matrix(all.corr.mat$tests)
-
-```
-
-```{r Create corrplot of all variables}
-
-all.corr.matrix %>%
-  corrplot(method = "color", # objects to represent the correlations on plot
-         type = "lower", # only use the lower triangle of the matrix
-         diag = FALSE, # do not show the correlations on the diagonal
-         addgrid.col = NA,
-         addCoef.col = "black", # colour for the correlation coefficients in the plot
-         tl.cex = 0.5, #size of text
-         number.cex = 0.5,
-         tl.col = "black",
-         col=colorRampPalette(c("dodgerblue4",
-                                "white",
-                                "firebrick4"))(200), # colours for correlations
-         # Combine with significance
-         p.mat = all.p.matrix, # Matrix with p values
-         sig.level = 0.01, # Choose significant level
-         insig = "blank")
+all.corr.mat %>% 
+  corrplot(method = "color",
+           addCoef.col = 1,
+           number.cex = 0.3,
+           tl.cex = 0.4,
+           type = "lower")
 
 ```
