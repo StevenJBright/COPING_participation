@@ -198,7 +198,7 @@ complete_LR_model_tidy <- tidy(
         "0" = "Not-significant",
         "1" = "Significant"
       )) %>%
-  select(
+  dplyr::select(
     Variable,
     OR = estimate,
     `CI 95% lower` = conf.low,
