@@ -493,6 +493,13 @@ COPING_waves_table_variable_exclusions <- c(
   "anxiety_disorder_labelled",
   "psychotic_disorder_labelled",
   "bipolar_disorder_labelled",
+  "age_groups_labelled",
+  "joined_coping_first_invitation_labelled",
+  "depressive_and_anxiety_comorbidity_labelled",
+  "personality_cluster_A_labelled",
+  "personality_cluster_B_labelled",
+  "personality_cluster_C_labelled",
+  "mental_health_comorbidities_labelled",
   "completed_baseline_labelled",
   "total_COPING_waves_labelled"
 )
