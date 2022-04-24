@@ -535,8 +535,7 @@ sociodemographic_variable_names <- c(
   "dem.questions_based_ethnic_origin",
   "dem.what_is_your_current_employment_status",
   "dem.what_is_your_current_maritalrelationship_status",
-  "kit_returned",
-  "joined_coping_first_invitation"
+  "kit_returned"
 )
 
 #Select correlation variables
