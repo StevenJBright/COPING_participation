@@ -351,11 +351,12 @@ exploratory_LR_model_tidy <- tidy(
   mutate(
     adj.p.value = p.adjust(p.value, 
                            "bonferroni"),
-    adj_significance = if_else(
-      adj.p.value < 0.05,
-      1,
-      0
-    )
+    adj_significance = case_when(
+        adj.p.value <= 0.001 ~ "***",
+        adj.p.value <= 0.01 ~ "**",
+        adj.p.value <= 0.05 ~ "*",
+        adj.p.value > 0.05 ~ ""
+      )
   )
 
 exploratory_LR_model_tidy %>% 
