@@ -724,3 +724,48 @@ exploratory_ZINB_model_p_values <- exploratory_ZINB_model_p_values %>%
 exploratory_ZINB_model_p_values
 
 ```
+
+```{r Get count p-values of exploratory ZINB model}
+
+exploratory_ZINB_model_count_p_values <- parameters::p_value(exploratory_ZINB_model)
+
+#Remove all the rows referring to the negative binomial ("count") model
+exploratory_ZINB_model_count_p_values <- exploratory_ZINB_model_count_p_values %>% 
+  select(Parameter, p) %>% 
+  filter(str_detect(Parameter, "count_"))
+
+#Check results
+exploratory_ZINB_model_count_p_values
+
+```
+
+```{r Adjust the exploratory ZINB model p-values for multiple testing}
+
+adj_exploratory_ZINB_count_p_values <- exploratory_ZINB_model_count_p_values$p %>% 
+  p.adjust("bonferroni")
+
+#Add the adjusted p-values to the p-value model
+exploratory_ZINB_model_count_p_values <- cbind(exploratory_ZINB_model_count_p_values,
+                                         adj_exploratory_ZINB_count_p_values)
+
+#Create a significant label variable based on the adjusted p-values
+exploratory_ZINB_model_count_p_values <- exploratory_ZINB_model_count_p_values %>% 
+  mutate(
+    adj_significance = case_when(
+        adj_exploratory_ZINB_count_p_values <= 0.001 ~ "***",
+        adj_exploratory_ZINB_count_p_values <= 0.01 ~ "**",
+        adj_exploratory_ZINB_count_p_values <= 0.05 ~ "*",
+        adj_exploratory_ZINB_count_p_values > 0.05 ~ ""
+      )
+  ) %>% 
+  select(
+    Parameter,
+    adj_significance,
+    p,
+    adj_exploratory_ZINB_count_p_values
+  )
+
+#Check results
+exploratory_ZINB_model_count_p_values
+
+```
