@@ -549,11 +549,12 @@ ZINB_model_p_values <- cbind(ZINB_model_p_values,
 #Create a significant label variable based on the adjusted p-values
 ZINB_model_p_values <- ZINB_model_p_values %>% 
   mutate(
-    adj_significance = if_else(
-    adj_ZINB_p_values < 0.05,
-    1,
-    0
-    )
+    adj_significance = case_when(
+        adj_ZINB_p_values <= 0.001 ~ "***",
+        adj_ZINB_p_values <= 0.01 ~ "**",
+        adj_ZINB_p_values <= 0.05 ~ "*",
+        adj_ZINB_p_values > 0.05 ~ ""
+      )
   ) %>% 
   select(
     Parameter,
@@ -660,11 +661,12 @@ exploratory_ZINB_model_p_values <- cbind(exploratory_ZINB_model_p_values,
 #Create a significant label variable based on the adjusted p-values
 exploratory_ZINB_model_p_values <- exploratory_ZINB_model_p_values %>% 
   mutate(
-    adj_significance = if_else(
-    adj_exploratory_ZINB_p_values < 0.05,
-    1,
-    0
-    )
+    adj_significance = case_when(
+        adj_exploratory_ZINB_p_values <= 0.001 ~ "***",
+        adj_exploratory_ZINB_p_values <= 0.01 ~ "**",
+        adj_exploratory_ZINB_p_values <= 0.05 ~ "*",
+        adj_exploratory_ZINB_p_values > 0.05 ~ ""
+      )
   ) %>% 
   select(
     Parameter,
