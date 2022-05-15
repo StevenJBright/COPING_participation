@@ -568,6 +568,51 @@ ZINB_model_p_values
 
 ```
 
+```{r Get p-values of count part of ZINB model}
+
+ZINB_model_count_p_values <- parameters::p_value(ZINB_model)
+
+#Remove all the rows referring to the negative binomial ("count") model
+ZINB_model_count_p_values <- ZINB_model_count_p_values %>% 
+  select(Parameter, p) %>% 
+  filter(str_detect(Parameter, "count_"))
+
+#Check results
+ZINB_model_count_p_values
+
+```
+
+```{r Adjust the ZINB model count p-values for multiple testing}
+
+adj_ZINB_count_p_values <- ZINB_model_count_p_values$p %>% 
+  p.adjust("bonferroni")
+
+#Add the adjusted p-values to the p-value model
+ZINB_model_count_p_values <- cbind(ZINB_model_count_p_values,
+                             adj_ZINB_count_p_values)
+
+#Create a significant label variable based on the adjusted p-values
+ZINB_model_count_p_values <- ZINB_model_count_p_values %>% 
+  mutate(
+    adj_significance = case_when(
+        adj_ZINB_p_values <= 0.001 ~ "***",
+        adj_ZINB_p_values <= 0.01 ~ "**",
+        adj_ZINB_p_values <= 0.05 ~ "*",
+        adj_ZINB_p_values > 0.05 ~ ""
+      )
+  ) %>% 
+  select(
+    Parameter,
+    adj_significance,
+    p,
+    adj_ZINB_count_p_values
+  )
+
+#Check results
+ZINB_model_count_p_values
+
+```
+
 ```{r Inspect tidy output from ZINB model}
 
 stargazer(ZINB_model, 
