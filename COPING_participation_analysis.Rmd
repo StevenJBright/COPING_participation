@@ -508,6 +508,30 @@ ZINB_model %>%
   head()
 ```
 
+```{r Create a significance column for the ZINB model results}
+#Rename p value column
+ZINB_model <- ZINB_model %>% 
+  rename("p_value" = "p value")
+
+#Turn p value column to numeric type instead of character
+ZINB_model$p_value <- as.numeric(ZINB_model$p_value)
+
+#Create significance column with p values
+ZINB_model <- ZINB_model %>% 
+  mutate(
+    significance = case_when(
+        p_value <= 0.001 ~ "***",
+        p_value <= 0.01 ~ "**",
+        p_value <= 0.05 ~ "*",
+        p_value > 0.05 ~ ""
+      )
+  )
+
+#Check significance column
+ZINB_model %>% 
+  head()
+```
+
 Pseudo r-squared 
 - use Nagelkerke (Cragg and Uhler) in the output regression summary table
 ```{r ZINB model nagelkerke}
