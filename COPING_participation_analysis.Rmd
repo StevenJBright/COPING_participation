@@ -508,22 +508,10 @@ ZINB_model %>%
   head()
 ```
 
-```{r Exponentiate the zero-inflated coefficients}
-exp(coef((ZINB_model)))
-```
-
-```{r ZINB as percentage}
-round((exp(coef(ZINB_model))-1)*100)
-```
-
 Pseudo r-squared 
 - use Nagelkerke (Cragg and Uhler) in the output regression summary table
 ```{r ZINB model nagelkerke}
 nagelkerke(ZINB_model)
-```
-
-```{r Calculate confidence intervals for ZINB model}
-confint(ZINB_model)
 ```
 
 ```{r Get p-values of ZINB model}
