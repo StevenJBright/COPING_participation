@@ -470,39 +470,42 @@ For aim 2, we want to see which variables are associated with participating
 in the COPING follow-up surveys. We will run a zero-inflated negative binomial
 regression to test for this.
 
+```{r Put ZINB explanatory variavles into a vector}
+ZINB_variables <- c(
+  "age_cleaned",  
+    "gender_recode_labelled", 
+    "highest_education_labelled",
+    "ethnicity_labelled",
+    "employment_labelled", 
+    "partnership_status_labelled",
+    "phq.sum_score",
+    "gad.sum_score", 
+    "audit.sum_score",
+    "smoking_status_labelled",
+    "physical_health_comorbidities_labelled",
+    "MH_disorders_total_count",
+    "eating_disorders_labelled",
+    "OCRDs_labelled",
+    "psychotic_and_biploar_disorder_labelled",
+    "asd_labelled",
+    "ADHD_ADD_labelled",
+    "personality_disorder_labelled",
+    "PTSD_labelled",
+    "kit_returned_labelled"
+    )
+```
+
 ```{r Run ZINB model}
+ZINB_model <- zeroinf.neg.binomial.estimates(
+  outcome = "total_COPING_waves",
+  explanatory_variables = ZINB_variables,
+  data_set = "glad_coping_participation_raw",
+  name = "ZINB_model"
+)
 
-ZINB_model <- zeroinfl(
-  formula = total_COPING_waves ~ age_cleaned + 
-    gender_recode_labelled +
-    highest_education_labelled +
-    ethnicity_labelled +
-    employment_labelled +
-    partnership_status_labelled +
-    phq.sum_score +
-    gad.sum_score +
-    audit.sum_score +
-    smoking_status_labelled +
-    physical_health_comorbidities_labelled +
-    MH_disorders_total_count +
-    eating_disorders_labelled +
-    OCRDs_labelled +
-    psychotic_and_biploar_disorder_labelled +
-    asd_labelled +
-    ADHD_ADD_labelled +
-    personality_disorder_labelled +
-    PTSD_labelled +
-    #startDate + 
-    kit_returned_labelled,
-    #joined_coping_first_invitation_labelled,
-  data = glad_coping_participation_raw,
-  dist = "negbin",
-  #zero.dist = "binomial",
-  link = "logit")
-
-#Check output
-summary(ZINB_model)
-
+#Check ZINB model output
+ZINB_model %>% 
+  head()
 ```
 
 ```{r Exponentiate the zero-inflated coefficients}
