@@ -760,3 +760,8 @@ exploratory_ZINB_model_count_p_values <- exploratory_ZINB_model_count_p_values %
 exploratory_ZINB_model_count_p_values
 
 ```
+
+```{r Write ZINB_model results to csv file}
+ZINB_model %>% 
+  write_csv("../ZIMB_participation_results")
+```
