@@ -640,39 +640,21 @@ In the same sense of the exploratory LR model, we want to run an exploratory
 ZINB model without the sproviding a saliva kit variable to see if this influences
 the results.
 
+```{r Remove providing a saliva kit from the ZINB_variables}
+exploratory_ZINB_variables <- ZINB_variables[ZINB_variables != "kit_returned_labelled"]
+```
+
 ```{r Run exploratory ZINB model without saliva kit variable}
+exploratory_ZINB_model <- zeroinf.neg.binomial.estimates(
+  outcome = "total_COPING_waves",
+  explanatory_variables = exploratory_ZINB_variables,
+  data_set = "glad_coping_participation_raw",
+  name = "ZINB_model"
+)
 
-exploratory_ZINB_model <- zeroinfl(
-  formula = total_COPING_waves ~ age_cleaned + 
-    gender_recode_labelled +
-    highest_education_labelled +
-    ethnicity_labelled +
-    employment_labelled +
-    partnership_status_labelled +
-    phq.sum_score +
-    gad.sum_score +
-    audit.sum_score +
-    smoking_status_labelled +
-    physical_health_comorbidities_labelled +
-    MH_disorders_total_count +
-    eating_disorders_labelled +
-    OCRDs_labelled +
-    psychotic_and_biploar_disorder_labelled +
-    asd_labelled +
-    ADHD_ADD_labelled +
-    personality_disorder_labelled +
-    PTSD_labelled,
-    #startDate + 
-    #kit_returned_labelled +
-    #joined_coping_first_invitation_labelled,
-  data = glad_coping_participation_raw,
-  dist = "negbin",
-  #zero.dist = "binomial",
-  link = "logit")
-
-#Check output
-summary(exploratory_ZINB_model)
-
+#Check ZINB model output
+exploratory_ZINB_model %>% 
+  head()
 ```
 
 ```{r Exponentiate the zero-inflated coefficients}
