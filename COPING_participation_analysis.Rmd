@@ -644,6 +644,108 @@ ZINB_model %>%
   head()
 ```
 
+```{r Extract odds ratios and CI's from ZINB model}
+#Get OR's and CI's for explanatory variables
+ZINB_model_or_CI <- ZINB_model %>% 
+  filter(
+    Part == "zero"
+  ) %>% 
+  select(
+    "Independent_variable" = "Independent variable",
+    Estimate,
+    "CI_95_low" = "95% CI low",
+    "CI_95_up" = "95% CI up"
+  )
+
+ZINB_model_or_CI
+```
+
+```{r Turn independent variable column into a factor for plot}
+#Create levels vector for explanatory variable column
+ZINB_explanatory_variable_levels <- c(
+  "(Intercept)",
+  "Age",
+  "Female",
+  "Non-binary/prefer to self-define",
+  "A levels/AS levels or equivalent",
+  "GCSEs or CSEs or equivalent",
+  "NVQ or HND or HNC or equivalent",
+  "None of the above edu",
+  "Mixed",
+  "Asian or Asian British",
+  "Black or Black British",
+  "Arab",
+  "Other",
+  "Retired",
+  "Looking after home and/or family",
+  "Sickness or disabled",
+  "Unemployed",
+  "Doing unpaid or voluntary work",
+  "Student",
+  "None of the above employ",
+  "Relationship or married",
+  "Divorced/widowed/separated",
+  "phq.sum_score",
+  "gad.sum_score",
+  "audit.sum_score",
+  "I smoke now",
+  "I used to smoke",
+  "1 physical health disorder",
+  "2+ physical health disorders",
+  "MH_disorders_total_count",
+  "Eating disorder",
+  "OCRDs",
+  "Psychotic and bipolar disorder",
+  "Only psychotic disorder",
+  "Only bipolar disorder",
+  "ASD",
+  "ADHD or ADD disorder",
+  "Personality disorder",
+  "PTSD",
+  "Pt has provided saliva kit"
+)
+
+ZINB_model_or_CI <- ZINB_model_or_CI %>% 
+  mutate(Independent_variable = ZINB_explanatory_variable_levels)
+
+ZINB_model_or_CI$Independent_variable <- factor(ZINB_model_or_CI$Independent_variable,
+                              levels = ZINB_explanatory_variable_levels)
+
+#Check output
+ZINB_model_or_CI
+```
+
+```{r Forest plot of ZINB results}
+plot_ZINB_model <- ZINB_model_or_CI %>% 
+  slice(-1) %>% #remove row number 1 (The intercept) 
+  ggplot(aes(x = Independent_variable, y = Estimate)) +
+  geom_point(shape = 15,
+             size  = 1, 
+             position = "dodge", 
+             color = "black") + 
+  geom_errorbar(aes(ymin  = CI_95_low,
+                    ymax  = CI_95_up),
+                size  = 0.7,
+                position = "dodge", 
+                color= "#EFC10B") +
+  labs(title = "ZINB model of participation in the COPING follow-up surveys",
+         x = "Explanatory variables",
+       y = "Adjusted rate ratios with 95% CI") +
+  coord_flip() + 
+  #scale_y_continuous(breaks = seq(0, 4, 0.5),
+  #                   limits = c(0, 4)) +
+  scale_x_discrete(limits = rev) +
+  geom_hline(yintercept = 1, color = "red", size = 1) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(color = "black"),
+        axis.text.y = element_text(colour = "black"),
+         axis.ticks = element_line(color = "black"))
+
+#Check plot
+plot_ZINB_model
+```
+
 Pseudo r-squared 
 - use Nagelkerke (Cragg and Uhler) in the output regression summary table
 ```{r ZINB model nagelkerke}
