@@ -250,6 +250,32 @@ or_CI <- or_CI %>%
 or_CI
 ```
 
+```{r Forest plot of LR results}
+plot_logit_model <- or_CI %>% 
+  slice(-1) %>% #remove row number 1 (The intercept) 
+  ggplot(aes(x = reorder(variable, AOR), y = AOR)) +
+  geom_point(shape = 15,
+             size  = 1, 
+             width = 0.1,
+             position = "dodge", 
+             color="black") + 
+  geom_errorbar(aes(ymin  = lower_bound,
+                    ymax  = upper_bound),
+                width = 0.2,
+                size  = 0.7,
+                position = "dodge", 
+                color= "#EFC10B") +
+  labs(x = "Explanatory variables",
+       y = "Adjusted odds ratios with 95% CI") +
+  coord_flip(ylim = c(0, 2.5)) + 
+  geom_hline(yintercept = 1, color = "red", size = 1) +
+  theme_bw()
+
+#Check plot
+plot_logit_model
+```
+
+
 ##Run exploratory LR model
 
 During the analysis, we began to think that it may be circular to include
