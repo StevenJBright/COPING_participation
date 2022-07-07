@@ -225,6 +225,31 @@ complete_LR_model_tidy %>%
 
 ```
 
+```{r Extract odds ratios and CI's}
+#Get OR's and CI's for explanatory variables
+or_CI <- round(exp(cbind(coef(complete_LR_model), confint(complete_LR_model))), digits=3) %>% 
+  as.data.frame()
+
+#Create variable column with variable names
+or_CI <- or_CI %>% 
+  mutate(variable=rownames(or_CI)) # extract the variables from rownames
+  
+#Rename and reorder columns
+or_CI <- or_CI %>% 
+  rename("AOR" = "V1",
+         "lower_bound" = "2.5 %",
+         "upper_bound" = "97.5 %"
+         ) %>% 
+  select(
+    variable,
+    AOR,
+    lower_bound,
+    upper_bound
+  )
+
+or_CI
+```
+
 ##Run exploratory LR model
 
 During the analysis, we began to think that it may be circular to include
