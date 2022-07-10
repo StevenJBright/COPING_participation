@@ -45,6 +45,7 @@ library(tidyverse)
 
 ```{r Create colour palettes}
 
+glad_colour <- "#EFC10B"
 glad_coping_palette2 <- c("#EFC10B", "#B7DEE8")
 glad_coping_palette3 <- c("#EFC10B", "#B7DEE8", "#0403ff")
 
@@ -108,10 +109,21 @@ N_followups
 glad_coping_participation %>% 
   filter(total_COPING_waves != 0) %>% 
   ggplot(aes(x = total_COPING_waves)) +
-  geom_histogram() +
+  geom_bar(fill = glad_colour,
+           colour = "black") +
   labs(title = "Distribution of completed follow-up surveys amongst GLAD Study participants",
        subtitle = paste0("No. of pt's who completed at least one follow-up: ", N_followups),
-       caption = paste0("No. of pt's completing no surveys: ", N_no_followups))
+       caption = paste0("No. of pt's completing no surveys: ", N_no_followups),
+       y = "N",
+       x = "No. of surveys completed") +
+  scale_x_continuous(limits = c(NA, NA),
+                   breaks = seq(1, 14, 1)) +
+  geom_text(aes(y = ..prop..,
+                label = ..count..), 
+            stat = "count",
+            vjust = -1,
+            nudge_y = .01) +
+  theme_bw()
 ```
 
 #Plots: Participation in the COPING baseline
