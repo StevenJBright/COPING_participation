@@ -76,6 +76,44 @@ glad_coping_participation %>%
 
 ```
 
+#Create COPING survey completion graph
+This graph will visualise the completion of the COPING surveys across the 
+COPING study.
+
+```{r Visualise distribution of COPING surveys completed}
+glad_coping_participation %>% 
+  group_by(total_COPING_waves) %>% 
+  count()
+```
+
+```{r Get N participants for plot}
+#Number or participants who completed baseline but no follow-up surveys
+N_no_followups <- glad_coping_participation %>% 
+  filter(completed_baseline == 1,
+    total_COPING_waves == 0) %>% 
+  nrow()
+
+#Number of participants who completed baseline survey and at least one survey
+N_followups <- glad_coping_participation %>% 
+  filter(completed_baseline == 1,
+         total_COPING_waves != 0) %>% 
+  nrow()
+
+#Check results
+N_no_followups
+N_followups
+```
+
+```{r Plot COPING surveys completed}
+glad_coping_participation %>% 
+  filter(total_COPING_waves != 0) %>% 
+  ggplot(aes(x = total_COPING_waves)) +
+  geom_histogram() +
+  labs(title = "Distribution of completed follow-up surveys amongst GLAD Study participants",
+       subtitle = paste0("No. of pt's who completed at least one follow-up: ", N_followups),
+       caption = paste0("No. of pt's completing no surveys: ", N_no_followups))
+```
+
 #Plots: Participation in the COPING baseline
 
 Will create individual plots of demographic variables before combining them into
