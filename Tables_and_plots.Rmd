@@ -118,6 +118,8 @@ glad_coping_participation %>%
        x = "No. of surveys completed") +
   scale_x_continuous(limits = c(NA, NA),
                    breaks = seq(1, 14, 1)) +
+  scale_y_continuous(limits = c(0, 2000),
+                     breaks = seq(0, 2000, 500)) +
   geom_text(aes(y = ..prop..,
                 label = ..count..), 
             stat = "count",
