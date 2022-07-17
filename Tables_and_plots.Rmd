@@ -592,6 +592,7 @@ correlation_vars <- c(
   "dem.select_the_box_that_best_describes_you",
   "physical_health_comorbidities",
   "MH_disorders_total_count",
+  "depressive_and_anxiety_comorbidity",
   "eating_disorders",
   "OCRDs",
   "psychotic_and_biploar_disorder",
