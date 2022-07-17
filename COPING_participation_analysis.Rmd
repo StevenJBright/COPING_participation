@@ -64,7 +64,8 @@ glad_coping_participation %>%
   head()
 ```
 
-#Create model formulas
+#Model inputs
+##Formulas
 
 ```{r Define explanatory and outcome variables}
 #Create explanatory variables vector
@@ -167,54 +168,11 @@ exploratory_ZINB_model1_formula <- as.formula(paste(coping_baseline_outcome,
 exploratory_ZINB_model2_formula <- exploratory_ZINB_model1_formula
 ```
 
-#Aim 1 Logistic regression model
-
-Our first aim is to see whether participation in the COPING baseline is 
-explained by the sociodemographic, mental and physical health characteristics
-of the GLAD Study participants.
-
-```{r Run complete LR model}
-#Note: Have left out the "depressive_and_anxiety_comorbidity_labelled" variable
-#because this is acting as the reference group for MH diagnoses.
-
-complete_LR_model <- glm(
-  formula = completed_baseline_labelled ~ age_cleaned + 
-    gender_recode_labelled +
-    highest_education_labelled +
-    ethnicity_labelled +
-    employment_labelled +
-    partnership_status_labelled +
-    phq.sum_score + 
-    gad.sum_score +
-    audit.sum_score +
-    smoking_status_labelled +
-    physical_health_comorbidities_labelled +
-    MH_disorders_total_count +
-    eating_disorders_labelled +
-    OCRDs_labelled +
-    psychotic_and_biploar_disorder_labelled +
-    asd_labelled +
-    ADHD_ADD_labelled +
-    personality_disorder_labelled +
-    PTSD_labelled +
-    startDate + 
-    kit_returned_labelled,
-    #joined_coping_first_invitation_labelled,
-  family = "binomial",
-  data = glad_coping_participation)
-
-#Check output
-summary(complete_LR_model)
-```
-
-```{r Calculate nagelkerke effect size}
-complete_LR_model %>% 
-  nagelkerke()
-```
+##Reference groups
+This is for creating tidy output from the models.
 
 ```{r Put complete LR model names into a vector}
-#Put all LR variable names into vector in the order they appear in summary(model4)
-complete_LR_model_names <- c(
+aim1_LR_model_names <- c(
   "Intercept",
   "age_cleaned",
   "gender_recode_labelledFemale",
@@ -244,6 +202,9 @@ complete_LR_model_names <- c(
   "smoking_status_labelledI used to smoke",
   "physical_health_comorbidities_labelled1 physical health disorder",
   "physical_health_comorbidities_labelled2+ physical health disorders",
+  "depressive_and_anxiety_comorbidity_labelledDepressive and anxiety disorder",
+  "depressive_and_anxiety_comorbidity_labelledDepressive disorder only",
+  "depressive_and_anxiety_comorbidity_labelledAnxiety disorder only",
   "MH_disorders_total_count",
   "eating_disorders_labelledEating disorder",
   "OCRDs_labelledOCRDs",
@@ -260,14 +221,35 @@ complete_LR_model_names <- c(
 )
 ```
 
+#Aim 1 Logistic regression model
+
+Our first aim is to see whether participation in the COPING baseline is 
+explained by the sociodemographic, mental and physical health characteristics
+of the GLAD Study participants.
+
+```{r Run complete LR model}
+aim1_LR_model <- glm(
+  formula = aim1_baseline_participation_formula,
+  family = "binomial",
+  data = glad_coping_participation)
+
+#Check output
+summary(aim1_LR_model)
+```
+
+```{r Calculate nagelkerke effect size}
+aim1_LR_model %>% 
+  nagelkerke()
+```
+
 ```{r Create tidy output for complete LR model}
 #Create tidy model output
-complete_LR_model_tidy <- tidy(
-  complete_LR_model,
+aim1_LR_model_tidy <- tidy(
+  aim1_LR_model,
   exponentiate = T,
   conf.int = T) %>%
   mutate(
-    Variable = complete_LR_model_names,
+    Variable = aim1_LR_model_names,
     Significance = if_else(
       p.value < 0.05, 
       1,
@@ -296,14 +278,106 @@ complete_LR_model_tidy <- tidy(
       )
   )
 
-complete_LR_model_tidy %>% 
-  head(nrow(complete_LR_model_tidy))
+#Check output
+aim1_LR_model_tidy
 ```
+
+##Test model assumptions
+
+Checking LR assumptions in R: 
+http://www.sthda.com/english/articles/36-classification-methods-essentials/148-logistic-regression-assumptions-and-diagnostics-in-r/
+
+###Multicollinearity
+
+Check that all IVs are not highly correlated.
+
+```{r Get VIF values of final model}
+
+aim1_LR_model_VIF <- aim1_LR_model %>% 
+  vif()
+
+aim1_LR_model_VIF
+
+```
+
+###Linearity
+
+Check the relationship between the continuous predictor variables and the logit
+of the DV. This can be inspected visually by creating scatterplots between each
+predictor and the logit values.
+
+Note: We have to remove values that have 0 because when you log transform
+a variable, it throws an error if there are any 0's in the variable. See:
+https://stackoverflow.com/questions/31177795/error-in-glm-in-r
+
+```{r Remove observations that have 0 on the continuous variables}
+
+glad_coping_participation_lin <- glad_coping_participation %>% 
+  filter(gad.sum_score != 0,
+         phq.sum_score != 0,
+         audit.sum_score != 0)
+
+#Check new dimensions
+glad_coping_participation %>% 
+  dim()
+
+glad_coping_participation_lin %>% 
+  dim()
+
+```
+
+```{r LR model with interaction terms for continuous variables}
+
+linearity_model <- glm(
+  formula = completed_baseline_labelled ~ age_cleaned*log(age_cleaned) +
+    gad.sum_score*log(gad.sum_score) +
+    phq.sum_score*log(phq.sum_score) +
+    audit.sum_score*log(audit.sum_score),
+  family = "binomial",
+  data = glad_coping_participation_lin
+)
+
+linearity_model %>% 
+  summary()
+
+```
+
+###Outliers
+
+Anything > 1 is a cause for concern.
+
+```{r Check cooks distance values in LR model}
+plot(aim1_LR_model,
+     which = 4)
+```
+
+```{r Extract model results}
+LR.model_data <- augment(aim1_LR_model) %>% 
+  mutate(index = 1:n())
+
+#Check output
+LR.model_data %>% 
+  glimpse()
+```
+
+```{r Plot standardised residuals}
+LR.model_data %>% 
+  ggplot(aes(index, .std.resid)) +
+  geom_point(aes(colour = completed_baseline_labelled), alpha = .5) +
+  theme_minimal()
+```
+
+```{r Check standardised residuals > 3.3}
+LR.model_data %>% 
+  filter(abs(.std.resid) > 3.3)
+```
+
+##Plot LR model 1 results
 
 ```{r Extract odds ratios and CI's}
 #Get OR's and CI's for explanatory variables
-or_CI <- round(exp(cbind(coef(complete_LR_model), 
-                         confint(complete_LR_model))), 
+or_CI <- round(exp(cbind(coef(aim1_LR_model), 
+                         confint(aim1_LR_model))), 
                digits=3) %>% 
   as.data.frame()
 
@@ -806,106 +880,6 @@ providing_kit_LR_model_tidy <- tidy(
 
 #Check output
 providing_kit_LR_model_tidy
-```
-
-#Test assumptions of complete LR model
-
-Checking LR assumptions in R: 
-http://www.sthda.com/english/articles/36-classification-methods-essentials/148-logistic-regression-assumptions-and-diagnostics-in-r/
-
-##Multicollinearity
-
-Check that all IVs are not highly correlated.
-
-```{r Get VIF values of final model}
-
-complete_LR_model_VIF <- complete_LR_model %>% 
-  vif()
-
-complete_LR_model_VIF
-
-```
-
-##Linearity
-
-Check the relationship between the continuous predictor variables and the logit
-of the DV. This can be inspected visually by creating scatterplots between each
-predictor and the logit values.
-
-
-Note: We have to remove values that have 0 because when you log transform
-a variable, it throws an error if there are any 0's in the variable. See:
-https://stackoverflow.com/questions/31177795/error-in-glm-in-r
-
-```{r Remove observations that have 0 on the continuous variables}
-
-glad_coping_participation_lin <- glad_coping_participation %>% 
-  filter(gad.sum_score != 0,
-         phq.sum_score != 0,
-         audit.sum_score != 0)
-
-#Check new dimensions
-glad_coping_participation %>% 
-  dim()
-
-glad_coping_participation_lin %>% 
-  dim()
-
-```
-
-
-```{r LR model with interaction terms for continuous variables}
-
-linearity_model <- glm(
-  formula = completed_baseline_labelled ~ age_cleaned*log(age_cleaned) +
-    gad.sum_score*log(gad.sum_score) +
-    phq.sum_score*log(phq.sum_score) +
-    audit.sum_score*log(audit.sum_score),
-  family = "binomial",
-  data = glad_coping_participation_lin
-)
-
-linearity_model %>% 
-  summary()
-
-```
-
-##Outliers
-
-Anything > 1 is a cause for concern.
-
-```{r Check cooks distance values in LR model}
-
-plot(complete_LR_model,
-     which = 4)
-
-```
-
-```{r Extract model results}
-
-LR.model_data <- augment(complete_LR_model) %>% 
-  mutate(index = 1:n())
-
-#Check output
-LR.model_data %>% 
-  glimpse()
-
-```
-
-```{r Plot standardised residuals}
-
-LR.model_data %>% 
-  ggplot(aes(index, .std.resid)) +
-  geom_point(aes(colour = completed_baseline_labelled), alpha = .5) +
-  theme_minimal()
-
-```
-
-```{r Check standardised residuals > 3.3}
-
-LR.model_data %>% 
-  filter(abs(.std.resid) > 3.3)
-
 ```
 
 #Aim 2: Zero-inflated negative binomial regression
