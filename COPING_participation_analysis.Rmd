@@ -274,6 +274,17 @@ glad_coping_participation_returned_kit <- glad_coping_participation %>%
   filter(kit_returned == 1)
 ```
 
+```{r Change reference group of depression/anxiety comorbidity}
+#We want the depression/anxiety comorbidity to be the reference group because it has the largest N
+##Full sample
+glad_coping_participation$depressive_and_anxiety_comorbidity_labelled <- relevel(glad_coping_participation$depressive_and_anxiety_comorbidity_labelled,
+        ref = "Depressive and anxiety disorder")
+
+##Pt's who have provided a kit
+glad_coping_participation_returned_kit$depressive_and_anxiety_comorbidity_labelled <- relevel(glad_coping_participation_returned_kit$depressive_and_anxiety_comorbidity_labelled,
+        ref = "Depressive and anxiety disorder")
+```
+
 #Aim 1 Logistic regression model
 
 Our first aim is to see whether participation in the COPING baseline is 
