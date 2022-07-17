@@ -339,8 +339,11 @@ aim1_LR_model_tidy <- tidy(
         adj.p.value <= 0.01 ~ "**",
         adj.p.value <= 0.05 ~ "*",
         adj.p.value > 0.05 ~ ""
-      )
-  )
+      ),
+    OR = round(OR, 2),
+    `CI 95% lower` = round(`CI 95% lower`, 2),
+    `CI 95% upper` = round(`CI 95% upper`, 2)
+    )
 
 #Check output
 aim1_LR_model_tidy
