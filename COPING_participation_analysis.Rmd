@@ -636,91 +636,28 @@ it was recommended that a model could be run to investigate what factors
 are associated with providing a saliva kit to the GLAD Study.
 
 ```{r Run LR model to invesitgate factors associated with providing a kit}
-providing_kit_LR_model <- glm(
-  formula = kit_returned_labelled ~ age_cleaned + 
-    gender_recode_labelled +
-    highest_education_labelled +
-    ethnicity_labelled +
-    employment_labelled +
-    partnership_status_labelled +
-    phq.sum_score + 
-    gad.sum_score +
-    audit.sum_score +
-    smoking_status_labelled +
-    physical_health_comorbidities_labelled +
-    MH_disorders_total_count +
-    depressive_and_anxiety_comorbidity_labelled +
-    eating_disorders_labelled +
-    OCRDs_labelled +
-    psychotic_and_biploar_disorder_labelled +
-    asd_labelled +
-    ADHD_ADD_labelled +
-    personality_disorder_labelled +
-    PTSD_labelled +
-    startDate,
+exploratory_LR_model3 <- glm(
+  formula = exploratory_LR_model3_formula,
   family = "binomial",
   data = glad_coping_participation)
 
 #Check output
-summary(providing_kit_LR_model)
+summary(exploratory_LR_model3)
 ```
 
-```{r Create vector of explanatory variables in providing a kit LR model}
-providing_kit_LR_model_names <- c(
-  "Intercept",
-  "age_cleaned",
-  "gender_recode_labelledFemale",
-  "gender_recode_labelledNon-binary/prefer to self-define",
-  "highest_education_labelledA levels/AS levels or equivalent",
-  "highest_education_labelledO levels/GCSEs or CSEs or equivalent",
-  "highest_education_labelledNVQ or HND or HNC or equivalent",
-  "highest_education_labelledNone of the above",
-  "ethnicity_labelledMixed",
-  "ethnicity_labelledAsian or Asian British",
-  "ethnicity_labelledBlack or Black British",
-  "ethnicity_labelledArab",
-  "ethnicity_labelledOther",
-  "employment_labelledRetired",
-  "employment_labelledLooking after home and/or family",
-  "employment_labelledUnable to work because of sickness or disability",
-  "employment_labelledUnemployed",
-  "employment_labelledDoing unpaid or voluntary work",
-  "employment_labelledFull or part-time_student",
-  "employment_labelledNone of the above",
-  "partnership_status_labelledRelationship or married/civil partnership",
-  "partnership_status_labelledDivorced/widowed/separated",
-  "phq.sum_score",
-  "gad.sum_score",
-  "audit.sum_score",
-  "smoking_status_labelledI smoke now",
-  "smoking_status_labelledI used to smoke",
-  "physical_health_comorbidities_labelled1 physical health disorder",
-  "physical_health_comorbidities_labelled2+ physical health disorders",
-  "depressive_and_anxiety_comorbidity_labelledDepressive and anxiety disorder",
-  "depressive_and_anxiety_comorbidity_labelledDepressive disorder only",
-  "depressive_and_anxiety_comorbidity_labelledAnxiety disorder only",
-  "MH_disorders_total_count",
-  "eating_disorders_labelledEating disorder",
-  "OCRDs_labelledOCRDs",
-  "psychotic_and_biploar_disorder_labelledPsychotic and bipolar disorder",
-  "psychotic_and_biploar_disorder_labelledOnly psychotic disorder",
-  "psychotic_and_biploar_disorder_labelledOnly bipolar disorder",
-  "asd_labelledAutistic spectrum disorder",
-  "ADHD_ADD_labelledADHD or ADD disorder",
-  "mhd.personality_disorder_labelledPersonality disorder",
-  "PTSD_labelledPost-traumatic stress disorder",
-  "startDate"
-  )
+```{r Calculate nagelkerke effect size}
+exploratory_LR_model3 %>% 
+  nagelkerke()
 ```
 
 ```{r Create tidy output for providing a kit LR model}
 #Create tidy model output
-providing_kit_LR_model_tidy <- tidy(
-  providing_kit_LR_model,
+exploratory_LR_model3_tidy <- tidy(
+  exploratory_LR_model3,
   exponentiate = T,
   conf.int = T) %>%
   mutate(
-    Variable = providing_kit_LR_model_names,
+    Variable = exploratory_LR_model3_names,
     Significance = if_else(
       p.value < 0.05, 
       1,
@@ -750,7 +687,7 @@ providing_kit_LR_model_tidy <- tidy(
   )
 
 #Check output
-providing_kit_LR_model_tidy
+exploratory_LR_model3_tidy
 ```
 
 #Aim 2: Zero-inflated negative binomial regression
