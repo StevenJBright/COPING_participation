@@ -342,7 +342,9 @@ aim1_LR_model_tidy <- tidy(
       ),
     OR = round(OR, 2),
     `CI 95% lower` = round(`CI 95% lower`, 2),
-    `CI 95% upper` = round(`CI 95% upper`, 2)
+    `CI 95% upper` = round(`CI 95% upper`, 2),
+    p.value = format.pval(pv = p.value,
+                          digits = 2)
     )
 
 #Check output
