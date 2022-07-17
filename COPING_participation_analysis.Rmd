@@ -115,6 +115,7 @@ ZINB_model1_variables <- c(
     "smoking_status_labelled",
     "physical_health_comorbidities_labelled",
     "MH_disorders_total_count",
+    "depressive_and_anxiety_comorbidity_labelled",
     "eating_disorders_labelled",
     "OCRDs_labelled",
     "psychotic_and_biploar_disorder_labelled",
@@ -124,6 +125,10 @@ ZINB_model1_variables <- c(
     "PTSD_labelled",
     "kit_returned_labelled"
     )
+
+exploratory_ZINB_model1_variables <- ZINB_model1_variables %>% 
+  str_subset(pattern = "kit_returned_labelled",
+             negate = TRUE)
 ```
 
 ##Formulas
@@ -943,129 +948,123 @@ In the same sense of the exploratory LR model, we want to run an exploratory
 ZINB model without the sproviding a saliva kit variable to see if this influences
 the results.
 
-```{r Remove providing a saliva kit from the ZINB_variables}
-exploratory_ZINB_variables <- ZINB_variables[ZINB_variables != "kit_returned_labelled"]
-```
-
 ```{r Run exploratory ZINB model without saliva kit variable}
-exploratory_ZINB_model <- zeroinf.neg.binomial.estimates(
-  outcome = "total_COPING_waves",
-  explanatory_variables = exploratory_ZINB_variables,
+exploratory_ZINB_model1 <- zeroinf.neg.binomial.estimates(
+  outcome = coping_followups_outcome,
+  explanatory_variables = exploratory_ZINB_model1_variables,
   data_set = "glad_coping_participation",
-  name = "ZINB_model"
+  name = "exploratory_ZINB_model1"
 )
 
 #Check ZINB model output
-exploratory_ZINB_model %>% 
+exploratory_ZINB_model1 %>% 
   head()
 ```
 
-```{r Exponentiate the zero-inflated coefficients}
-exp(coef((exploratory_ZINB_model)))
+```{r Create a significance column for the exploratory ZINB model 1 results}
+#Rename p value column
+exploratory_ZINB_model1 <- exploratory_ZINB_model1 %>% 
+  rename("p_value" = "p value")
+
+#Turn p value column to numeric type instead of character
+exploratory_ZINB_model1$p_value <- as.numeric(exploratory_ZINB_model1$p_value)
+
+#Create significance column with p values
+exploratory_ZINB_model1 <- exploratory_ZINB_model1 %>% 
+  mutate(
+    significance = case_when(
+        p_value <= 0.00128205128 ~ "Significant",
+        p_value > 0.00128205128 ~ ""
+      )
+  )
+
+#Check significance column
+exploratory_ZINB_model1 %>% 
+  head()
 ```
 
-```{r ZINB as percentage}
-round((exp(coef(exploratory_ZINB_model))-1)*100)
-```
-
-Pseudo r-squared 
-- use Nagelkerke (Cragg and Uhler) in the output regression summary table
-```{r ZINB model nagelkerke}
-nagelkerke(exploratory_ZINB_model)
-```
-
-```{r Calculate confidence intervals for ZINB model}
-confint(exploratory_ZINB_model)
-```
+###OLD: Adjusting for multiple testing
 
 ```{r Get p-values of exploratory ZINB model}
-
-exploratory_ZINB_model_p_values <- parameters::p_value(exploratory_ZINB_model)
+#exploratory_ZINB_model_p_values <- parameters::p_value(exploratory_ZINB_model)
 
 #Remove all the rows referring to the negative binomial ("count") model
-exploratory_ZINB_model_p_values <- exploratory_ZINB_model_p_values %>% 
-  select(Parameter, p) %>% 
-  filter(str_detect(Parameter, "zero_"))
+#exploratory_ZINB_model_p_values <- exploratory_ZINB_model_p_values %>% 
+#  select(Parameter, p) %>% 
+#  filter(str_detect(Parameter, "zero_"))
 
 #Check results
-exploratory_ZINB_model_p_values
-
+#exploratory_ZINB_model_p_values
 ```
 
 ```{r Adjust the exploratory ZINB model p-values for multiple testing}
-
-adj_exploratory_ZINB_p_values <- exploratory_ZINB_model_p_values$p %>% 
-  p.adjust("bonferroni")
+#adj_exploratory_ZINB_p_values <- exploratory_ZINB_model_p_values$p %>% 
+#  p.adjust("bonferroni")
 
 #Add the adjusted p-values to the p-value model
-exploratory_ZINB_model_p_values <- cbind(exploratory_ZINB_model_p_values,
-                                         adj_exploratory_ZINB_p_values)
+#exploratory_ZINB_model_p_values <- cbind(exploratory_ZINB_model_p_values,
+#                                         adj_exploratory_ZINB_p_values)
 
 #Create a significant label variable based on the adjusted p-values
-exploratory_ZINB_model_p_values <- exploratory_ZINB_model_p_values %>% 
-  mutate(
-    adj_significance = case_when(
-        adj_exploratory_ZINB_p_values <= 0.001 ~ "***",
-        adj_exploratory_ZINB_p_values <= 0.01 ~ "**",
-        adj_exploratory_ZINB_p_values <= 0.05 ~ "*",
-        adj_exploratory_ZINB_p_values > 0.05 ~ ""
-      )
-  ) %>% 
-  select(
-    Parameter,
-    adj_significance,
-    p,
-    adj_exploratory_ZINB_p_values
-  )
+#exploratory_ZINB_model_p_values <- exploratory_ZINB_model_p_values %>% 
+#  mutate(
+#    adj_significance = case_when(
+#        adj_exploratory_ZINB_p_values <= 0.001 ~ "***",
+#        adj_exploratory_ZINB_p_values <= 0.01 ~ "**",
+#        adj_exploratory_ZINB_p_values <= 0.05 ~ "*",
+#        adj_exploratory_ZINB_p_values > 0.05 ~ ""
+#      )
+#  ) %>% 
+#  select(
+#    Parameter,
+#    adj_significance,
+#    p,
+#    adj_exploratory_ZINB_p_values
+#  )
 
 #Check results
-exploratory_ZINB_model_p_values
-
+#exploratory_ZINB_model_p_values
 ```
 
 ```{r Get count p-values of exploratory ZINB model}
-
-exploratory_ZINB_model_count_p_values <- parameters::p_value(exploratory_ZINB_model)
+#exploratory_ZINB_model_count_p_values <- parameters::p_value(exploratory_ZINB_model)
 
 #Remove all the rows referring to the negative binomial ("count") model
-exploratory_ZINB_model_count_p_values <- exploratory_ZINB_model_count_p_values %>% 
-  select(Parameter, p) %>% 
-  filter(str_detect(Parameter, "count_"))
+#exploratory_ZINB_model_count_p_values <- exploratory_ZINB_model_count_p_values %>% 
+#  select(Parameter, p) %>% 
+#  filter(str_detect(Parameter, "count_"))
 
 #Check results
-exploratory_ZINB_model_count_p_values
-
+#exploratory_ZINB_model_count_p_values
 ```
 
 ```{r Adjust the exploratory ZINB model p-values for multiple testing}
-
-adj_exploratory_ZINB_count_p_values <- exploratory_ZINB_model_count_p_values$p %>% 
-  p.adjust("bonferroni")
+#adj_exploratory_ZINB_count_p_values <- exploratory_ZINB_model_count_p_values$p %>% 
+#  p.adjust("bonferroni")
 
 #Add the adjusted p-values to the p-value model
-exploratory_ZINB_model_count_p_values <- cbind(exploratory_ZINB_model_count_p_values,
-                                         adj_exploratory_ZINB_count_p_values)
+#exploratory_ZINB_model_count_p_values <- cbind(exploratory_ZINB_model_count_p_values,
+#                                         adj_exploratory_ZINB_count_p_values)
 
 #Create a significant label variable based on the adjusted p-values
-exploratory_ZINB_model_count_p_values <- exploratory_ZINB_model_count_p_values %>% 
-  mutate(
-    adj_significance = case_when(
-        adj_exploratory_ZINB_count_p_values <= 0.001 ~ "***",
-        adj_exploratory_ZINB_count_p_values <= 0.01 ~ "**",
-        adj_exploratory_ZINB_count_p_values <= 0.05 ~ "*",
-        adj_exploratory_ZINB_count_p_values > 0.05 ~ ""
-      )
-  ) %>% 
-  select(
-    Parameter,
-    adj_significance,
-    p,
-    adj_exploratory_ZINB_count_p_values
-  )
+#exploratory_ZINB_model_count_p_values <- exploratory_ZINB_model_count_p_values %>% 
+#  mutate(
+#    adj_significance = case_when(
+#        adj_exploratory_ZINB_count_p_values <= 0.001 ~ "***",
+#        adj_exploratory_ZINB_count_p_values <= 0.01 ~ "**",
+#        adj_exploratory_ZINB_count_p_values <= 0.05 ~ "*",
+#        adj_exploratory_ZINB_count_p_values > 0.05 ~ ""
+#      )
+#  ) %>% 
+#  select(
+#    Parameter,
+#    adj_significance,
+#    p,
+#    adj_exploratory_ZINB_count_p_values
+#  )
 
 #Check results
-exploratory_ZINB_model_count_p_values
-
+#exploratory_ZINB_model_count_p_values
 ```
 
 ###Kit returners only
