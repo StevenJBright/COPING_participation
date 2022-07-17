@@ -59,25 +59,19 @@ library(tidyverse)
 #Read in data
 
 ```{r Source paths}
-
 source("..//COPING_participation_paths.r")
-
 ```
 
 ```{r Source functions}
-
 source("..//COPING_participation_functions.r")
-
 ```
 
 ```{r Read in glad coping participation data}
-
 glad_coping_participation_raw <- read_rds(paste0(processed_data_path, processed_data_name))
 
 #Check data
 glad_coping_participation_raw %>% 
   head()
-
 ```
 
 #Aim 1 Logistic regression model
@@ -87,7 +81,6 @@ explained by the sociodemographic, mental and physical health characteristics
 of the GLAD Study participants.
 
 ```{r Run complete LR model}
-
 #Note: Have left out the "depressive_and_anxiety_comorbidity_labelled" variable
 #because this is acting as the reference group for MH diagnoses.
 
@@ -119,7 +112,6 @@ complete_LR_model <- glm(
 
 #Check output
 summary(complete_LR_model)
-
 ```
 
 ```{r Calculate nagelkerke effect size}
@@ -339,7 +331,8 @@ plot_logit_model <- or_CI %>%
 plot_logit_model
 ```
 
-##Run exploratory LR model
+##Run exploratory LR models
+###Without saliva kit variable
 
 During the analysis, we began to think that it may be circular to include
 a measure of participation (providing a saliva kit for the GLAD study) as 
@@ -347,7 +340,7 @@ a predictor of participation. Therefore, we want to re-run the LR model
 without the saliva kit predictor to see to what extent this influences the 
 results.
 
-```{r Run exploratory  LR model}
+```{r Run exploratory LR model}
 
 exploratory_LR_model <- glm(
   formula = completed_baseline_labelled ~ age_cleaned + 
@@ -476,6 +469,130 @@ exploratory_LR_model_tidy <- tidy(
 exploratory_LR_model_tidy %>% 
   head(nrow(exploratory_LR_model_tidy))
 
+```
+
+###Providing kit as outcome
+17/07/2022
+After presenting the first draft of the paper to the GLAD analaysis team,
+it was recommended that a model could be run to investigate what factors 
+are associated with providing a saliva kit to the GLAD Study.
+
+```{r Run LR model to invesitgate factors associated with providing a kit}
+providing_kit_LR_model <- glm(
+  formula = kit_returned_labelled ~ age_cleaned + 
+    gender_recode_labelled +
+    highest_education_labelled +
+    ethnicity_labelled +
+    employment_labelled +
+    partnership_status_labelled +
+    phq.sum_score + 
+    gad.sum_score +
+    audit.sum_score +
+    smoking_status_labelled +
+    physical_health_comorbidities_labelled +
+    MH_disorders_total_count +
+    depressive_and_anxiety_comorbidity_labelled +
+    eating_disorders_labelled +
+    OCRDs_labelled +
+    psychotic_and_biploar_disorder_labelled +
+    asd_labelled +
+    ADHD_ADD_labelled +
+    personality_disorder_labelled +
+    PTSD_labelled +
+    startDate,
+  family = "binomial",
+  data = glad_coping_participation_raw)
+
+#Check output
+summary(providing_kit_LR_model)
+```
+
+```{r Create vector of explanatory variables in providing a kit LR model}
+providing_kit_LR_model_names <- c(
+  "Intercept",
+  "age_cleaned",
+  "gender_recode_labelledFemale",
+  "gender_recode_labelledNon-binary/prefer to self-define",
+  "highest_education_labelledA levels/AS levels or equivalent",
+  "highest_education_labelledO levels/GCSEs or CSEs or equivalent",
+  "highest_education_labelledNVQ or HND or HNC or equivalent",
+  "highest_education_labelledNone of the above",
+  "ethnicity_labelledMixed",
+  "ethnicity_labelledAsian or Asian British",
+  "ethnicity_labelledBlack or Black British",
+  "ethnicity_labelledArab",
+  "ethnicity_labelledOther",
+  "employment_labelledRetired",
+  "employment_labelledLooking after home and/or family",
+  "employment_labelledUnable to work because of sickness or disability",
+  "employment_labelledUnemployed",
+  "employment_labelledDoing unpaid or voluntary work",
+  "employment_labelledFull or part-time_student",
+  "employment_labelledNone of the above",
+  "partnership_status_labelledRelationship or married/civil partnership",
+  "partnership_status_labelledDivorced/widowed/separated",
+  "phq.sum_score",
+  "gad.sum_score",
+  "audit.sum_score",
+  "smoking_status_labelledI smoke now",
+  "smoking_status_labelledI used to smoke",
+  "physical_health_comorbidities_labelled1 physical health disorder",
+  "physical_health_comorbidities_labelled2+ physical health disorders",
+  "depressive_and_anxiety_comorbidity_labelledDepressive and anxiety disorder",
+  "depressive_and_anxiety_comorbidity_labelledDepressive disorder only",
+  "depressive_and_anxiety_comorbidity_labelledAnxiety disorder only",
+  "MH_disorders_total_count",
+  "eating_disorders_labelledEating disorder",
+  "OCRDs_labelledOCRDs",
+  "psychotic_and_biploar_disorder_labelledPsychotic and bipolar disorder",
+  "psychotic_and_biploar_disorder_labelledOnly psychotic disorder",
+  "psychotic_and_biploar_disorder_labelledOnly bipolar disorder",
+  "asd_labelledAutistic spectrum disorder",
+  "ADHD_ADD_labelledADHD or ADD disorder",
+  "mhd.personality_disorder_labelledPersonality disorder",
+  "PTSD_labelledPost-traumatic stress disorder",
+  "startDate"
+  )
+```
+
+```{r Create tidy output for providing a kit LR model}
+#Create tidy model output
+providing_kit_LR_model_tidy <- tidy(
+  providing_kit_LR_model,
+  exponentiate = T,
+  conf.int = T) %>%
+  mutate(
+    Variable = providing_kit_LR_model_names,
+    Significance = if_else(
+      p.value < 0.05, 
+      1,
+      0
+      ) %>%
+    recode_factor(
+        "0" = "Not-significant",
+        "1" = "Significant"
+      )) %>%
+  select(
+    Variable,
+    OR = estimate,
+    `CI 95% lower` = conf.low,
+    `CI 95% upper` = conf.high,
+     p.value,
+    Significance
+  ) %>% 
+  mutate(
+    adj.p.value = p.adjust(p.value, 
+                           "bonferroni"),
+    adj_significance = case_when(
+        adj.p.value <= 0.001 ~ "***",
+        adj.p.value <= 0.01 ~ "**",
+        adj.p.value <= 0.05 ~ "*",
+        adj.p.value > 0.05 ~ ""
+      )
+  )
+
+#Check output
+providing_kit_LR_model_tidy
 ```
 
 #Test assumptions of complete LR model
