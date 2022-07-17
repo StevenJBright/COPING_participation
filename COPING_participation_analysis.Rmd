@@ -471,6 +471,136 @@ exploratory_LR_model_tidy %>%
 
 ```
 
+###Only participants who have provided a saliva kit
+17/07/2022
+After presenting the first draft of the paper to the GLAD analysis team,
+Prof. Gerome Breen suggested that instead of omitting the saliva kit variable,
+it would be better to run the LR model whilst only including the participants 
+who have provided a saliva kit.
+
+```{r Investigate factors associated with COPING baseline participation for kit returners}
+#Filter the participants who have returned a saliva kit
+glad_coping_participation_returned_kit <- glad_coping_participation_raw %>% 
+  filter(kit_returned == 1)
+
+#Investigate factors associated with COPING baseline survey participation in this cohort
+baseline_participation_kit_returners_LR_model <- glm(
+  formula = completed_baseline_labelled ~ age_cleaned + 
+    gender_recode_labelled +
+    highest_education_labelled +
+    ethnicity_labelled +
+    employment_labelled +
+    partnership_status_labelled +
+    phq.sum_score + 
+    gad.sum_score +
+    audit.sum_score +
+    smoking_status_labelled +
+    physical_health_comorbidities_labelled +
+    MH_disorders_total_count +
+    depressive_and_anxiety_comorbidity_labelled +
+    eating_disorders_labelled +
+    OCRDs_labelled +
+    psychotic_and_biploar_disorder_labelled +
+    asd_labelled +
+    ADHD_ADD_labelled +
+    personality_disorder_labelled +
+    PTSD_labelled + #Why is estimate NA?
+    startDate,
+  family = "binomial",
+  data = glad_coping_participation_returned_kit)
+
+#Check output
+summary(baseline_participation_kit_returners_LR_model)
+```
+
+```{r Create vector of explanatory variables in providing a kit LR model}
+baseline_participation_kit_returners_LR_model_names <- c(
+  "Intercept",
+  "age_cleaned",
+  "gender_recode_labelledFemale",
+  "gender_recode_labelledNon-binary/prefer to self-define",
+  "highest_education_labelledA levels/AS levels or equivalent",
+  "highest_education_labelledO levels/GCSEs or CSEs or equivalent",
+  "highest_education_labelledNVQ or HND or HNC or equivalent",
+  "highest_education_labelledNone of the above",
+  "ethnicity_labelledMixed",
+  "ethnicity_labelledAsian or Asian British",
+  "ethnicity_labelledBlack or Black British",
+  "ethnicity_labelledArab",
+  "ethnicity_labelledOther",
+  "employment_labelledRetired",
+  "employment_labelledLooking after home and/or family",
+  "employment_labelledUnable to work because of sickness or disability",
+  "employment_labelledUnemployed",
+  "employment_labelledDoing unpaid or voluntary work",
+  "employment_labelledFull or part-time_student",
+  "employment_labelledNone of the above",
+  "partnership_status_labelledRelationship or married/civil partnership",
+  "partnership_status_labelledDivorced/widowed/separated",
+  "phq.sum_score",
+  "gad.sum_score",
+  "audit.sum_score",
+  "smoking_status_labelledI smoke now",
+  "smoking_status_labelledI used to smoke",
+  "physical_health_comorbidities_labelled1 physical health disorder",
+  "physical_health_comorbidities_labelled2+ physical health disorders",
+  "depressive_and_anxiety_comorbidity_labelledDepressive and anxiety disorder",
+  "depressive_and_anxiety_comorbidity_labelledDepressive disorder only",
+  "depressive_and_anxiety_comorbidity_labelledAnxiety disorder only",
+  "MH_disorders_total_count",
+  "eating_disorders_labelledEating disorder",
+  "OCRDs_labelledOCRDs",
+  "psychotic_and_biploar_disorder_labelledPsychotic and bipolar disorder",
+  "psychotic_and_biploar_disorder_labelledOnly psychotic disorder",
+  "psychotic_and_biploar_disorder_labelledOnly bipolar disorder",
+  "asd_labelledAutistic spectrum disorder",
+  "ADHD_ADD_labelledADHD or ADD disorder",
+  "mhd.personality_disorder_labelledPersonality disorder",
+  "PTSD_labelledPost-traumatic stress disorder",
+  "startDate"
+  )
+```
+
+```{r Create tidy output for providing a kit LR model}
+#Create tidy model output
+baseline_participation_kit_returners_LR_model_tidy <- tidy(
+  baseline_participation_kit_returners_LR_model,
+  exponentiate = T,
+  conf.int = T) %>%
+  mutate(
+    Variable = baseline_participation_kit_returners_LR_model_names,
+    Significance = if_else(
+      p.value < 0.05, 
+      1,
+      0
+      ) %>%
+    recode_factor(
+        "0" = "Not-significant",
+        "1" = "Significant"
+      )) %>%
+  select(
+    Variable,
+    OR = estimate,
+    `CI 95% lower` = conf.low,
+    `CI 95% upper` = conf.high,
+     p.value,
+    Significance
+  ) %>% 
+  mutate(
+    adj.p.value = p.adjust(p.value, 
+                           "bonferroni"),
+    adj_significance = case_when(
+        adj.p.value <= 0.001 ~ "***",
+        adj.p.value <= 0.01 ~ "**",
+        adj.p.value <= 0.05 ~ "*",
+        adj.p.value > 0.05 ~ ""
+      )
+  )
+
+#Check output
+baseline_participation_kit_returners_LR_model_tidy
+```
+
 ###Providing kit as outcome
 17/07/2022
 After presenting the first draft of the paper to the GLAD analaysis team,
@@ -967,8 +1097,13 @@ stargazer(ZINB_model,
 
 ```
 
-##Exploratory ZINB model
+```{r Write ZINB_model results to csv file}
+ZINB_model %>% 
+  write_csv("../ZIMB_participation_results.csv")
+```
 
+##Exploratory ZINB model
+###Without providing kit variable
 In the same sense of the exploratory LR model, we want to run an exploratory
 ZINB model without the sproviding a saliva kit variable to see if this influences
 the results.
@@ -1098,7 +1233,53 @@ exploratory_ZINB_model_count_p_values
 
 ```
 
-```{r Write ZINB_model results to csv file}
-ZINB_model %>% 
-  write_csv("../ZIMB_participation_results.csv")
+###Kit returners only
+17/07/2022
+After presenting the first draft of the paper to the GLAD analysis team,
+Prof. Gerome Breen suggested that instead of omitting the saliva kit variable,
+it would be better to run the ZINB model whilst only including the participants 
+who have provided a saliva kit.
+
+```{r Put ZINB explanatory variavles into a vector}
+ZINB_kit_returners_variables <- c(
+  "age_cleaned",  
+  "gender_recode_labelled", 
+  "highest_education_labelled",
+  "ethnicity_labelled",
+  "employment_labelled", 
+  "partnership_status_labelled",
+  "phq.sum_score",
+  "gad.sum_score", 
+  "audit.sum_score",
+  "smoking_status_labelled",
+  "physical_health_comorbidities_labelled",
+  "MH_disorders_total_count",
+  "depressive_and_anxiety_comorbidity_labelled",
+  "eating_disorders_labelled",
+  "OCRDs_labelled",
+  "psychotic_and_biploar_disorder_labelled",
+  "asd_labelled",
+  "ADHD_ADD_labelled",
+  "personality_disorder_labelled"
+  #"PTSD_labelled" # Including PTSD throws an error? - Investigate
+  #"kit_returned_labelled" # Should we leave this out?
+  )
+```
+
+```{r Run ZINB model}
+ZINB_kit_returners_model <- zeroinf.neg.binomial.estimates(
+  outcome = "total_COPING_waves",
+  explanatory_variables = ZINB_kit_returners_variables,
+  data_set = "glad_coping_participation_returned_kit",
+  name = "ZINB_kit_returners_model"
+)
+
+#Check ZINB model output
+ZINB_kit_returners_model %>% 
+  head()
+```
+
+```{r Write ZINB_kit_returners_model results to csv file}
+ZINB_kit_returners_model %>% 
+  write_csv("../ZIMB_kit_returners_participation_results.csv")
 ```
