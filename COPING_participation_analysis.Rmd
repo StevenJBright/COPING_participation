@@ -65,7 +65,7 @@ glad_coping_participation %>%
 ```
 
 #Preliminaries
-##Formulas
+##Variables
 
 ```{r Define explanatory and outcome variables}
 #Create explanatory variables vector
@@ -97,9 +97,36 @@ explanatory_variables <- c(
 
 #Create dependent variable vectors
 coping_baseline_outcome <- c("completed_baseline_labelled")
-coping_followups_outcome <- c("total_COPING_surveys")
+coping_followups_outcome <- c("total_COPING_waves")
 providing_kit_outcome <- c("kit_returned_labelled")
 ```
+
+```{r Put ZINB explanatory variables into a vector}
+ZINB_model1_variables <- c(
+  "age_cleaned",  
+    "gender_recode_labelled", 
+    "highest_education_labelled",
+    "ethnicity_labelled",
+    "employment_labelled", 
+    "partnership_status_labelled",
+    "phq.sum_score",
+    "gad.sum_score", 
+    "audit.sum_score",
+    "smoking_status_labelled",
+    "physical_health_comorbidities_labelled",
+    "MH_disorders_total_count",
+    "eating_disorders_labelled",
+    "OCRDs_labelled",
+    "psychotic_and_biploar_disorder_labelled",
+    "asd_labelled",
+    "ADHD_ADD_labelled",
+    "personality_disorder_labelled",
+    "PTSD_labelled",
+    "kit_returned_labelled"
+    )
+```
+
+##Formulas
 
 ```{r Create aim 1 model formulas}
 #Main aim1 formula
@@ -141,16 +168,6 @@ exploratory_LR_model3_formula <- as.formula(paste(providing_kit_outcome,
 ```
 
 ```{r Create aim 2 model formulas}
-#Main aim 2 model formula
-aim2_ZINB_model_explan_vars <- explanatory_variables %>% 
-  str_subset(pattern = "startDate",
-             negate = TRUE)
-
-aim2_followup_participation_formula <- as.formula(paste(coping_followups_outcome, 
-                                                        paste(aim2_ZINB_model_explan_vars, 
-                                                              collapse=" + "), 
-                                                        sep = " ~ "))
-
 #Explanatory aim2 model formulas
 ##Explanatory model 1: Without the saliva kit variable
 exploratory_ZINB_model1_exclude_vars <- c("kit_returned_labelled|startDate")
@@ -696,54 +713,29 @@ For aim 2, we want to see which variables are associated with participating
 in the COPING follow-up surveys. We will run a zero-inflated negative binomial
 regression to test for this.
 
-```{r Put ZINB explanatory variavles into a vector}
-ZINB_variables <- c(
-  "age_cleaned",  
-    "gender_recode_labelled", 
-    "highest_education_labelled",
-    "ethnicity_labelled",
-    "employment_labelled", 
-    "partnership_status_labelled",
-    "phq.sum_score",
-    "gad.sum_score", 
-    "audit.sum_score",
-    "smoking_status_labelled",
-    "physical_health_comorbidities_labelled",
-    "MH_disorders_total_count",
-    "eating_disorders_labelled",
-    "OCRDs_labelled",
-    "psychotic_and_biploar_disorder_labelled",
-    "asd_labelled",
-    "ADHD_ADD_labelled",
-    "personality_disorder_labelled",
-    "PTSD_labelled",
-    "kit_returned_labelled"
-    )
-```
-
 ```{r Run ZINB model}
-ZINB_model <- zeroinf.neg.binomial.estimates(
-  outcome = "total_COPING_waves",
-  explanatory_variables = ZINB_variables,
+ZINB_model1 <- zeroinf.neg.binomial.estimates(
+  outcome = coping_followups_outcome,
+  explanatory_variables = ZINB_model1_variables,
   data_set = "glad_coping_participation",
-  name = "ZINB_model"
+  name = "ZINB_model1"
 )
 
 #Check ZINB model output
-ZINB_model %>% 
+ZINB_model1 %>% 
   head()
 ```
 
 ```{r Create a significance column for the ZINB model results}
 #Rename p value column
-ZINB_model <- ZINB_model %>% 
+ZINB_model1 <- ZINB_model1 %>% 
   rename("p_value" = "p value")
 
 #Turn p value column to numeric type instead of character
-ZINB_model$p_value <- as.numeric(ZINB_model$p_value)
+ZINB_model1$p_value <- as.numeric(ZINB_model1$p_value)
 
 #Create significance column with p values
-ZINB_model <- ZINB_model %>% 
+ZINB_model1 <- ZINB_model1 %>% 
   mutate(
     significance = case_when(
         p_value <= 0.00128205128 ~ "Significant",
@@ -752,13 +744,15 @@ ZINB_model <- ZINB_model %>%
   )
 
 #Check significance column
-ZINB_model %>% 
+ZINB_model1 %>% 
   head()
 ```
 
+##Plot ZINB model 1
+
 ```{r Extract odds ratios and CI's from ZINB model}
 #Get OR's and CI's for explanatory variables
-ZINB_model_or_CI <- ZINB_model %>% 
+ZINB_model_or_CI <- ZINB_model1 %>% 
   filter(
     Part == "zero"
   ) %>% 
@@ -774,7 +768,7 @@ ZINB_model_or_CI
 
 ```{r Turn independent variable column into a factor for plot}
 #Create levels vector for explanatory variable column
-ZINB_explanatory_variable_levels <- c(
+ZINB_model1_explanatory_variable_levels <- c(
   "(Intercept)",
   "Age",
   "Female",
@@ -818,17 +812,17 @@ ZINB_explanatory_variable_levels <- c(
 )
 
 ZINB_model_or_CI <- ZINB_model_or_CI %>% 
-  mutate(Independent_variable = ZINB_explanatory_variable_levels)
+  mutate(Independent_variable = ZINB_model1_explanatory_variable_levels)
 
 ZINB_model_or_CI$Independent_variable <- factor(ZINB_model_or_CI$Independent_variable,
-                              levels = ZINB_explanatory_variable_levels)
+                              levels = ZINB_model1_explanatory_variable_levels)
 
 #Check output
 ZINB_model_or_CI
 ```
 
 ```{r Forest plot of ZINB results}
-plot_ZINB_model <- ZINB_model_or_CI %>% 
+ZINB_model_or_CI %>% 
   slice(-1) %>% #remove row number 1 (The intercept) 
   ggplot(aes(x = Independent_variable, y = Estimate)) +
   geom_point(shape = 15,
@@ -853,118 +847,94 @@ plot_ZINB_model <- ZINB_model_or_CI %>%
     axis.text.x = element_text(color = "black"),
         axis.text.y = element_text(colour = "black"),
          axis.ticks = element_line(color = "black"))
-
-#Check plot
-plot_ZINB_model
 ```
 
-Pseudo r-squared 
-- use Nagelkerke (Cragg and Uhler) in the output regression summary table
-```{r ZINB model nagelkerke}
-nagelkerke(ZINB_model)
-```
+### OLD: Adjusting for multiple testing
+17/07/2022
+This was old code for adjusting for multiple testing. However, Prof. Gerome 
+Breen has recommended using a p-value threshold rather than adjusting the 
+p-values themselves.
 
 ```{r Get p-values of ZINB model}
-
-ZINB_model_p_values <- parameters::p_value(ZINB_model)
+#ZINB_model_p_values <- parameters::p_value(ZINB_model)
 
 #Remove all the rows referring to the negative binomial ("count") model
-ZINB_model_p_values <- ZINB_model_p_values %>% 
-  select(Parameter, p) %>% 
-  filter(str_detect(Parameter, "zero_"))
+#ZINB_model_p_values <- ZINB_model_p_values %>% 
+#  select(Parameter, p) %>% 
+#  filter(str_detect(Parameter, "zero_"))
 
 #Check results
-ZINB_model_p_values
-
+#ZINB_model_p_values
 ```
 
 ```{r Adjust the ZINB model p-values for multiple testing}
-
-adj_ZINB_p_values <- ZINB_model_p_values$p %>% 
-  p.adjust("bonferroni")
+#adj_ZINB_p_values <- ZINB_model_p_values$p %>% 
+#  p.adjust("bonferroni")
 
 #Add the adjusted p-values to the p-value model
-ZINB_model_p_values <- cbind(ZINB_model_p_values,
-                             adj_ZINB_p_values)
+#ZINB_model_p_values <- cbind(ZINB_model_p_values,
+#                             adj_ZINB_p_values)
 
 #Create a significant label variable based on the adjusted p-values
-ZINB_model_p_values <- ZINB_model_p_values %>% 
-  mutate(
-    adj_significance = case_when(
-        adj_ZINB_p_values <= 0.001 ~ "***",
-        adj_ZINB_p_values <= 0.01 ~ "**",
-        adj_ZINB_p_values <= 0.05 ~ "*",
-        adj_ZINB_p_values > 0.05 ~ ""
-      )
-  ) %>% 
-  select(
-    Parameter,
-    adj_significance,
-    p,
-    adj_ZINB_p_values
-  )
+#ZINB_model_p_values <- ZINB_model_p_values %>% 
+#  mutate(
+#    adj_significance = case_when(
+#        adj_ZINB_p_values <= 0.001 ~ "***",
+#        adj_ZINB_p_values <= 0.01 ~ "**",
+#        adj_ZINB_p_values <= 0.05 ~ "*",
+#        adj_ZINB_p_values > 0.05 ~ ""
+#      )
+#  ) %>% 
+#  select(
+#    Parameter,
+#    adj_significance,
+#    p,
+#    adj_ZINB_p_values
+#  )
 
 #Check results
-ZINB_model_p_values
-
+#ZINB_model_p_values
 ```
 
 ```{r Get p-values of count part of ZINB model}
-
-ZINB_model_count_p_values <- parameters::p_value(ZINB_model)
+#ZINB_model_count_p_values <- parameters::p_value(ZINB_model)
 
 #Remove all the rows referring to the negative binomial ("count") model
-ZINB_model_count_p_values <- ZINB_model_count_p_values %>% 
-  select(Parameter, p) %>% 
-  filter(str_detect(Parameter, "count_"))
+#ZINB_model_count_p_values <- ZINB_model_count_p_values %>% 
+#  select(Parameter, p) %>% 
+#  filter(str_detect(Parameter, "count_"))
 
 #Check results
-ZINB_model_count_p_values
-
+#ZINB_model_count_p_values
 ```
 
 ```{r Adjust the ZINB model count p-values for multiple testing}
-
-adj_ZINB_count_p_values <- ZINB_model_count_p_values$p %>% 
-  p.adjust("bonferroni")
+#adj_ZINB_count_p_values <- ZINB_model_count_p_values$p %>% 
+#  p.adjust("bonferroni")
 
 #Add the adjusted p-values to the p-value model
-ZINB_model_count_p_values <- cbind(ZINB_model_count_p_values,
-                             adj_ZINB_count_p_values)
+#ZINB_model_count_p_values <- cbind(ZINB_model_count_p_values,
+#                             adj_ZINB_count_p_values)
 
 #Create a significant label variable based on the adjusted p-values
-ZINB_model_count_p_values <- ZINB_model_count_p_values %>% 
-  mutate(
-    adj_significance = case_when(
-        adj_ZINB_p_values <= 0.001 ~ "***",
-        adj_ZINB_p_values <= 0.01 ~ "**",
-        adj_ZINB_p_values <= 0.05 ~ "*",
-        adj_ZINB_p_values > 0.05 ~ ""
-      )
-  ) %>% 
-  select(
-    Parameter,
-    adj_significance,
-    p,
-    adj_ZINB_count_p_values
-  )
+#ZINB_model_count_p_values <- ZINB_model_count_p_values %>% 
+#  mutate(
+#    adj_significance = case_when(
+#        adj_ZINB_p_values <= 0.001 ~ "***",
+#        adj_ZINB_p_values <= 0.01 ~ "**",
+#        adj_ZINB_p_values <= 0.05 ~ "*",
+#        adj_ZINB_p_values > 0.05 ~ ""
+#      )
+#  ) %>% 
+#  select(
+#    Parameter,
+#    adj_significance,
+#    p,
+#    adj_ZINB_count_p_values
+#  )
 
 #Check results
-ZINB_model_count_p_values
-
-```
-
-```{r Inspect tidy output from ZINB model}
-
-stargazer(ZINB_model, 
-          zero.component = FALSE, 
-          type = "text")
-
-```
-
-```{r Write ZINB_model results to csv file}
-ZINB_model %>% 
-  write_csv("../ZIMB_participation_results.csv")
+#ZINB_model_count_p_values
 ```
 
 ##Exploratory ZINB model
