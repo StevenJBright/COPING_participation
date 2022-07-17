@@ -10,50 +10,40 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r Clean global environment}
-
 remove(list = ls())
-
 ```
 
 ```{r Turn scientific notation off}
-
 #Change it to "= 0" to turn it back on
 options(scipen = 999)
-
 ```
 
 #Call libraries
 
 ```{r Install packages}
-
 #install.packages("broom")
 #install.packages("knitr)
 #install.packages("car")
 #install.packages("rstatix")
 #install.packages("pscl")
-#install.packages("stargazer")
 #install.packages("boot")
 #install.packages("stats")
 #install.packages("rcompanion")
 #install.packages("MASS")
 #install.packages("tidyverse")
-
 ```
 
 ```{r Load libraries}
-
 library(broom)
 library(knitr)
 library(car)
 library(rstatix)
 library(pscl)
-library(stargazer)
 library(boot)
 library(stats)
 library(rcompanion)
 library(MASS)
 library(tidyverse)
-
 ```
 
 #Read in data
@@ -67,11 +57,114 @@ source("..//COPING_participation_functions.r")
 ```
 
 ```{r Read in glad coping participation data}
-glad_coping_participation_raw <- read_rds(paste0(processed_data_path, processed_data_name))
+glad_coping_participation <- read_rds(paste0(processed_data_path, processed_data_name))
 
 #Check data
-glad_coping_participation_raw %>% 
+glad_coping_participation %>% 
   head()
+```
+
+#Create model formulas
+
+```{r Define explanatory and outcome variables}
+#Create explanatory variables vector
+explanatory_variables <- c(
+  "age_cleaned",
+  "gender_recode_labelled",
+  "highest_education_labelled",
+  "ethnicity_labelled",
+  "employment_labelled",
+  "partnership_status_labelled",
+  "phq.sum_score",
+  "gad.sum_score",
+  "audit.sum_score",
+  "smoking_status_labelled",
+  "physical_health_comorbidities_labelled",
+  "MH_disorders_total_count",
+  "depressive_and_anxiety_comorbidity_labelled",
+  "eating_disorders_labelled",
+  "OCRDs_labelled",
+  "psychotic_and_biploar_disorder_labelled",
+  "asd_labelled",
+  "ADHD_ADD_labelled",
+  "personality_disorder_labelled",
+  "PTSD_labelled",
+  "startDate",
+  "kit_returned_labelled"
+  #joined_coping_first_invitation_labelled,
+)
+
+#Create dependent variable vectors
+coping_baseline_outcome <- c("completed_baseline_labelled")
+coping_followups_outcome <- c("total_COPING_surveys")
+providing_kit_outcome <- c("kit_returned_labelled")
+```
+
+```{r Create aim 1 model formulas}
+#Main aim1 formula
+aim1_baseline_participation_formula <- as.formula(paste(coping_baseline_outcome, 
+                                                        paste(explanatory_variables, 
+                                                              collapse=" + "), 
+                                                        sep = " ~ "))
+
+#Exploratory aim1 formulas
+##Exploratory model 1: Omitting the saliva kit variable
+exploratory_LR_model1_explan_vars <- explanatory_variables %>% 
+  str_subset(pattern = "kit_returned_labelled",
+             negate = TRUE)
+
+exploratory_LR_model1_formula <- as.formula(paste(coping_baseline_outcome, 
+                                                  paste(exploratory_LR_model1_explan_vars, 
+                                                        collapse=" + "), 
+                                                  sep = " ~ "))
+
+##Exploratory model 2: Only participants who have returned a saliva kit
+exploratory_LR_model2_explan_vars <- explanatory_variables %>% 
+  str_subset(pattern = "kit_returned_labelled",
+             negate = TRUE)
+
+exploratory_LR_model2_formula <- as.formula(paste(coping_baseline_outcome, 
+                                                  paste(exploratory_LR_model2_explan_vars, 
+                                                        collapse=" + "), 
+                                                  sep = " ~ "))
+
+##Exploratory model 3: Providing a saliva kit as the outcome variable
+exploratory_LR_model3_explan_vars <- explanatory_variables %>% 
+  str_subset(pattern = "kit_returned_labelled",
+             negate = TRUE)
+
+exploratory_LR_model3_formula <- as.formula(paste(providing_kit_outcome, 
+                                                  paste(exploratory_LR_model3_explan_vars, 
+                                                        collapse=" + "), 
+                                                  sep = " ~ "))
+```
+
+```{r Create aim 2 model formulas}
+#Main aim 2 model formula
+aim2_ZINB_model_explan_vars <- explanatory_variables %>% 
+  str_subset(pattern = "startDate",
+             negate = TRUE)
+
+aim2_followup_participation_formula <- as.formula(paste(coping_followups_outcome, 
+                                                        paste(aim2_ZINB_model_explan_vars, 
+                                                              collapse=" + "), 
+                                                        sep = " ~ "))
+
+#Explanatory aim2 model formulas
+##Explanatory model 1: Without the saliva kit variable
+exploratory_ZINB_model1_exclude_vars <- c("kit_returned_labelled|startDate")
+
+exploratory_ZINB_model1_explan_vars <- explanatory_variables %>% 
+  str_subset(pattern = exploratory_ZINB_model1_exclude_vars,
+             negate = TRUE)
+
+exploratory_ZINB_model1_formula <- as.formula(paste(coping_baseline_outcome, 
+                                                  paste(exploratory_ZINB_model1_explan_vars, 
+                                                        collapse=" + "), 
+                                                  sep = " ~ "))
+
+##Explanatory model 2: Only pt's who returned their saliva kit
+exploratory_ZINB_model2_formula <- exploratory_ZINB_model1_formula
 ```
 
 #Aim 1 Logistic regression model
@@ -108,21 +201,18 @@ complete_LR_model <- glm(
     kit_returned_labelled,
     #joined_coping_first_invitation_labelled,
   family = "binomial",
-  data = glad_coping_participation_raw)
+  data = glad_coping_participation)
 
 #Check output
 summary(complete_LR_model)
 ```
 
 ```{r Calculate nagelkerke effect size}
-
 complete_LR_model %>% 
   nagelkerke()
-
 ```
 
 ```{r Put complete LR model names into a vector}
-
 #Put all LR variable names into vector in the order they appear in summary(model4)
 complete_LR_model_names <- c(
   "Intercept",
@@ -168,11 +258,9 @@ complete_LR_model_names <- c(
   "kit_returnedPt has provided saliva kit"
   #"joined_coping_first_invitationCompleted COPING baseline before 1st follow-up"
 )
-
 ```
 
 ```{r Create tidy output for complete LR model}
-
 #Create tidy model output
 complete_LR_model_tidy <- tidy(
   complete_LR_model,
@@ -210,11 +298,6 @@ complete_LR_model_tidy <- tidy(
 
 complete_LR_model_tidy %>% 
   head(nrow(complete_LR_model_tidy))
-
-#Create kable output
-#complete_LR_model_kable <- kable(complete_LR_model_tidy[-c(1), ],
-#      digits = 2)
-
 ```
 
 ```{r Extract odds ratios and CI's}
@@ -366,7 +449,7 @@ exploratory_LR_model <- glm(
     #kit_returned_labelled,
     #joined_coping_first_invitation_labelled,
   family = "binomial",
-  data = glad_coping_participation_raw)
+  data = glad_coping_participation)
 
 #Check output
 summary(exploratory_LR_model)
@@ -480,7 +563,7 @@ who have provided a saliva kit.
 
 ```{r Investigate factors associated with COPING baseline participation for kit returners}
 #Filter the participants who have returned a saliva kit
-glad_coping_participation_returned_kit <- glad_coping_participation_raw %>% 
+glad_coping_participation_returned_kit <- glad_coping_participation %>% 
   filter(kit_returned == 1)
 
 #Investigate factors associated with COPING baseline survey participation in this cohort
@@ -631,7 +714,7 @@ providing_kit_LR_model <- glm(
     PTSD_labelled +
     startDate,
   family = "binomial",
-  data = glad_coping_participation_raw)
+  data = glad_coping_participation)
 
 #Check output
 summary(providing_kit_LR_model)
@@ -756,13 +839,13 @@ https://stackoverflow.com/questions/31177795/error-in-glm-in-r
 
 ```{r Remove observations that have 0 on the continuous variables}
 
-glad_coping_participation_lin <- glad_coping_participation_raw %>% 
+glad_coping_participation_lin <- glad_coping_participation %>% 
   filter(gad.sum_score != 0,
          phq.sum_score != 0,
          audit.sum_score != 0)
 
 #Check new dimensions
-glad_coping_participation_raw %>% 
+glad_coping_participation %>% 
   dim()
 
 glad_coping_participation_lin %>% 
@@ -860,7 +943,7 @@ ZINB_variables <- c(
 ZINB_model <- zeroinf.neg.binomial.estimates(
   outcome = "total_COPING_waves",
   explanatory_variables = ZINB_variables,
-  data_set = "glad_coping_participation_raw",
+  data_set = "glad_coping_participation",
   name = "ZINB_model"
 )
 
@@ -1116,7 +1199,7 @@ exploratory_ZINB_variables <- ZINB_variables[ZINB_variables != "kit_returned_lab
 exploratory_ZINB_model <- zeroinf.neg.binomial.estimates(
   outcome = "total_COPING_waves",
   explanatory_variables = exploratory_ZINB_variables,
-  data_set = "glad_coping_participation_raw",
+  data_set = "glad_coping_participation",
   name = "ZINB_model"
 )
 
