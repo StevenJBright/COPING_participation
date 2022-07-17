@@ -30,6 +30,7 @@ options(scipen = 999)
 #install.packages("stats")
 #install.packages("rcompanion")
 #install.packages("MASS")
+#install.packages("openxlsx")
 #install.packages("tidyverse")
 ```
 
@@ -43,6 +44,7 @@ library(boot)
 library(stats)
 library(rcompanion)
 library(MASS)
+library(openxlsx)
 library(tidyverse)
 ```
 
@@ -1115,7 +1117,21 @@ exploratory_ZINB_model2 %>%
   head()
 ```
 
-```{r Write ZINB_kit_returners_model results to csv file}
-ZINB_kit_returners_model %>% 
-  write_csv("../ZIMB_kit_returners_participation_results.csv")
+#Write all model output to Excel file
+
+```{r Write all models to a single Excel file}
+#Put models into named list
+model_list <- list(
+  "Aim1_LR_model" = aim1_LR_model_tidy,
+  "Exploratory_LR_model1" = exploratory_LR_model1_tidy,
+  "Exploratory_LR_model2" = exploratory_LR_model2_tidy,
+  "Exploratory_LR_model3" = exploratory_LR_model3_tidy,
+  "Aim2_ZINB_model1" = ZINB_model1,
+  "Exploratory_ZINB_model1" = exploratory_ZINB_model1,
+  "Exploratory_ZINB_model2" = exploratory_ZINB_model2
+)
+
+#Write models to excel
+model_list %>% 
+  write.xlsx(file = "../COPING_participation_models.xlsx")
 ```
