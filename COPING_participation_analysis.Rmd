@@ -293,7 +293,12 @@ by 6 to adjust for multiple testing. This method was preferred to adjusting the
 actual p-values themselves by the authors.
 
 ```{r Create adjusted p-value threshold object}
-adj_p_value_threshold <- format.pval(pv = 0.05 / 6,
+#Create p-value and no. of test objects
+standard_p_value_level <- 0.05
+no_of_tests <- 5
+
+#Create adjusted p value threshold
+adj_p_value_threshold <- format.pval(pv = standard_p_value_level / no_of_tests,
                                      digits = 2)
 
 #Check threshold
@@ -619,19 +624,23 @@ exploratory_LR_model1_tidy <- tidy(
     Significance
   ) %>% 
   mutate(
-    adj.p.value = p.adjust(p.value, 
-                           "bonferroni"),
-    adj_significance = case_when(
-        adj.p.value <= 0.001 ~ "***",
-        adj.p.value <= 0.01 ~ "**",
-        adj.p.value <= 0.05 ~ "*",
-        adj.p.value > 0.05 ~ ""
-      ),
+    #adj.p.value = p.adjust(p.value, 
+    #                       "bonferroni"),
+    #adj_significance = case_when(
+    #    adj.p.value <= 0.001 ~ "***",
+    #    adj.p.value <= 0.01 ~ "**",
+    #    adj.p.value <= 0.05 ~ "*",
+    #    adj.p.value > 0.05 ~ ""
+    #  ),
     OR = round(OR, 2),
     `CI 95% lower` = round(`CI 95% lower`, 2),
     `CI 95% upper` = round(`CI 95% upper`, 2),
     p.value = format.pval(pv = p.value,
-                          digits = 2)
+                          digits = 2),
+    threshold_adj_sig = case_when(
+      p.value <= adj_p_value_threshold ~ "Significant",
+      p.value > adj_p_value_threshold ~ "Not-significant"
+        )
     )
 
 #Check output
@@ -685,19 +694,23 @@ exploratory_LR_model2_tidy <- tidy(
     Significance
   ) %>% 
   mutate(
-    adj.p.value = p.adjust(p.value, 
-                           "bonferroni"),
-    adj_significance = case_when(
-        adj.p.value <= 0.001 ~ "***",
-        adj.p.value <= 0.01 ~ "**",
-        adj.p.value <= 0.05 ~ "*",
-        adj.p.value > 0.05 ~ ""
-    ),
+    #adj.p.value = p.adjust(p.value, 
+    #                       "bonferroni"),
+    #adj_significance = case_when(
+    #    adj.p.value <= 0.001 ~ "***",
+    #    adj.p.value <= 0.01 ~ "**",
+    #    adj.p.value <= 0.05 ~ "*",
+    #    adj.p.value > 0.05 ~ ""
+    #),
     OR = round(OR, 2),
     `CI 95% lower` = round(`CI 95% lower`, 2),
     `CI 95% upper` = round(`CI 95% upper`, 2),
     p.value = format.pval(pv = p.value,
-                          digits = 2)
+                          digits = 2),
+    threshold_adj_sig = case_when(
+      p.value <= adj_p_value_threshold ~ "Significant",
+      p.value > adj_p_value_threshold ~ "Not-significant"
+        )
     )
 
 #Check output
@@ -751,19 +764,23 @@ exploratory_LR_model3_tidy <- tidy(
     Significance
   ) %>% 
   mutate(
-    adj.p.value = p.adjust(p.value, 
-                           "bonferroni"),
-    adj_significance = case_when(
-        adj.p.value <= 0.001 ~ "***",
-        adj.p.value <= 0.01 ~ "**",
-        adj.p.value <= 0.05 ~ "*",
-        adj.p.value > 0.05 ~ ""
-      ),
+    #adj.p.value = p.adjust(p.value, 
+    #                       "bonferroni"),
+    #adj_significance = case_when(
+    #    adj.p.value <= 0.001 ~ "***",
+    #    adj.p.value <= 0.01 ~ "**",
+    #    adj.p.value <= 0.05 ~ "*",
+    #    adj.p.value > 0.05 ~ ""
+    #  ),
     OR = round(OR, 2),
     `CI 95% lower` = round(`CI 95% lower`, 2),
     `CI 95% upper` = round(`CI 95% upper`, 2),
     p.value = format.pval(pv = p.value,
-                          digits = 2)
+                          digits = 2),
+    threshold_adj_sig = case_when(
+      p.value <= adj_p_value_threshold ~ "Significant",
+      p.value > adj_p_value_threshold ~ "Not-significant"
+        )
     )
 
 #Check output
@@ -797,12 +814,12 @@ ZINB_model1 <- ZINB_model1 %>%
 #Turn p value column to numeric type instead of character
 ZINB_model1$p_value <- as.numeric(ZINB_model1$p_value)
 
-#Create significance column with p values
+#Create column to show whether variable meets adjusted p value threshold
 ZINB_model1 <- ZINB_model1 %>% 
   mutate(
-    significance = case_when(
-        p_value <= 0.00128205128 ~ "Significant",
-        p_value > 0.00128205128 ~ ""
+    threshold_adj_sig = case_when(
+        p_value <= adj_p_value_threshold ~ "Significant",
+        p_value > adj_p_value_threshold ~ "Not-significant"
       )
   )
 
@@ -1000,7 +1017,7 @@ p-values themselves.
 #ZINB_model_count_p_values
 ```
 
-##Exploratory ZINB model
+##Exploratory ZINB models
 ###Without providing kit variable
 In the same sense of the exploratory LR model, we want to run an exploratory
 ZINB model without the providing a saliva kit variable to see if this influences
@@ -1027,12 +1044,12 @@ exploratory_ZINB_model1 <- exploratory_ZINB_model1 %>%
 #Turn p value column to numeric type instead of character
 exploratory_ZINB_model1$p_value <- as.numeric(exploratory_ZINB_model1$p_value)
 
-#Create significance column with p values
+#Create column to show whether factor meets adjusted p value threshold
 exploratory_ZINB_model1 <- exploratory_ZINB_model1 %>% 
   mutate(
-    significance = case_when(
-        p_value <= 0.00128205128 ~ "Significant",
-        p_value > 0.00128205128 ~ ""
+    threshold_adj_sig = case_when(
+        p_value <= adj_p_value_threshold ~ "Significant",
+        p_value > adj_p_value_threshold ~ "Not-significant"
       )
   )
 
@@ -1153,12 +1170,12 @@ exploratory_ZINB_model2 <- exploratory_ZINB_model2 %>%
 #Turn p value column to numeric type instead of character
 exploratory_ZINB_model2$p_value <- as.numeric(exploratory_ZINB_model2$p_value)
 
-#Create significance column with p values
+#Create column to show whether factor meets adjusted p value threshold
 exploratory_ZINB_model2 <- exploratory_ZINB_model2 %>% 
   mutate(
-    significance = case_when(
-        p_value <= 0.00128205128 ~ "Significant",
-        p_value > 0.00128205128 ~ ""
+    threshold_adj_sig = case_when(
+        p_value <= adj_p_value_threshold ~ "Significant",
+        p_value > adj_p_value_threshold ~ "Not-significant"
       )
   )
 
