@@ -820,6 +820,8 @@ ZINB_model1$p_value <- as.numeric(ZINB_model1$p_value)
 #Create column to show whether variable meets adjusted p value threshold
 ZINB_model1 <- ZINB_model1 %>% 
   mutate(
+    p_value = format.pval(p_value,
+                          digits = 2),
     threshold_adj_sig = case_when(
         p_value <= adj_p_value_threshold ~ "Significant",
         p_value > adj_p_value_threshold ~ "Not-significant"
@@ -882,6 +884,9 @@ ZINB_model1_explanatory_variable_levels <- c(
   "1 physical health disorder",
   "2+ physical health disorders",
   "MH_disorders_total_count",
+  "depressive_and_anxiety_comorbidity_labelledDepressive and anxiety disorder",
+  "depressive_and_anxiety_comorbidity_labelledDepressive disorder only",
+  "depressive_and_anxiety_comorbidity_labelledAnxiety disorder only",
   "Eating disorder",
   "OCRDs",
   "Psychotic and bipolar disorder",
@@ -890,7 +895,7 @@ ZINB_model1_explanatory_variable_levels <- c(
   "ASD",
   "ADHD or ADD disorder",
   "Personality disorder",
-  "PTSD",
+  #"PTSD", #PTSD is no longer in the models
   "Pt has provided saliva kit"
 )
 
@@ -1050,6 +1055,8 @@ exploratory_ZINB_model1$p_value <- as.numeric(exploratory_ZINB_model1$p_value)
 #Create column to show whether factor meets adjusted p value threshold
 exploratory_ZINB_model1 <- exploratory_ZINB_model1 %>% 
   mutate(
+    p_value = format.pval(p_value,
+                          digits = 2),
     threshold_adj_sig = case_when(
         p_value <= adj_p_value_threshold ~ "Significant",
         p_value > adj_p_value_threshold ~ "Not-significant"
@@ -1176,6 +1183,8 @@ exploratory_ZINB_model2$p_value <- as.numeric(exploratory_ZINB_model2$p_value)
 #Create column to show whether factor meets adjusted p value threshold
 exploratory_ZINB_model2 <- exploratory_ZINB_model2 %>% 
   mutate(
+    p_value = format.pval(p_value,
+                          digits = 2),
     threshold_adj_sig = case_when(
         p_value <= adj_p_value_threshold ~ "Significant",
         p_value > adj_p_value_threshold ~ "Not-significant"
