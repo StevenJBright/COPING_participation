@@ -91,7 +91,7 @@ explanatory_variables <- c(
   "asd_labelled",
   "ADHD_ADD_labelled",
   "personality_disorder_labelled",
-  "PTSD_labelled",
+  #"PTSD_labelled", # Hasing this out because it turns to NA in models after adding anx/dep comorbidity
   "startDate",
   "kit_returned_labelled"
   #joined_coping_first_invitation_labelled,
@@ -124,7 +124,7 @@ ZINB_model1_variables <- c(
     "asd_labelled",
     "ADHD_ADD_labelled",
     "personality_disorder_labelled",
-    "PTSD_labelled",
+    #"PTSD_labelled", #Causes an error after adding anx/dep comorbidity variable
     "kit_returned_labelled"
     #"startDate" #Throws error
     )
@@ -244,7 +244,7 @@ aim1_LR_model_names <- c(
   "asd_labelledAutistic spectrum disorder",
   "ADHD_ADD_labelledADHD or ADD disorder",
   "mhd.personality_disorder_labelledPersonality disorder",
-  "PTSD_labelledPost-traumatic stress disorder",
+  #"PTSD_labelledPost-traumatic stress disorder", # turns to NA in models after adding anx/dep comorbidity
   "startDate",
   "kit_returnedPt has provided saliva kit"
   #"joined_coping_first_invitationCompleted COPING baseline before 1st follow-up"
