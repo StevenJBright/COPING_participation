@@ -521,6 +521,9 @@ explanatory_variable_levels <- c(
   "1 physical health disorder",
   "2+ physical health disorders",
   "MH_disorders_total_count",
+  "depressive_and_anxiety_comorbidity_labelledDepressive and anxiety disorder",
+  "depressive_and_anxiety_comorbidity_labelledDepressive disorder only",
+  "depressive_and_anxiety_comorbidity_labelledAnxiety disorder only",
   "Eating disorder",
   "OCRDs",
   "Psychotic and bipolar disorder",
@@ -529,7 +532,7 @@ explanatory_variable_levels <- c(
   "ASD",
   "ADHD or ADD disorder",
   "Personality disorder",
-  "PTSD",
+  #"PTSD", #Removing PTSD because not in models anymore
   "startDate",
   "Pt has provided saliva kit"
 )
