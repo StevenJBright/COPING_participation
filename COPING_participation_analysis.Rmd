@@ -285,6 +285,21 @@ glad_coping_participation_returned_kit$depressive_and_anxiety_comorbidity_labell
         ref = "Depressive and anxiety disorder")
 ```
 
+##Adjusted p value threshold
+
+24/07/2022
+Since we are running 6 models in total, we need to adjust the p-value threshold
+by 6 to adjust for multiple testing. This method was preferred to adjusting the 
+actual p-values themselves by the authors.
+
+```{r Create adjusted p-value threshold object}
+adj_p_value_threshold <- format.pval(pv = 0.05 / 6,
+                                     digits = 2)
+
+#Check threshold
+adj_p_value_threshold
+```
+
 #Aim 1 Logistic regression model
 
 Our first aim is to see whether participation in the COPING baseline is 
@@ -332,19 +347,23 @@ aim1_LR_model_tidy <- tidy(
     Significance
   ) %>% 
   mutate(
-    adj.p.value = p.adjust(p.value, 
-                           "bonferroni"),
-    adj_significance = case_when(
-        adj.p.value <= 0.001 ~ "***",
-        adj.p.value <= 0.01 ~ "**",
-        adj.p.value <= 0.05 ~ "*",
-        adj.p.value > 0.05 ~ ""
-      ),
+    #adj.p.value = p.adjust(p.value, 
+    #                       "bonferroni"),
+    #adj_significance = case_when(
+    #    adj.p.value <= 0.001 ~ "***",
+    #    adj.p.value <= 0.01 ~ "**",
+    #    adj.p.value <= 0.05 ~ "*",
+    #    adj.p.value > 0.05 ~ ""
+    #  ),
     OR = round(OR, 2),
     `CI 95% lower` = round(`CI 95% lower`, 2),
     `CI 95% upper` = round(`CI 95% upper`, 2),
     p.value = format.pval(pv = p.value,
-                          digits = 2)
+                          digits = 2),
+    threshold_adj_sig = case_when(
+      p.value <= adj_p_value_threshold ~ "Significant",
+      p.value > adj_p_value_threshold ~ "Not-significant"
+        )
     )
 
 #Check output
