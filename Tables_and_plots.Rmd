@@ -45,6 +45,7 @@ library(tidyverse)
 
 ```{r Create colour palettes}
 
+glad_colour <- "#EFC10B"
 glad_coping_palette2 <- c("#EFC10B", "#B7DEE8")
 glad_coping_palette3 <- c("#EFC10B", "#B7DEE8", "#0403ff")
 
@@ -74,6 +75,57 @@ glad_coping_participation <- read_rds(paste0(processed_data_path, processed_data
 glad_coping_participation %>% 
   head()
 
+```
+
+#Create COPING survey completion graph
+This graph will visualise the completion of the COPING surveys across the 
+COPING study.
+
+```{r Visualise distribution of COPING surveys completed}
+glad_coping_participation %>% 
+  group_by(total_COPING_waves) %>% 
+  count()
+```
+
+```{r Get N participants for plot}
+#Number or participants who completed baseline but no follow-up surveys
+N_no_followups <- glad_coping_participation %>% 
+  filter(completed_baseline == 1,
+    total_COPING_waves == 0) %>% 
+  nrow()
+
+#Number of participants who completed baseline survey and at least one survey
+N_followups <- glad_coping_participation %>% 
+  filter(completed_baseline == 1,
+         total_COPING_waves != 0) %>% 
+  nrow()
+
+#Check results
+N_no_followups
+N_followups
+```
+
+```{r Plot COPING surveys completed}
+glad_coping_participation %>% 
+  filter(total_COPING_waves != 0) %>% 
+  ggplot(aes(x = total_COPING_waves)) +
+  geom_bar(fill = glad_colour,
+           colour = "black") +
+  labs(title = "Distribution of completed follow-up surveys amongst GLAD Study participants",
+       subtitle = paste0("No. of pt's who completed at least one follow-up: ", N_followups),
+       caption = paste0("No. of pt's completing no surveys: ", N_no_followups),
+       y = "N",
+       x = "No. of surveys completed") +
+  scale_x_continuous(limits = c(NA, NA),
+                   breaks = seq(1, 14, 1)) +
+  scale_y_continuous(limits = c(0, 2000),
+                     breaks = seq(0, 2000, 500)) +
+  geom_text(aes(y = ..prop..,
+                label = ..count..), 
+            stat = "count",
+            vjust = -1,
+            nudge_y = .01) +
+  theme_bw()
 ```
 
 #Plots: Participation in the COPING baseline
@@ -391,13 +443,70 @@ demographics_COPING_waves_plot <- grid.arrange(ethnic_minority_COPING_waves_plot
 
 #Summary tables
 
-Want to create x2 tables
+We want to caclucate/create three things:
 
-- One summarising the sociodemographic and psychiatric characteristics of those
-participants who did/didn't complete the COPING baseline
+- Descriptive statistics for continuous variables
 
-- One summarising the sociodemographics and psychiatric characteristics of those
-participants who completed the follow-ups/baseline only participants
+- Create a table summarising the sociodemographic and psychiatric characteristics 
+of those participants who did/didn't complete the COPING baseline
+
+- Create a table summarising the sociodemographics and psychiatric characteristics 
+of those participants who completed the follow-ups/baseline only participants
+
+##Descriptive statistics
+
+```{r Create vector of continuous variables}
+
+continuous_variables <- c(
+  "age_cleaned",
+  "gad.sum_score",
+  "phq.sum_score",
+  "audit.sum_score",
+  "MH_disorders_total_count"
+)
+
+```
+
+```{r Calculate descriptive statistics for continous variables}
+
+glad_coping_participation_desc <- glad_coping_participation %>% 
+  select(all_of(continuous_variables),
+         completed_baseline_labelled,
+         total_COPING_waves_binary_labelled)
+
+glad_coping_participation_desc %>% 
+  summarise(across(all_of(continuous_variables),
+                   list(m = mean,
+                        std_d = sd),
+                   na.rm = TRUE))
+
+```
+
+```{r Calculate descriptive statistics grouped by COPING baseline completion}
+
+glad_coping_participation_desc %>% 
+  group_by(completed_baseline_labelled) %>% 
+  summarise(
+    across(all_of(continuous_variables), 
+           list(m = mean, 
+                std_d = sd), 
+           na.rm = TRUE)
+    )
+
+```
+
+```{r Calculate descriptive statistics grouped by binary follow-up survey count}
+
+glad_coping_participation_desc %>% 
+  group_by(total_COPING_waves_binary_labelled) %>% 
+  summarise(
+    across(all_of(continuous_variables), 
+           list(m = mean, 
+                std_d = sd), 
+           na.rm = TRUE)
+    )
+
+```
 
 ##COPING baseline participation table
 
@@ -436,15 +545,29 @@ COPING_waves_table_variable_exclusions <- c(
   "anxiety_disorder_labelled",
   "psychotic_disorder_labelled",
   "bipolar_disorder_labelled",
+  "age_groups_labelled",
+  "joined_coping_first_invitation_labelled",
+  #"depressive_and_anxiety_comorbidity_labelled",
+  "personality_cluster_A_labelled",
+  "personality_cluster_B_labelled",
+  "personality_cluster_C_labelled",
+  "mental_health_comorbidities_labelled",
   "completed_baseline_labelled",
   "total_COPING_waves_labelled"
 )
 
 ```
 
+```{r Filter for participants who completed the COPING baseline}
+
+completed_COPING_baseline_pts <- glad_coping_participation %>% 
+  filter(completed_baseline == 1)
+
+```
+
 ```{r Get N and percentage values for COPING follow-ups}
 
-glad_coping_participation %>% 
+completed_COPING_baseline_pts %>% 
   select(all_of(ends_with("_labelled"))) %>%
   select(-all_of(COPING_waves_table_variable_exclusions)) %>% 
   tbl_summary(missing_text = "Missing",
@@ -452,130 +575,9 @@ glad_coping_participation %>%
 
 ```
 
-#Correlation matrices
+#Correlations
 
-```{r Create correlation matrix for sociodemographic variables}
-
-#Create character vector of sociodemographic variables
-sociodemographic_variable_names <- c(
-  "age_cleaned",
-  "gender_recode",
-  "highest_education",
-  "dem.questions_based_ethnic_origin",
-  "dem.what_is_your_current_employment_status",
-  "dem.what_is_your_current_maritalrelationship_status",
-  "kit_returned",
-  "joined_coping_first_invitation"
-)
-
-#Select correlation variables
-sociodemographic_correlation_vars <- glad_coping_participation %>% 
-  select(all_of(sociodemographic_variable_names))
-
-#Get correlations
-all.corr.mat_sociodemographic <- sociodemographic_correlation_vars %>% 
-  hetcor(use = "pairwise.complete.obs")
-
-```
-
-```{r Save cormat as a matrix object}
-
-all.corr.matrix_sociodemographic <- as.matrix(all.corr.mat_sociodemographic)
-
-```
-
-```{r Save p values}
-
-all.p.matrix_sociodemographic <- as.matrix(all.corr.mat_sociodemographic$tests)
-
-```
-
-```{r Create correlation plot for sociodemographic variables}
-
-all.corr.matrix_sociodemographic %>%
-  corrplot(method = "color", # objects to represent the correlations on plot
-         type = "lower", # only use the lower triangle of the matrix
-         diag = FALSE, # do not show the correlations on the diagonal
-         addgrid.col = NA,
-         addCoef.col = "black", # colour for the correlation coefficients in the plot
-         tl.cex = 0.7, #size of text
-         tl.col = "black",
-         col=colorRampPalette(c("dodgerblue4",
-                                "white",
-                                "firebrick4"))(200), # colours for correlations
-         # Combine with significance
-         p.mat = all.p.matrix_sociodemographic, # Matrix with p values
-         sig.level = 0.01, # Choose significant level
-         insig = "blank") # Nonsignificant correlations have no colour
-
-```
-
-###Psychiatric and health correlation matrix
-
-```{r Get the correlations for the psychiatric and health vars}
-
-#Create character vector of psychiatric and health variables
-psychiatric_and_health_variable_names <- c(
-  "phq.sum_score",
-  "gad.sum_score",
-  "audit.sum_score",
-  "dem.select_the_box_that_best_describes_you",
-  "physical_health_comorbidities",
-  "mental_health_comorbidities",
-  "depressive_and_anxiety_comorbidity",
-  "eating_disorders",
-  "OCRDs",
-  "psychotic_and_biploar_disorder",
-  "mhd.asd",
-  "mhd.addadhd",
-  "mhd.personality_disorder"
-)
-
-#Select correlation variables
-psychiatric_and_health_correlation_vars <- glad_coping_participation %>% 
-  select(all_of(psychiatric_and_health_variable_names))
-
-#Get correlations
-all.corr.mat_psychatric_and_health <- psychiatric_and_health_correlation_vars %>% 
-  hetcor(use = "pairwise.complete.obs")
-
-```
-
-```{r Save cormat as a matrix object}
-
-all.corr.matrix_psychiatric_and_health <- as.matrix(all.corr.mat_psychatric_and_health)
-
-```
-
-```{r Save p values}
-
-all.p.matrix_psychiatric_and_health <- as.matrix(all.corr.mat_psychatric_and_health$tests)
-
-```
-
-```{r Create correlation plot for psychiatric and health variables}
-
-all.corr.matrix_psychiatric_and_health %>%
-  corrplot(method = "color", # objects to represent the correlations on plot
-         type = "lower", # only use the lower triangle of the matrix
-         diag = FALSE, # do not show the correlations on the diagonal
-         addgrid.col = NA,
-         addCoef.col = "black", # colour for the correlation coefficients in the plot
-         tl.cex = 0.7, #size of text
-         tl.col = "black",
-         col=colorRampPalette(c("dodgerblue4",
-                                "white",
-                                "firebrick4"))(200), # colours for correlations
-         # Combine with significance
-         p.mat = all.p.matrix_psychiatric_and_health, # Matrix with p values
-         sig.level = 0.01, # Choose significant level
-         insig = "blank") # Nonsignificant correlations have no colour
-
-```
-
-#Testing 
-
-```{r Correlation variables}
+```{r Calculate correlations}
 
 correlation_vars <- c(
   "age_cleaned",
@@ -584,22 +586,23 @@ correlation_vars <- c(
   "dem.questions_based_ethnic_origin",
   "dem.what_is_your_current_employment_status",
   "dem.what_is_your_current_maritalrelationship_status",
-  "kit_returned",
-  "joined_coping_first_invitation",
   "phq.sum_score",
   "gad.sum_score",
   "audit.sum_score",
   "dem.select_the_box_that_best_describes_you",
   "physical_health_comorbidities",
-  "mental_health_comorbidities",
+  "MH_disorders_total_count",
   "depressive_and_anxiety_comorbidity",
   "eating_disorders",
   "OCRDs",
   "psychotic_and_biploar_disorder",
-  "mhd.ptsd",
   "mhd.asd",
   "mhd.addadhd",
-  "mhd.personality_disorder"
+  "mhd.personality_disorder",
+  "mhd.ptsd",
+  "kit_returned",
+  "completed_baseline",
+  "total_COPING_waves"
 )
 
 #Select correlation variables
@@ -608,39 +611,17 @@ correlation_vars_data <- glad_coping_participation %>%
 
 #Get correlations
 all.corr.mat <- correlation_vars_data %>% 
-  hetcor(use = "pairwise.complete.obs")
+  cor(use = "pairwise.complete.obs")
 
 ```
 
-```{r Save cormat as a matrix object}
+```{r Plot the correlations}
 
-all.corr.matrix <- as.matrix(all.corr.mat)
-
-```
-
-```{r Save p values}
-
-all.p.matrix <- as.matrix(all.corr.mat$tests)
-
-```
-
-```{r Create corrplot of all variables}
-
-all.corr.matrix %>%
-  corrplot(method = "color", # objects to represent the correlations on plot
-         type = "lower", # only use the lower triangle of the matrix
-         diag = FALSE, # do not show the correlations on the diagonal
-         addgrid.col = NA,
-         addCoef.col = "black", # colour for the correlation coefficients in the plot
-         tl.cex = 0.5, #size of text
-         number.cex = 0.5,
-         tl.col = "black",
-         col=colorRampPalette(c("dodgerblue4",
-                                "white",
-                                "firebrick4"))(200), # colours for correlations
-         # Combine with significance
-         p.mat = all.p.matrix, # Matrix with p values
-         sig.level = 0.01, # Choose significant level
-         insig = "blank")
+all.corr.mat %>% 
+  corrplot(method = "color",
+           addCoef.col = 1,
+           number.cex = 0.3,
+           tl.cex = 0.4,
+           type = "lower")
 
 ```

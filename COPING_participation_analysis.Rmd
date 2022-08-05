@@ -10,363 +10,205 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r Clean global environment}
-
 remove(list = ls())
-
 ```
 
 ```{r Turn scientific notation off}
-
 #Change it to "= 0" to turn it back on
 options(scipen = 999)
-
 ```
 
 #Call libraries
 
 ```{r Install packages}
-
 #install.packages("broom")
 #install.packages("knitr)
 #install.packages("car")
-#install.packages("tidyverse")
 #install.packages("rstatix")
-
+#install.packages("pscl")
+#install.packages("boot")
+#install.packages("stats")
+#install.packages("rcompanion")
+#install.packages("MASS")
+#install.packages("openxlsx")
+#install.packages("tidyverse")
 ```
 
 ```{r Load libraries}
-
 library(broom)
 library(knitr)
 library(car)
 library(rstatix)
+library(pscl)
+library(boot)
+library(stats)
+library(rcompanion)
+library(MASS)
+library(openxlsx)
 library(tidyverse)
-
 ```
 
 #Read in data
 
 ```{r Source paths}
-
 source("..//COPING_participation_paths.r")
+```
 
+```{r Source functions}
+source("..//COPING_participation_functions.r")
 ```
 
 ```{r Read in glad coping participation data}
-
-glad_coping_participation_raw <- read_rds(paste0(processed_data_path, processed_data_name))
+glad_coping_participation <- read_rds(paste0(processed_data_path, processed_data_name))
 
 #Check data
-glad_coping_participation_raw %>% 
+glad_coping_participation %>% 
   head()
-
 ```
 
-#Create tables for chi2 tests
+#Preliminaries
+##Variables
 
-Sociodemographic variables:
+```{r Define explanatory and outcome variables}
+#Create explanatory variables vector
+explanatory_variables <- c(
+  "age_cleaned",
+  "gender_recode_labelled",
+  "highest_education_labelled",
+  "ethnicity_labelled",
+  "employment_labelled",
+  "partnership_status_labelled",
+  "phq.sum_score",
+  "gad.sum_score",
+  "audit.sum_score",
+  "smoking_status_labelled",
+  "physical_health_comorbidities_labelled",
+  "MH_disorders_total_count",
+  "depressive_and_anxiety_comorbidity_labelled",
+  "eating_disorders_labelled",
+  "OCRDs_labelled",
+  "psychotic_and_biploar_disorder_labelled",
+  "asd_labelled",
+  "ADHD_ADD_labelled",
+  "personality_disorder_labelled",
+  #"PTSD_labelled", # Hasing this out because it turns to NA in models after adding anx/dep comorbidity
+  "startDate",
+  "kit_returned_labelled"
+  #joined_coping_first_invitation_labelled,
+)
 
-Age (age groups)
-Gender
-Ethnicity
-Education
-Employment
-Partnership status
-
-```{r Run chi2 test for gender and participation in the COPING baseline}
-
-#NOTE: Topher suggests running chi2 tests like this.
-
-# gender_recode_baseline_participation_chi2_test <- glad_coping_participation_raw %>%
-#   count(gender_recode, completed_baseline) %>%
-#   spread(key = completed_baseline, value = n) %>%
-#   select(-gender_recode) %>% 
-#   chisq.test() %>%
-#   glance() %>%
-#   add_column(
-#     Variable = "gender_recode", # Change variable name here -> use nice label
-#     .before = 1)
-
+#Create dependent variable vectors
+coping_baseline_outcome <- c("completed_baseline_labelled")
+coping_followups_outcome <- c("total_COPING_waves")
+providing_kit_outcome <- c("kit_returned_labelled")
 ```
 
-```{r Run pairwise chi2 tests for gender and participation in the COPING baseline}
+```{r Put ZINB explanatory variables into a vector}
+ZINB_model1_variables <- c(
+  "age_cleaned",  
+    "gender_recode_labelled", 
+    "highest_education_labelled",
+    "ethnicity_labelled",
+    "employment_labelled", 
+    "partnership_status_labelled",
+    "phq.sum_score",
+    "gad.sum_score", 
+    "audit.sum_score",
+    "smoking_status_labelled",
+    "physical_health_comorbidities_labelled",
+    "MH_disorders_total_count",
+    "depressive_and_anxiety_comorbidity_labelled",
+    "eating_disorders_labelled",
+    "OCRDs_labelled",
+    "psychotic_and_biploar_disorder_labelled",
+    "asd_labelled",
+    "ADHD_ADD_labelled",
+    "personality_disorder_labelled",
+    #"PTSD_labelled", #Causes an error after adding anx/dep comorbidity variable
+    "kit_returned_labelled"
+    #"startDate" #Throws error
+    )
 
-# pairwise_gender_chi2_tests <- glad_coping_participation_raw %>%
-#   count(gender_recode, completed_baseline) %>%
-#   spread(key = gender_recode, value = n) %>%
-#   select(-completed_baseline) %>% 
-#   pairwise_chisq_gof_test(
-#     p.adjust.method = "BH"
-#   ) %>%
-#   mutate(
-#     Comparison = paste(group1,"vs.",group2, sep = " "),
-#     Effect = p.adj.signif
-#   ) %>%
-#   select(
-#     Comparison,
-#     Effect
-#   ) %>%
-#   pivot_longer(
-#     cols = c("Effect"),
-#     values_to = "Difference") %>%
-#   select(-name) %>%
-#   pivot_wider(
-#     names_from = "Comparison",
-#     values_from = "Difference")
+#Explanatory variables for exploratory models 
+##Exploratory model 1: Without the saliva kit variable
+exploratory_ZINB_model1_variables <- ZINB_model1_variables %>% 
+  str_subset(pattern = "kit_returned_labelled",
+             negate = TRUE)
 
+##Exploratory model 2: Only pt's who have provided a saliva kit
+exploratory_ZINB_model2_variables <- exploratory_ZINB_model1_variables
 ```
 
-```{r Create contingency table for age}
+##Formulas
 
-age_groups_contingency_table <- table(glad_coping_participation_raw$age_groups_labelled,
-                                      glad_coping_participation_raw$completed_baseline_labelled)
+```{r Create aim 1 model formulas}
+#Main aim1 formula
+aim1_baseline_participation_formula <- as.formula(paste(coping_baseline_outcome, 
+                                                        paste(explanatory_variables, 
+                                                              collapse=" + "), 
+                                                        sep = " ~ "))
 
-#Check output
-age_groups_contingency_table
+#Exploratory aim1 formulas
+##Exploratory model 1: Omitting the saliva kit variable
+exploratory_LR_model1_explan_vars <- explanatory_variables %>% 
+  str_subset(pattern = "kit_returned_labelled",
+             negate = TRUE)
 
+exploratory_LR_model1_formula <- as.formula(paste(coping_baseline_outcome, 
+                                                  paste(exploratory_LR_model1_explan_vars, 
+                                                        collapse=" + "), 
+                                                  sep = " ~ "))
+
+##Exploratory model 2: Only participants who have returned a saliva kit
+exploratory_LR_model2_explan_vars <- explanatory_variables %>% 
+  str_subset(pattern = "kit_returned_labelled",
+             negate = TRUE)
+
+exploratory_LR_model2_formula <- as.formula(paste(coping_baseline_outcome, 
+                                                  paste(exploratory_LR_model2_explan_vars, 
+                                                        collapse=" + "), 
+                                                  sep = " ~ "))
+
+##Exploratory model 3: Providing a saliva kit as the outcome variable
+exploratory_LR_model3_explan_vars <- explanatory_variables %>% 
+  str_subset(pattern = "kit_returned_labelled",
+             negate = TRUE)
+
+exploratory_LR_model3_formula <- as.formula(paste(providing_kit_outcome, 
+                                                  paste(exploratory_LR_model3_explan_vars, 
+                                                        collapse=" + "), 
+                                                  sep = " ~ "))
 ```
 
-```{r Create contingency table for gender}
+```{r Create aim 2 model formulas}
+#Explanatory aim2 model formulas
+##Explanatory model 1: Without the saliva kit variable
+exploratory_ZINB_model1_exclude_vars <- c("kit_returned_labelled|startDate")
 
-gender_contingency_table <- table(glad_coping_participation_raw$gender_recode_labelled,
-                                  glad_coping_participation_raw$completed_baseline_labelled)
+exploratory_ZINB_model1_explan_vars <- explanatory_variables %>% 
+  str_subset(pattern = exploratory_ZINB_model1_exclude_vars,
+             negate = TRUE)
 
-#Check output
-gender_contingency_table
+exploratory_ZINB_model1_formula <- as.formula(paste(coping_baseline_outcome, 
+                                                  paste(exploratory_ZINB_model1_explan_vars, 
+                                                        collapse=" + "), 
+                                                  sep = " ~ "))
 
+##Explanatory model 2: Only pt's who returned their saliva kit
+exploratory_ZINB_model2_formula <- exploratory_ZINB_model1_formula
 ```
 
-```{r Create contingency table for ethnicity}
-
-ethnicity_contingency_table <- table(glad_coping_participation_raw$ethnicity_labelled,
-                                     glad_coping_participation_raw$completed_baseline_labelled)
-
-#Check output
-ethnicity_contingency_table
-
-```
-
-```{r Create contingency table for Education}
-
-education_contingency_table <- table(glad_coping_participation_raw$highest_education,
-                                     glad_coping_participation_raw$completed_baseline_labelled)
-
-#Check output
-education_contingency_table
-
-```
-
-```{r Create contingency table for employment}
-
-employment_contingency_table <- table(glad_coping_participation_raw$employment_labelled,
-                                      glad_coping_participation_raw$completed_baseline_labelled)
-
-#Check output
-employment_contingency_table
-
-```
-
-```{r Partnership status}
-
-partnership_contingency_table <- table(glad_coping_participation_raw$partnership_status_labelled,
-                                       glad_coping_participation_raw$completed_baseline_labelled)
-
-#Check output
-partnership_contingency_table
-
-```
-
-#Run aim 1 chi2 tests
-
-The aim here is to see whether there are any significant differences between 
-the GLAD Study paticipants who did and did not take part in the COPING baseline.
-
-##Age
-
-```{r Chi2 test for age}
-
-age_groups_chi2_test <- chisq.test(age_groups_contingency_table,
-           correct = TRUE)
-
-#Check output
-age_groups_chi2_test
-
-```
-
-```{r Create post_hoc function for sig chi2 results}
-
-post_hoc_chi2_func <- function(contingency_table, correct_adj = FALSE, sig_level = 0.05){
-  
-  #Get the adjusted residuals
-  chi2_result <- chisq.test(contingency_table,
-             correct = correct_adj)$stdres
-  
-  #Make Bonferonni correction
-  print(bonferroni <- sig_level/(nrow(contingency_table) * ncol(contingency_table)))
-  
-  #Get critical z value
-  print(qnorm(bonferroni/2))
-
-  return(chi2_result)
-  
-}
-
-```
-
-```{r Run follow-up tests for age groups}
-
-post_hoc_chi2_func(age_groups_contingency_table,
-              correct_adj = TRUE)
-
-```
-
-##Gender
-
-```{r Chi2 test for gender}
-
-gender_chi2_test <- chisq.test(gender_contingency_table,
-           correct = TRUE)
-
-#Check output
-gender_chi2_test
-
-```
-
-```{r Post hoc testing for gender}
-
-post_hoc_chi2_func(gender_contingency_table,
-              correct_adj = TRUE)
-
-```
-
-##Ethnicity
-
-```{r Chi2 test for ethnicity}
-
-ethnicity_chi2_test <- chisq.test(ethnicity_contingency_table,
-           correct = TRUE)
-
-#Check output
-ethnicity_chi2_test
-
-```
-
-```{r Post-hoc testing for ethnicity chi2}
-
-post_hoc_chi2_func(ethnicity_contingency_table,
-                   correct_adj = TRUE)
-
-```
-
-##Education
-
-```{r Chi2 test for education}
-
-education_chi2_test <- chisq.test(education_contingency_table,
-           correct = TRUE)
-
-#Check output
-education_chi2_test
-
-```
-
-```{r Post-hoc testing for education chi2 test}
-
-post_hoc_chi2_func(education_contingency_table,
-                   correct_adj = TRUE)
-
-```
-
-##Employment
-
-```{r Chi2 test for employment}
-
-employment_chi2_test <- chisq.test(employment_contingency_table,
-           correct = TRUE)
-
-#Check output
-employment_chi2_test
-
-```
-
-```{r Post-hoc testing for employment chi2 test}
-
-post_hoc_chi2_func(employment_contingency_table,
-                   correct_adj = TRUE)
-
-```
-
-##Partnership status
-
-```{r Chi2 test for partnership status}
-
-partnership_chi2_test <- chisq.test(partnership_contingency_table,
-           correct = TRUE)
-
-#Check output
-partnership_chi2_test
-
-```
-
-```{r Post-hoc testing for partnership status chi2 test}
-
-post_hoc_chi2_func(partnership_contingency_table,
-                   correct_adj = TRUE)
-
-```
-
-#Aim 1 Logistic regression model
-
-Our first aim is to see whether participation in the COPING baseline is 
-explained by the sociodemographic, mental and physical health characteristics
-of the GLAD Study participants.
-
-```{r Run complete LR model}
-
-#Note: Have left out the "depressive_and_anxiety_comorbidity_labelled" variable
-#because this is acting as the reference group for MH diagnoses.
-
-complete_LR_model <- glm(
-  formula = completed_baseline_labelled ~ age_cleaned + 
-    gender_recode_labelled +
-    highest_education_labelled +
-    ethnicity_labelled +
-    employment_labelled +
-    partnership_status_labelled +
-    phq.sum_score + 
-    gad.sum_score +
-    audit.sum_score +
-    smoking_status_labelled +
-    physical_health_comorbidities_labelled +
-    mental_health_comorbidities_labelled +
-    eating_disorders_labelled +
-    OCRDs_labelled +
-    psychotic_and_biploar_disorder_labelled +
-    asd_labelled +
-    ADHD_ADD_labelled +
-    personality_disorder_labelled +
-    startDate + 
-    kit_returned_labelled +
-    joined_coping_first_invitation_labelled,
-  family = "binomial",
-  data = glad_coping_participation_raw)
-
-#Check output
-summary(complete_LR_model)
-
-```
-
-```{r Put complete LR model names into a vector}
-
-#Put all LR variable names into vector in the order they appear in summary(model4)
-complete_LR_model_names <- c(
+##Reference groups
+This is for creating tidy output from the models.
+
+```{r Put aim1 LR model names into a vector}
+aim1_LR_model_names <- c(
   "Intercept",
   "age_cleaned",
   "gender_recode_labelledFemale",
   "gender_recode_labelledNon-binary/prefer to self-define",
   "highest_education_labelledA levels/AS levels or equivalent",
-  "highest_education_labelledO levels/GCSEs or equivalent",
-  "highest_education_labelledCSEs or equivalent",
+  "highest_education_labelledO levels/GCSEs or CSEs or equivalent",
   "highest_education_labelledNVQ or HND or HNC or equivalent",
   "highest_education_labelledNone of the above",
   "ethnicity_labelledMixed",
@@ -390,8 +232,10 @@ complete_LR_model_names <- c(
   "smoking_status_labelledI used to smoke",
   "physical_health_comorbidities_labelled1 physical health disorder",
   "physical_health_comorbidities_labelled2+ physical health disorders",
-  "mental_health_comorbidities_labelled1 mental health disorder",
-  "mental_health_comorbidities_labelled2+ mental health disorders",
+  "MH_disorders_total_count",
+  "depressive_and_anxiety_comorbidity_labelledDepressive and anxiety disorder",
+  "depressive_and_anxiety_comorbidity_labelledDepressive disorder only",
+  "depressive_and_anxiety_comorbidity_labelledAnxiety disorder only",
   "eating_disorders_labelledEating disorder",
   "OCRDs_labelledOCRDs",
   "psychotic_and_biploar_disorder_labelledPsychotic and bipolar disorder",
@@ -400,22 +244,371 @@ complete_LR_model_names <- c(
   "asd_labelledAutistic spectrum disorder",
   "ADHD_ADD_labelledADHD or ADD disorder",
   "mhd.personality_disorder_labelledPersonality disorder",
+  #"PTSD_labelledPost-traumatic stress disorder", # turns to NA in models after adding anx/dep comorbidity
   "startDate",
-  "kit_returnedPt has provided saliva kit",
-  "joined_coping_first_invitationCompleted COPING baseline before 1st follow-up"
+  "kit_returnedPt has provided saliva kit"
+  #"joined_coping_first_invitationCompleted COPING baseline before 1st follow-up"
 )
+```
 
+```{r Reference groups for exploratory models}
+#Exploratory model 1: Remove the saliva kit provided variable
+exploratory_LR_model1_names <- aim1_LR_model_names %>% 
+  str_subset(pattern = "kit_returnedPt has provided saliva kit",
+             negate = TRUE)
+
+#Exploratory model 2: Only pt's who have provided a saliva kit
+exploratory_LR_model2_names <- exploratory_LR_model1_names
+
+#Exploratory model 3: Providing a saliva kit as the outcome variable
+exploratory_LR_model3_names <- exploratory_LR_model1_names
+```
+
+##Kit providers subset
+
+This data set contains only the participants who have returned a saliva kit 
+- important for exploratory models.
+
+```{r Filter pts who have returned a kit}
+glad_coping_participation_returned_kit <- glad_coping_participation %>% 
+  filter(kit_returned == 1)
+```
+
+```{r Change reference group of depression/anxiety comorbidity}
+#We want the depression/anxiety comorbidity to be the reference group because it has the largest N
+##Full sample
+glad_coping_participation$depressive_and_anxiety_comorbidity_labelled <- relevel(glad_coping_participation$depressive_and_anxiety_comorbidity_labelled,
+        ref = "Depressive and anxiety disorder")
+
+##Pt's who have provided a kit
+glad_coping_participation_returned_kit$depressive_and_anxiety_comorbidity_labelled <- relevel(glad_coping_participation_returned_kit$depressive_and_anxiety_comorbidity_labelled,
+        ref = "Depressive and anxiety disorder")
+```
+
+##Adjusted p value threshold
+
+24/07/2022
+Since we are running 6 models in total, we need to adjust the p-value threshold
+by 6 to adjust for multiple testing. This method was preferred to adjusting the 
+actual p-values themselves by the authors.
+
+```{r Create adjusted p-value threshold object}
+#Create p-value and no. of test objects
+standard_p_value_level <- 0.05
+no_of_tests <- 5
+
+#Create adjusted p value threshold
+adj_p_value_threshold <- format.pval(pv = standard_p_value_level / no_of_tests,
+                                     digits = 2)
+
+#Check threshold
+adj_p_value_threshold
+```
+
+#Aim 1 Logistic regression model
+
+Our first aim is to see whether participation in the COPING baseline is 
+explained by the sociodemographic, mental and physical health characteristics
+of the GLAD Study participants.
+
+```{r Run complete LR model}
+aim1_LR_model <- glm(
+  formula = aim1_baseline_participation_formula,
+  family = "binomial",
+  data = glad_coping_participation)
+
+#Check output
+summary(aim1_LR_model)
+```
+
+```{r Calculate nagelkerke effect size}
+aim1_LR_model %>% 
+  nagelkerke()
 ```
 
 ```{r Create tidy output for complete LR model}
-
 #Create tidy model output
-complete_LR_model_tidy <- tidy(
-  complete_LR_model,
+aim1_LR_model_tidy <- tidy(
+  aim1_LR_model,
   exponentiate = T,
   conf.int = T) %>%
   mutate(
-    Variable = complete_LR_model_names,
+    Variable = aim1_LR_model_names,
+    Significance = if_else(
+      p.value < 0.05, 
+      1,
+      0
+      ) %>%
+    recode_factor(
+        "0" = "Not-significant",
+        "1" = "Significant"
+      )) %>%
+  dplyr::select(
+    Variable,
+    OR = estimate,
+    `CI 95% lower` = conf.low,
+    `CI 95% upper` = conf.high,
+     p.value,
+    Significance
+  ) %>% 
+  mutate(
+    #adj.p.value = p.adjust(p.value, 
+    #                       "bonferroni"),
+    #adj_significance = case_when(
+    #    adj.p.value <= 0.001 ~ "***",
+    #    adj.p.value <= 0.01 ~ "**",
+    #    adj.p.value <= 0.05 ~ "*",
+    #    adj.p.value > 0.05 ~ ""
+    #  ),
+    OR = round(OR, 2),
+    `CI 95% lower` = round(`CI 95% lower`, 2),
+    `CI 95% upper` = round(`CI 95% upper`, 2),
+    p.value = format.pval(pv = p.value,
+                          digits = 2),
+    threshold_adj_sig = case_when(
+      p.value <= adj_p_value_threshold ~ "Significant",
+      p.value > adj_p_value_threshold ~ "Not-significant"
+        )
+    )
+
+#Check output
+aim1_LR_model_tidy
+```
+
+##Test model assumptions
+
+Checking LR assumptions in R: 
+http://www.sthda.com/english/articles/36-classification-methods-essentials/148-logistic-regression-assumptions-and-diagnostics-in-r/
+
+###Multicollinearity
+
+Check that all IVs are not highly correlated.
+
+```{r Get VIF values of final model}
+aim1_LR_model_VIF <- aim1_LR_model %>% 
+  vif()
+
+aim1_LR_model_VIF
+```
+
+###Linearity
+
+Check the relationship between the continuous predictor variables and the logit
+of the DV. This can be inspected visually by creating scatterplots between each
+predictor and the logit values.
+
+Note: We have to remove values that have 0 because when you log transform
+a variable, it throws an error if there are any 0's in the variable. See:
+https://stackoverflow.com/questions/31177795/error-in-glm-in-r
+
+```{r Remove observations that have 0 on the continuous variables}
+glad_coping_participation_lin <- glad_coping_participation %>% 
+  filter(gad.sum_score != 0,
+         phq.sum_score != 0,
+         audit.sum_score != 0)
+
+#Check new dimensions
+glad_coping_participation %>% 
+  dim()
+
+glad_coping_participation_lin %>% 
+  dim()
+```
+
+```{r LR model with interaction terms for continuous variables}
+linearity_model <- glm(
+  formula = completed_baseline_labelled ~ age_cleaned*log(age_cleaned) +
+    gad.sum_score*log(gad.sum_score) +
+    phq.sum_score*log(phq.sum_score) +
+    audit.sum_score*log(audit.sum_score),
+  family = "binomial",
+  data = glad_coping_participation_lin
+)
+
+linearity_model %>% 
+  summary()
+```
+
+###Outliers
+
+Anything > 1 is a cause for concern.
+
+```{r Check cooks distance values in LR model}
+plot(aim1_LR_model,
+     which = 4)
+```
+
+```{r Extract model results}
+LR.model_data <- augment(aim1_LR_model) %>% 
+  mutate(index = 1:n())
+
+#Check output
+LR.model_data %>% 
+  glimpse()
+```
+
+```{r Plot standardised residuals}
+LR.model_data %>% 
+  ggplot(aes(index, .std.resid)) +
+  geom_point(aes(colour = completed_baseline_labelled), alpha = .5) +
+  theme_minimal()
+```
+
+```{r Check standardised residuals > 3.3}
+LR.model_data %>% 
+  filter(abs(.std.resid) > 3.3)
+```
+
+##Plot LR model 1 results
+
+```{r Extract odds ratios and CI's}
+#Get OR's and CI's for explanatory variables
+or_CI <- round(exp(cbind(coef(aim1_LR_model), 
+                         confint(aim1_LR_model))), 
+               digits=3) %>% 
+  as.data.frame()
+
+#Create variable column with variable names
+or_CI <- or_CI %>% 
+  mutate(variable=rownames(or_CI)) # extract the variables from rownames
+  
+#Rename and reorder columns
+or_CI <- or_CI %>% 
+  rename("AOR" = "V1",
+         "lower_bound" = "2.5 %",
+         "upper_bound" = "97.5 %"
+         ) %>% 
+  select(
+    variable,
+    AOR,
+    lower_bound,
+    upper_bound
+  )
+
+or_CI
+```
+
+```{r Turn explanatory variable column into a factor for plot}
+#Create levels vector for explanatory variable column
+explanatory_variable_levels <- c(
+  "(Intercept)",
+  "Age",
+  "Female",
+  "Non-binary/prefer to self-define",
+  "A levels/AS levels or equivalent",
+  "GCSEs or CSEs or equivalent",
+  "NVQ or HND or HNC or equivalent",
+  "None of the above edu",
+  "Mixed",
+  "Asian or Asian British",
+  "Black or Black British",
+  "Arab",
+  "Other",
+  "Retired",
+  "Looking after home and/or family",
+  "Sickness or disabled",
+  "Unemployed",
+  "Doing unpaid or voluntary work",
+  "Student",
+  "None of the above employ",
+  "Relationship or married",
+  "Divorced/widowed/separated",
+  "phq.sum_score",
+  "gad.sum_score",
+  "audit.sum_score",
+  "I smoke now",
+  "I used to smoke",
+  "1 physical health disorder",
+  "2+ physical health disorders",
+  "MH_disorders_total_count",
+  "depressive_and_anxiety_comorbidity_labelledDepressive and anxiety disorder",
+  "depressive_and_anxiety_comorbidity_labelledDepressive disorder only",
+  "depressive_and_anxiety_comorbidity_labelledAnxiety disorder only",
+  "Eating disorder",
+  "OCRDs",
+  "Psychotic and bipolar disorder",
+  "Only psychotic disorder",
+  "Only bipolar disorder",
+  "ASD",
+  "ADHD or ADD disorder",
+  "Personality disorder",
+  #"PTSD", #Removing PTSD because not in models anymore
+  "startDate",
+  "Pt has provided saliva kit"
+)
+
+or_CI <- or_CI %>% 
+  mutate(variable = explanatory_variable_levels)
+
+or_CI$variable <- factor(or_CI$variable,
+                              levels = explanatory_variable_levels)
+
+#Check output
+or_CI
+```
+
+```{r Forest plot of LR results}
+plot_logit_model <- or_CI %>% 
+  slice(-1) %>% #remove row number 1 (The intercept) 
+  ggplot(aes(x = variable, y = AOR)) +
+  geom_point(shape = 15,
+             size  = 1, 
+             position = "dodge", 
+             color="black") + 
+  geom_errorbar(aes(ymin  = lower_bound,
+                    ymax  = upper_bound),
+                size  = 0.7,
+                position = "dodge", 
+                color= "#EFC10B") +
+  labs(title = "LR of participation in the COPING baseline survey",
+         x = "Explanatory variables",
+       y = "Adjusted odds ratios with 95% CI") +
+  coord_flip() + 
+  scale_y_continuous(breaks = seq(0, 4, 0.5),
+                     limits = c(0, 4)) +
+  scale_x_discrete(limits = rev) +
+  geom_hline(yintercept = 1, color = "red", size = 1) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(color = "black"),
+        axis.text.y = element_text(colour = "black"),
+         axis.ticks = element_line(color = "black"))
+
+#Check plot
+plot_logit_model
+```
+
+##Run exploratory LR models
+###Without saliva kit variable
+
+During the analysis, we began to think that it may be circular to include
+a measure of participation (providing a saliva kit for the GLAD study) as 
+a predictor of participation. Therefore, we want to re-run the LR model
+without the saliva kit predictor to see to what extent this influences the 
+results.
+
+```{r Run exploratory LR model1}
+exploratory_LR_model1 <- glm(
+  formula = exploratory_LR_model1_formula,
+  family = "binomial",
+  data = glad_coping_participation)
+
+#Check output
+summary(exploratory_LR_model1)
+```
+
+```{r Calculate nagelkerke effect size}
+exploratory_LR_model1 %>% 
+  nagelkerke()
+```
+
+```{r Create tidy output for exploratory LR model1}
+exploratory_LR_model1_tidy <- tidy(
+  exploratory_LR_model1,
+  exponentiate = T,
+  conf.int = T) %>%
+  mutate(
+    Variable = exploratory_LR_model1_names,
     Significance = if_else(
       p.value < 0.05, 
       1,
@@ -430,366 +623,62 @@ complete_LR_model_tidy <- tidy(
     OR = estimate,
     `CI 95% lower` = conf.low,
     `CI 95% upper` = conf.high,
-    `p value` = p.value,
+     p.value,
     Significance
-  )
-
-complete_LR_model_tidy %>% 
-  head(nrow(complete_LR_model_tidy))
-
-#Create kable output
-#complete_LR_model_kable <- kable(complete_LR_model_tidy[-c(1), ],
-#      digits = 2)
-
-```
-
-#Test assumptions of complete LR model
-
-Checking LR assumptions in R: 
-http://www.sthda.com/english/articles/36-classification-methods-essentials/148-logistic-regression-assumptions-and-diagnostics-in-r/
-
-##Multicollinearity
-
-Check that all IVs are not highly correlated.
-
-```{r Get VIF values of final model}
-
-complete_LR_model_VIF <- complete_LR_model %>% 
-  vif()
-
-complete_LR_model_VIF
-
-```
-
-##Linearity
-
-Check the relationship between the continuous predictor variables and the logit
-of the DV. This can be inspected visually by creating scatterplots between each
-predictor and the logit values.
-
-```{r Predict the probability (p) of participating in COPING baseline}
-
-COPING_baseline_probabilities <- complete_LR_model %>% 
-  predict(type = "response")
-
-#Create predicted COPING baseline case variable
-predicted_COPING_baseline_cases <- ifelse(COPING_baseline_probabilities > 0.5,
-                                          "positive",
-                                          "negative")
-#Check output
-predicted_COPING_baseline_cases %>% 
-  head()
-
-```
-
-```{r Create character vector with all the continuous predictors}
-
-continuous_predictors <- c(
-  "age_cleaned", 
-  "phq.sum_score", 
-  "gad.sum_score",
-  "audit.sum_score"
+  ) %>% 
+  mutate(
+    #adj.p.value = p.adjust(p.value, 
+    #                       "bonferroni"),
+    #adj_significance = case_when(
+    #    adj.p.value <= 0.001 ~ "***",
+    #    adj.p.value <= 0.01 ~ "**",
+    #    adj.p.value <= 0.05 ~ "*",
+    #    adj.p.value > 0.05 ~ ""
+    #  ),
+    OR = round(OR, 2),
+    `CI 95% lower` = round(`CI 95% lower`, 2),
+    `CI 95% upper` = round(`CI 95% upper`, 2),
+    p.value = format.pval(pv = p.value,
+                          digits = 2),
+    threshold_adj_sig = case_when(
+      p.value <= adj_p_value_threshold ~ "Significant",
+      p.value > adj_p_value_threshold ~ "Not-significant"
+        )
     )
 
+#Check output
+exploratory_LR_model1_tidy
 ```
 
-```{r Create data with no NAs on the LR predictors}
+###Only pt's who have provided a saliva kit
+17/07/2022
+After presenting the first draft of the paper to the GLAD analysis team,
+Prof. Gerome Breen suggested that instead of omitting the saliva kit variable,
+it would be better to run the LR model whilst only including the participants 
+who have provided a saliva kit.
 
-LR_predictors_without_NAs <- glad_coping_participation_raw %>% 
-  select(
-    age_cleaned, 
-    gender_recode_labelled,
-    highest_education_labelled,
-    ethnicity_labelled,
-    employment_labelled,
-    partnership_status_labelled,
-    phq.sum_score, 
-    gad.sum_score,
-    audit.sum_score,
-    smoking_status_labelled,
-    physical_health_comorbidities_labelled,
-    mental_health_comorbidities_labelled,
-    eating_disorders_labelled,
-    OCRDs_labelled,
-    psychotic_and_biploar_disorder_labelled,
-    asd_labelled,
-    ADHD_ADD_labelled,
-    personality_disorder_labelled,
-    startDate,
-    kit_returned_labelled,
-    joined_coping_first_invitation_labelled
-  ) %>% 
-  na.omit(.)
-
-#Check rows match the predict model
-COPING_baseline_probabilities %>% 
-  length()
-
-LR_predictors_without_NAs %>% 
-  nrow()
-
-```
-
-```{r Prepare data for linearity plot}
-
-#Select the continuous variables from the non-NA data
-continuous_LR_predictors_without_NA <- LR_predictors_without_NAs %>% 
-  select(all_of(continuous_predictors))
-
-LR_linearity_check <- continuous_LR_predictors_without_NA %>% 
-  mutate(logit = log(COPING_baseline_probabilities/(1-COPING_baseline_probabilities))) %>% 
-  gather(key = "predictors", value = "predictor.value", -logit)
+```{r Investigate factors associated with COPING baseline participation for kit returners}
+exploratory_LR_model2 <- glm(
+  formula = exploratory_LR_model2_formula,
+  family = "binomial",
+  data = glad_coping_participation_returned_kit)
 
 #Check output
-LR_linearity_check %>% 
-  glimpse()
-
+summary(exploratory_LR_model2)
 ```
 
-```{r Create linearity scatterplots}
-
-LR_linearity_check %>% 
-  ggplot(aes(logit, predictor.value)) +
-  geom_point(size = 0.5, alpha = 0.5) +
-  geom_smooth(method = "loess") +
-  theme_minimal() +
-  facet_wrap(~predictors, scales = "free_y")
-
+```{r Calculate nagelkerke effect size}
+exploratory_LR_model2 %>% 
+  nagelkerke()
 ```
 
-Checking linearity for LR: (Old video)
-https://www.youtube.com/watch?v=5TW_wWeTOe0
-
-```{r Get quartiles and calculaties probabilities of completing baseline}
-
-#Get age quartiles
-age_quartiles <- summary(glad_coping_participation_raw$age_cleaned)
-
-#Calculate probabilities of completing survey within each age quartile
-age_q1_prob <- glad_coping_participation_raw %>% 
-  filter(age_cleaned < 26) %>%
-  pull(completed_baseline) %>% 
-  mean(.)
-
-age_q2_prob <- glad_coping_participation_raw %>% 
-  filter(age_cleaned >= 26 & age_cleaned < 36) %>% 
-  pull(completed_baseline) %>% 
-  mean(.)
-
-age_q3_prob <- glad_coping_participation_raw %>% 
-  filter(age_cleaned >= 36 & age_cleaned < 49) %>% 
-  pull(completed_baseline) %>% 
-  mean(.)
-
-age_q4_prob <- glad_coping_participation_raw %>% 
-  filter(age_cleaned >= 49) %>% 
-  pull(completed_baseline) %>% 
-  mean(.)
-
-#Check proportion is right
-# glad_coping_participation_raw %>% 
-#   filter(age_cleaned < 26) %>% 
-#   group_by(completed_baseline) %>% 
-#   count()
-
-#Put probabilities into one object
-age_cleaned_probs <- c(age_q1_prob, age_q2_prob, age_q3_prob, age_q4_prob)
-
-```
-
-```{r Plot completed baseline ~ age}
-
-#Get logits
-age_logits <- log(age_cleaned_probs/(1-age_cleaned_probs))
-
-#Get medians
-age_log_quartiles <- quantile(glad_coping_participation_raw$age_cleaned,
-                              probs = seq(0, 1, 0.25))
-
-age_q1_median <- glad_coping_participation_raw %>% 
-  filter(age_cleaned < 26) %>% 
-  pull(age_cleaned) %>% 
-  median(.)
-
-age_q2_median <- glad_coping_participation_raw %>% 
-  filter(age_cleaned >= 26 &
-           age_cleaned < 36) %>% 
-  pull(age_cleaned) %>% 
-  median(.)
-
-age_q3_median <- glad_coping_participation_raw %>% 
-  filter(age_cleaned >= 36 &
-           age_cleaned < 49) %>% 
-  pull(age_cleaned) %>% 
-  median(.)
-
-age_q4_median <- glad_coping_participation_raw %>% 
-  filter(age_cleaned >= 49) %>% 
-  pull(age_cleaned) %>% 
-  median(.)
-
-age_medians <- c(age_q1_median, age_q2_median, age_q3_median, age_q4_median)
-
-```
-
-```{r Make linear check plot for age}
-
-plot(age_medians,
-     age_logits,
-     main = "Should look linear if age is linear with log age",
-     xlab = "age",
-     ylab = "log-odds(com base|age)",
-     las = 1)
-
-```
-
-```{r Check linearity for sociodemographic model}
-
-# boxTidwell(sociodemographic_LR_model$linear.predictors ~ age_cleaned,
-#             data = glad_coping_participation_raw)
-
-# sociodemographic_LR_linearity_test <- glm(
-#   formula = completed_baseline ~ age_cleaned + age_cleaned * log(age_cleaned),
-#   family = "binomial",
-#   data = glad_coping_participation_raw)
-# 
-# #Check output
-# summary(sociodemographic_LR_linearity_test)
-
-```
-
-##Outliers
-
-Anything > 1 is a cause for concern.
-
-```{r Check cooks distance values in LR model}
-
-plot(complete_LR_model,
-     which = 4)
-
-```
-
-```{r Extract model results}
-
-LR.model_data <- augment(complete_LR_model) %>% 
-  mutate(index = 1:n())
-
-#Check output
-LR.model_data %>% 
-  glimpse()
-
-```
-
-```{r Plot standardised residuals}
-
-LR.model_data %>% 
-  ggplot(aes(index, .std.resid)) +
-  geom_point(aes(colour = completed_baseline_labelled), alpha = .5) +
-  theme_minimal()
-
-```
-
-```{r Check standardised residuals > 3.3}
-
-LR.model_data %>% 
-  filter(abs(.std.resid) > 3.3)
-
-```
-
-#Multiple Regression models
-
-There are x4 models to run:
-
-Model 1: Sociodemographic variables
-Model 2: Psychiatric and health variables
-Model 3: Study variables
-Model 4: All variables together
-
-##Model 1: Sociodemographic variables
-
-```{r Run sociodemographic MLR model}
-
-sociodemographic_MLR_model <- lm(total_COPING_waves ~ age_cleaned + 
-    gender_recode_labelled +
-    highest_education_labelled +
-    ethnicity_labelled +
-    employment_labelled +
-    partnership_status_labelled,
-    data = glad_coping_participation_raw)
-
-#Check model output
-summary(sociodemographic_MLR_model)
-
-```
-
-```{r Create tidy sociodemographic MLR model output}
-
-#Create tidy model output
-sociodemographic_MLR_model_tidy <- tidy(
-  sociodemographic_MLR_model,
-  conf.int = T) %>%
-  mutate(
-    Variable = sociodemographic_variable_names,
-    Significance = if_else(
-      p.value < 0.05, 
-      1,
-      0
-      ) %>%
-    recode_factor(
-        "0" = "Not-significant",
-        "1" = "Significant"
-      )) %>%
-  select(
-    Variable,
-    estimate,
-    `CI 95% lower` = conf.low,
-    `CI 95% upper` = conf.high,
-    `p value` = p.value,
-    Significance
-  )
-
-sociodemographic_MLR_model_tidy %>% 
-  head(23)
-
-#Create kable output
-sociodemographic_MLR_model_kable <- kable(sociodemographic_MLR_model_tidy[-c(1), ],
-      digits = 2)
-
-```
-
-##Model 2: Psychiatric and health variables
-
-```{r Run psychiatric and health MLR model}
-
-psychiatric_and_health_MLR_model <- lm(total_COPING_waves ~ phq.sum_score + 
-    gad.sum_score +
-    audit.sum_score +
-    smoking_status_labelled +
-    physical_health_comorbidities_labelled +
-    mental_health_comorbidities_labelled +
-    depressive_and_anxiety_comorbidity_labelled +
-    eating_disorders_labelled +
-    OCRDs_labelled +
-    psychotic_and_biploar_disorder_labelled +
-    autistic_spectrum_disorder +
-    ADHD_ADD_labelled +
-    personality_disorder_labelled,
-  data = glad_coping_participation_raw)
-
-#Check model output
-summary(psychiatric_and_health_MLR_model)
-
-```
-
-```{r Create tidy output for psychiatric and health MLR}
-
-#Create tidy model output
-psychiatric_and_health_MLR_model_tidy <- tidy(
-  psychiatric_and_health_MLR_model,
+```{r Create tidy output for providing a kit LR model}
+exploratory_LR_model2_tidy <- tidy(
+  exploratory_LR_model2,
   exponentiate = T,
   conf.int = T) %>%
   mutate(
-    Variable = psychiatric_and_health_LR_variable_names,
+    Variable = exploratory_LR_model2_names,
     Significance = if_else(
       p.value < 0.05, 
       1,
@@ -801,45 +690,65 @@ psychiatric_and_health_MLR_model_tidy <- tidy(
       )) %>%
   select(
     Variable,
-    estimate,
+    OR = estimate,
     `CI 95% lower` = conf.low,
     `CI 95% upper` = conf.high,
-    `p value` = p.value,
+     p.value,
     Significance
-  )
-
-psychiatric_and_health_MLR_model_tidy %>% 
-  head(14)
-
-#Create kable output
-psychiatric_and_health_MLR_model_kable <- kable(psychiatric_and_health_MLR_model_tidy[-c(1), ],
-      digits = 2)
-
-```
-
-##Model 3: glad study variables model
-
-```{r Run glad study variables MLR model}
-
-glad_study_variables_MLR_model <- lm(
-  formula = total_COPING_waves ~ startDate + 
-    kit_returned_labelled +
-    joined_coping_first_invitation_labelled,
-  data = glad_coping_participation_raw)
+  ) %>% 
+  mutate(
+    #adj.p.value = p.adjust(p.value, 
+    #                       "bonferroni"),
+    #adj_significance = case_when(
+    #    adj.p.value <= 0.001 ~ "***",
+    #    adj.p.value <= 0.01 ~ "**",
+    #    adj.p.value <= 0.05 ~ "*",
+    #    adj.p.value > 0.05 ~ ""
+    #),
+    OR = round(OR, 2),
+    `CI 95% lower` = round(`CI 95% lower`, 2),
+    `CI 95% upper` = round(`CI 95% upper`, 2),
+    p.value = format.pval(pv = p.value,
+                          digits = 2),
+    threshold_adj_sig = case_when(
+      p.value <= adj_p_value_threshold ~ "Significant",
+      p.value > adj_p_value_threshold ~ "Not-significant"
+        )
+    )
 
 #Check output
-summary(glad_study_variables_MLR_model)
-
+exploratory_LR_model2_tidy
 ```
 
-```{r Create tidy output for glad study variable MLR}
+###Providing kit as outcome
+17/07/2022
+After presenting the first draft of the paper to the GLAD analaysis team,
+it was recommended that a model could be run to investigate what factors 
+are associated with providing a saliva kit to the GLAD Study.
 
+```{r Run LR model to invesitgate factors associated with providing a kit}
+exploratory_LR_model3 <- glm(
+  formula = exploratory_LR_model3_formula,
+  family = "binomial",
+  data = glad_coping_participation)
+
+#Check output
+summary(exploratory_LR_model3)
+```
+
+```{r Calculate nagelkerke effect size}
+exploratory_LR_model3 %>% 
+  nagelkerke()
+```
+
+```{r Create tidy output for providing a kit LR model}
 #Create tidy model output
-glad_study_variables_MLR_model_tidy <- tidy(
-  glad_study_variables_MLR_model,
+exploratory_LR_model3_tidy <- tidy(
+  exploratory_LR_model3,
+  exponentiate = T,
   conf.int = T) %>%
   mutate(
-    Variable = glad_study_LR_variable_names,
+    Variable = exploratory_LR_model3_names,
     Significance = if_else(
       p.value < 0.05, 
       1,
@@ -851,161 +760,457 @@ glad_study_variables_MLR_model_tidy <- tidy(
       )) %>%
   select(
     Variable,
-    estimate,
+    OR = estimate,
     `CI 95% lower` = conf.low,
     `CI 95% upper` = conf.high,
-    `p value` = p.value,
+     p.value,
     Significance
-  )
+  ) %>% 
+  mutate(
+    #adj.p.value = p.adjust(p.value, 
+    #                       "bonferroni"),
+    #adj_significance = case_when(
+    #    adj.p.value <= 0.001 ~ "***",
+    #    adj.p.value <= 0.01 ~ "**",
+    #    adj.p.value <= 0.05 ~ "*",
+    #    adj.p.value > 0.05 ~ ""
+    #  ),
+    OR = round(OR, 2),
+    `CI 95% lower` = round(`CI 95% lower`, 2),
+    `CI 95% upper` = round(`CI 95% upper`, 2),
+    p.value = format.pval(pv = p.value,
+                          digits = 2),
+    threshold_adj_sig = case_when(
+      p.value <= adj_p_value_threshold ~ "Significant",
+      p.value > adj_p_value_threshold ~ "Not-significant"
+        )
+    )
 
-glad_study_variables_MLR_model_tidy %>% 
+#Check output
+exploratory_LR_model3_tidy
+```
+
+#Aim 2: Zero-inflated negative binomial regression
+
+For aim 2, we want to see which variables are associated with participating
+in the COPING follow-up surveys. We will run a zero-inflated negative binomial
+regression to test for this.
+
+```{r Run ZINB model}
+ZINB_model1 <- zeroinf.neg.binomial.estimates(
+  outcome = coping_followups_outcome,
+  explanatory_variables = ZINB_model1_variables,
+  data_set = "glad_coping_participation",
+  name = "ZINB_model1"
+)
+
+#Check ZINB model output
+ZINB_model1 %>% 
   head()
-
-#Create kable output
-glad_study_variables_MLR_model_kable <- kable(glad_study_variables_MLR_model_tidy[-c(1), ],
-      digits = 2)
-
 ```
 
-##Model 4: Complete MLR model
+```{r Create a significance column for the ZINB model results}
+#Rename p value column
+ZINB_model1 <- ZINB_model1 %>% 
+  rename("p_value" = "p value")
 
-```{r Run complete MLR model}
+#Turn p value column to numeric type instead of character
+ZINB_model1$p_value <- as.numeric(ZINB_model1$p_value)
 
-complete_MLR_model <- lm(
-  formula = completed_baseline ~ age_cleaned + 
-    gender_recode_labelled +
-    highest_education_labelled +
-    ethnicity_labelled +
-    employment_labelled +
-    partnership_status_labelled +
-    phq.sum_score +
-    gad.sum_score +
-    audit.sum_score +
-    smoking_status_labelled +
-    physical_health_comorbidities_labelled +
-    mental_health_comorbidities_labelled +
-    depressive_and_anxiety_comorbidity_labelled +
-    eating_disorders_labelled +
-    OCRDs_labelled +
-    psychotic_and_biploar_disorder_labelled +
-    autistic_spectrum_disorder +
-    ADHD_ADD_labelled +
-    personality_disorder_labelled +
-    startDate + 
-    kit_returned_labelled +
-    joined_coping_first_invitation_labelled,
-  data = glad_coping_participation_raw)
-
-#Check output
-summary(complete_MLR_model)
-
-```
-
-```{r Create tidy output for complete MLR model}
-
-#Create tidy model output
-complete_MLR_model_tidy <- tidy(
-  complete_MLR_model,
-  conf.int = T) %>%
+#Create column to show whether variable meets adjusted p value threshold
+ZINB_model1 <- ZINB_model1 %>% 
   mutate(
-    Variable = complete_LR_model_names,
-    Significance = if_else(
-      p.value < 0.05, 
-      1,
-      0
-      ) %>%
-    recode_factor(
-        "0" = "Not-significant",
-        "1" = "Significant"
-      )) %>%
-  select(
-    Variable,
-    estimate,
-    `CI 95% lower` = conf.low,
-    `CI 95% upper` = conf.high,
-    `p value` = p.value,
-    Significance
+    p_value = format.pval(p_value,
+                          digits = 2),
+    threshold_adj_sig = case_when(
+        p_value <= adj_p_value_threshold ~ "Significant",
+        p_value > adj_p_value_threshold ~ "Not-significant"
+      )
   )
 
-complete_MLR_model_tidy %>% 
-  head(46)
-
-#Create kable output
-complete_MLR_model_kable <- kable(complete_MLR_model_tidy[-c(1), ],
-      digits = 2)
-
+#Check significance column
+ZINB_model1 %>% 
+  head()
 ```
 
-#Multiple linear regression assumptions
+##Plot ZINB model 1
 
-Linear regression assumptions:
-https://thatdatatho.com/assumption-checking-for-multiple-linear-regression/
+```{r Extract odds ratios and CI's from ZINB model}
+#Get OR's and CI's for explanatory variables
+ZINB_model_or_CI <- ZINB_model1 %>% 
+  filter(
+    Part == "zero"
+  ) %>% 
+  select(
+    "Independent_variable" = "Independent variable",
+    Estimate,
+    "CI_95_low" = "95% CI low",
+    "CI_95_up" = "95% CI up"
+  )
 
-##Linearity
-
-The second aim is to investigate whether any of the sociodemographic, psychiatric
-and/or health factors explain any variance in the overall number of COPING follow-ups
-the GLAD participant take part in.
-
-```{r Create linear ggplot2 function}
-
-linear_plot <- function(df, IV, DV){
-  
-  IV_data <- df[[IV]]
-  IV_data_NA_removed <- IV_data %>% 
-    na.omit()
-  
-  DV_data <- df[[DV]]
-  DV_data_NA_removed <- DV_data %>% 
-    na.omit()
-  
-  df %>% 
-    ggplot(aes(y = DV_data, x = IV_data)) +
-    geom_point(position = position_jitter(w = 0.1, h = 0.1),
-            alpha = 0.3) +
-  geom_smooth(method = lm, se = TRUE, col="black") +
-    labs(y = DV,
-        x = IV) +
-    theme(panel.grid.major.y = element_line(size = 0.5,
-                                        linetype = 'dashed',
-                                        colour = "gray"),
-        axis.text.x = element_text(colour="black", size = 12),
-        axis.text.y = element_text(colour="black", size = 12),
-        axis.ticks.x = element_blank(),
-        axis.ticks.y = element_blank(),
-        panel.background = element_blank())
-
-}
-
+ZINB_model_or_CI
 ```
 
-```{r Check Linear relationships between sociodemographic IVs and DV}
+```{r Turn independent variable column into a factor for plot}
+#Create levels vector for explanatory variable column
+ZINB_model1_explanatory_variable_levels <- c(
+  "(Intercept)",
+  "Age",
+  "Female",
+  "Non-binary/prefer to self-define",
+  "A levels/AS levels or equivalent",
+  "GCSEs or CSEs or equivalent",
+  "NVQ or HND or HNC or equivalent",
+  "None of the above edu",
+  "Mixed",
+  "Asian or Asian British",
+  "Black or Black British",
+  "Arab",
+  "Other",
+  "Retired",
+  "Looking after home and/or family",
+  "Sickness or disabled",
+  "Unemployed",
+  "Doing unpaid or voluntary work",
+  "Student",
+  "None of the above employ",
+  "Relationship or married",
+  "Divorced/widowed/separated",
+  "phq.sum_score",
+  "gad.sum_score",
+  "audit.sum_score",
+  "I smoke now",
+  "I used to smoke",
+  "1 physical health disorder",
+  "2+ physical health disorders",
+  "MH_disorders_total_count",
+  "depressive_and_anxiety_comorbidity_labelledDepressive and anxiety disorder",
+  "depressive_and_anxiety_comorbidity_labelledDepressive disorder only",
+  "depressive_and_anxiety_comorbidity_labelledAnxiety disorder only",
+  "Eating disorder",
+  "OCRDs",
+  "Psychotic and bipolar disorder",
+  "Only psychotic disorder",
+  "Only bipolar disorder",
+  "ASD",
+  "ADHD or ADD disorder",
+  "Personality disorder",
+  #"PTSD", #PTSD is no longer in the models
+  "Pt has provided saliva kit"
+)
 
-#Get IV variable names without Intercept and startDate
-linear_relationship_vars <- glad_coping_participation_raw %>% 
-  select(all_of(sociodemographic_variable_names)) %>% 
-  colnames()
+ZINB_model_or_CI <- ZINB_model_or_CI %>% 
+  mutate(Independent_variable = ZINB_model1_explanatory_variable_levels)
 
-linear_relationship_vars %>% 
-  map(linear_plot, 
-      df = glad_coping_participation_raw,
-      DV = "total_COPING_waves")
+ZINB_model_or_CI$Independent_variable <- factor(ZINB_model_or_CI$Independent_variable,
+                              levels = ZINB_model1_explanatory_variable_levels)
 
+#Check output
+ZINB_model_or_CI
 ```
 
-##Homoscedasticity
-
-```{r Check VIF values for complete model}
-
-sociodemographic_MLR_model %>% 
-  vif()
-
+```{r Forest plot of ZINB results}
+ZINB_model_or_CI %>% 
+  slice(-1) %>% #remove row number 1 (The intercept) 
+  ggplot(aes(x = Independent_variable, y = Estimate)) +
+  geom_point(shape = 15,
+             size  = 1, 
+             position = "dodge", 
+             color = "black") + 
+  geom_errorbar(aes(ymin  = CI_95_low,
+                    ymax  = CI_95_up),
+                size  = 0.7,
+                position = "dodge", 
+                color= "#EFC10B") +
+  labs(title = "ZINB model of participation in the COPING follow-up surveys",
+         x = "Explanatory variables",
+       y = "Adjusted rate ratios with 95% CI") +
+  coord_flip() + 
+  #scale_y_continuous(breaks = seq(0, 4, 0.5),
+  #                   limits = c(0, 4)) +
+  scale_x_discrete(limits = rev) +
+  geom_hline(yintercept = 1, color = "red", size = 1) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(color = "black"),
+        axis.text.y = element_text(colour = "black"),
+         axis.ticks = element_line(color = "black"))
 ```
 
-##Diagnostic plots
+### OLD: Adjusting for multiple testing
+17/07/2022
+This was old code for adjusting for multiple testing. However, Prof. Gerome 
+Breen has recommended using a p-value threshold rather than adjusting the 
+p-values themselves.
 
-```{r Create diagnostic plots for complete MLR model}
+```{r Get p-values of ZINB model}
+#ZINB_model_p_values <- parameters::p_value(ZINB_model)
 
-plot(sociodemographic_MLR_model, which = 1:4)
+#Remove all the rows referring to the negative binomial ("count") model
+#ZINB_model_p_values <- ZINB_model_p_values %>% 
+#  select(Parameter, p) %>% 
+#  filter(str_detect(Parameter, "zero_"))
 
+#Check results
+#ZINB_model_p_values
+```
+
+```{r Adjust the ZINB model p-values for multiple testing}
+#adj_ZINB_p_values <- ZINB_model_p_values$p %>% 
+#  p.adjust("bonferroni")
+
+#Add the adjusted p-values to the p-value model
+#ZINB_model_p_values <- cbind(ZINB_model_p_values,
+#                             adj_ZINB_p_values)
+
+#Create a significant label variable based on the adjusted p-values
+#ZINB_model_p_values <- ZINB_model_p_values %>% 
+#  mutate(
+#    adj_significance = case_when(
+#        adj_ZINB_p_values <= 0.001 ~ "***",
+#        adj_ZINB_p_values <= 0.01 ~ "**",
+#        adj_ZINB_p_values <= 0.05 ~ "*",
+#        adj_ZINB_p_values > 0.05 ~ ""
+#      )
+#  ) %>% 
+#  select(
+#    Parameter,
+#    adj_significance,
+#    p,
+#    adj_ZINB_p_values
+#  )
+
+#Check results
+#ZINB_model_p_values
+```
+
+```{r Get p-values of count part of ZINB model}
+#ZINB_model_count_p_values <- parameters::p_value(ZINB_model)
+
+#Remove all the rows referring to the negative binomial ("count") model
+#ZINB_model_count_p_values <- ZINB_model_count_p_values %>% 
+#  select(Parameter, p) %>% 
+#  filter(str_detect(Parameter, "count_"))
+
+#Check results
+#ZINB_model_count_p_values
+```
+
+```{r Adjust the ZINB model count p-values for multiple testing}
+#adj_ZINB_count_p_values <- ZINB_model_count_p_values$p %>% 
+#  p.adjust("bonferroni")
+
+#Add the adjusted p-values to the p-value model
+#ZINB_model_count_p_values <- cbind(ZINB_model_count_p_values,
+#                             adj_ZINB_count_p_values)
+
+#Create a significant label variable based on the adjusted p-values
+#ZINB_model_count_p_values <- ZINB_model_count_p_values %>% 
+#  mutate(
+#    adj_significance = case_when(
+#        adj_ZINB_p_values <= 0.001 ~ "***",
+#        adj_ZINB_p_values <= 0.01 ~ "**",
+#        adj_ZINB_p_values <= 0.05 ~ "*",
+#        adj_ZINB_p_values > 0.05 ~ ""
+#      )
+#  ) %>% 
+#  select(
+#    Parameter,
+#    adj_significance,
+#    p,
+#    adj_ZINB_count_p_values
+#  )
+
+#Check results
+#ZINB_model_count_p_values
+```
+
+##Exploratory ZINB models
+###Without providing kit variable
+In the same sense of the exploratory LR model, we want to run an exploratory
+ZINB model without the providing a saliva kit variable to see if this influences
+the results.
+
+```{r Run exploratory ZINB model without saliva kit variable}
+exploratory_ZINB_model1 <- zeroinf.neg.binomial.estimates(
+  outcome = coping_followups_outcome,
+  explanatory_variables = exploratory_ZINB_model1_variables,
+  data_set = "glad_coping_participation",
+  name = "exploratory_ZINB_model1"
+)
+
+#Check ZINB model output
+exploratory_ZINB_model1 %>% 
+  head()
+```
+
+```{r Create a significance column for the exploratory ZINB model 1 results}
+#Rename p value column
+exploratory_ZINB_model1 <- exploratory_ZINB_model1 %>% 
+  rename("p_value" = "p value")
+
+#Turn p value column to numeric type instead of character
+exploratory_ZINB_model1$p_value <- as.numeric(exploratory_ZINB_model1$p_value)
+
+#Create column to show whether factor meets adjusted p value threshold
+exploratory_ZINB_model1 <- exploratory_ZINB_model1 %>% 
+  mutate(
+    p_value = format.pval(p_value,
+                          digits = 2),
+    threshold_adj_sig = case_when(
+        p_value <= adj_p_value_threshold ~ "Significant",
+        p_value > adj_p_value_threshold ~ "Not-significant"
+      )
+  )
+
+#Check significance column
+exploratory_ZINB_model1 %>% 
+  head()
+```
+
+###OLD: Adjusting for multiple testing
+
+```{r Get p-values of exploratory ZINB model}
+#exploratory_ZINB_model_p_values <- parameters::p_value(exploratory_ZINB_model)
+
+#Remove all the rows referring to the negative binomial ("count") model
+#exploratory_ZINB_model_p_values <- exploratory_ZINB_model_p_values %>% 
+#  select(Parameter, p) %>% 
+#  filter(str_detect(Parameter, "zero_"))
+
+#Check results
+#exploratory_ZINB_model_p_values
+```
+
+```{r Adjust the exploratory ZINB model p-values for multiple testing}
+#adj_exploratory_ZINB_p_values <- exploratory_ZINB_model_p_values$p %>% 
+#  p.adjust("bonferroni")
+
+#Add the adjusted p-values to the p-value model
+#exploratory_ZINB_model_p_values <- cbind(exploratory_ZINB_model_p_values,
+#                                         adj_exploratory_ZINB_p_values)
+
+#Create a significant label variable based on the adjusted p-values
+#exploratory_ZINB_model_p_values <- exploratory_ZINB_model_p_values %>% 
+#  mutate(
+#    adj_significance = case_when(
+#        adj_exploratory_ZINB_p_values <= 0.001 ~ "***",
+#        adj_exploratory_ZINB_p_values <= 0.01 ~ "**",
+#        adj_exploratory_ZINB_p_values <= 0.05 ~ "*",
+#        adj_exploratory_ZINB_p_values > 0.05 ~ ""
+#      )
+#  ) %>% 
+#  select(
+#    Parameter,
+#    adj_significance,
+#    p,
+#    adj_exploratory_ZINB_p_values
+#  )
+
+#Check results
+#exploratory_ZINB_model_p_values
+```
+
+```{r Get count p-values of exploratory ZINB model}
+#exploratory_ZINB_model_count_p_values <- parameters::p_value(exploratory_ZINB_model)
+
+#Remove all the rows referring to the negative binomial ("count") model
+#exploratory_ZINB_model_count_p_values <- exploratory_ZINB_model_count_p_values %>% 
+#  select(Parameter, p) %>% 
+#  filter(str_detect(Parameter, "count_"))
+
+#Check results
+#exploratory_ZINB_model_count_p_values
+```
+
+```{r Adjust the exploratory ZINB model p-values for multiple testing}
+#adj_exploratory_ZINB_count_p_values <- exploratory_ZINB_model_count_p_values$p %>% 
+#  p.adjust("bonferroni")
+
+#Add the adjusted p-values to the p-value model
+#exploratory_ZINB_model_count_p_values <- cbind(exploratory_ZINB_model_count_p_values,
+#                                         adj_exploratory_ZINB_count_p_values)
+
+#Create a significant label variable based on the adjusted p-values
+#exploratory_ZINB_model_count_p_values <- exploratory_ZINB_model_count_p_values %>% 
+#  mutate(
+#    adj_significance = case_when(
+#        adj_exploratory_ZINB_count_p_values <= 0.001 ~ "***",
+#        adj_exploratory_ZINB_count_p_values <= 0.01 ~ "**",
+#        adj_exploratory_ZINB_count_p_values <= 0.05 ~ "*",
+#        adj_exploratory_ZINB_count_p_values > 0.05 ~ ""
+#      )
+#  ) %>% 
+#  select(
+#    Parameter,
+#    adj_significance,
+#    p,
+#    adj_exploratory_ZINB_count_p_values
+#  )
+
+#Check results
+#exploratory_ZINB_model_count_p_values
+```
+
+###Kit returners only
+17/07/2022
+After presenting the first draft of the paper to the GLAD analysis team,
+Prof. Gerome Breen suggested that instead of omitting the saliva kit variable,
+it would be better to run the ZINB model whilst only including the participants 
+who have provided a saliva kit.
+
+```{r Run exploratory ZINB model 2}
+exploratory_ZINB_model2 <- zeroinf.neg.binomial.estimates(
+  outcome = coping_followups_outcome,
+  explanatory_variables = exploratory_ZINB_model2_variables,
+  data_set = "glad_coping_participation_returned_kit",
+  name = "exploratory_ZINB_model2"
+)
+
+#Check ZINB model output
+exploratory_ZINB_model2 %>% 
+  head()
+```
+
+```{r Create a significance column for the exploratory ZINB model 1 results}
+#Rename p value column
+exploratory_ZINB_model2 <- exploratory_ZINB_model2 %>% 
+  rename("p_value" = "p value")
+
+#Turn p value column to numeric type instead of character
+exploratory_ZINB_model2$p_value <- as.numeric(exploratory_ZINB_model2$p_value)
+
+#Create column to show whether factor meets adjusted p value threshold
+exploratory_ZINB_model2 <- exploratory_ZINB_model2 %>% 
+  mutate(
+    p_value = format.pval(p_value,
+                          digits = 2),
+    threshold_adj_sig = case_when(
+        p_value <= adj_p_value_threshold ~ "Significant",
+        p_value > adj_p_value_threshold ~ "Not-significant"
+      )
+  )
+
+#Check significance column
+exploratory_ZINB_model2 %>% 
+  head()
+```
+
+#Write all model output to Excel file
+
+```{r Write all models to a single Excel file}
+#Put models into named list
+model_list <- list(
+  "Aim1_LR_model" = aim1_LR_model_tidy,
+  "Exploratory_LR_model1" = exploratory_LR_model1_tidy,
+  "Exploratory_LR_model2" = exploratory_LR_model2_tidy,
+  "Exploratory_LR_model3" = exploratory_LR_model3_tidy,
+  "Aim2_ZINB_model1" = ZINB_model1,
+  "Exploratory_ZINB_model1" = exploratory_ZINB_model1,
+  "Exploratory_ZINB_model2" = exploratory_ZINB_model2
+)
+
+#Write models to excel
+model_list %>% 
+  write.xlsx(file = "../COPING_participation_models.xlsx")
 ```
