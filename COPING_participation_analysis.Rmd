@@ -233,7 +233,7 @@ aim1_LR_model_names <- c(
   "physical_health_comorbidities_labelled1 physical health disorder",
   "physical_health_comorbidities_labelled2+ physical health disorders",
   "MH_disorders_total_count",
-  "depressive_and_anxiety_comorbidity_labelledDepressive and anxiety disorder",
+  "depressive_and_anxiety_comorbidity_labelledNo depressive and anxiety disorder",
   "depressive_and_anxiety_comorbidity_labelledDepressive disorder only",
   "depressive_and_anxiety_comorbidity_labelledAnxiety disorder only",
   "eating_disorders_labelledEating disorder",
