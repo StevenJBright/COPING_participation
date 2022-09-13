@@ -1451,12 +1451,12 @@ GLAD_signup_depression_and_anxiety <- GLAD_signup_anxiety_disorder %>%
            case_when(
              depressive_disorder == 1 &
                anxiety_disorder == 1 ~ 1,
-             depressive_disorder == 0 &
-               anxiety_disorder == 0 ~ 0,
              depressive_disorder == 1 &
                anxiety_disorder == 0 ~ 2,
              depressive_disorder == 0 &
-               anxiety_disorder == 1 ~ 3
+               anxiety_disorder == 1 ~ 3,
+             depressive_disorder == 0 &
+               anxiety_disorder == 0 ~ 4
            ))
 
 ```
