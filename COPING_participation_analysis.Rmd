@@ -233,7 +233,7 @@ aim1_LR_model_names <- c(
   "physical_health_comorbidities_labelled1 physical health disorder",
   "physical_health_comorbidities_labelled2+ physical health disorders",
   "MH_disorders_total_count",
-  "depressive_and_anxiety_comorbidity_labelledDepressive and anxiety disorder",
+  "depressive_and_anxiety_comorbidity_labelledNo depressive and anxiety disorder",
   "depressive_and_anxiety_comorbidity_labelledDepressive disorder only",
   "depressive_and_anxiety_comorbidity_labelledAnxiety disorder only",
   "eating_disorders_labelledEating disorder",
@@ -478,7 +478,7 @@ or_CI <- or_CI %>%
          "lower_bound" = "2.5 %",
          "upper_bound" = "97.5 %"
          ) %>% 
-  select(
+  dplyr::select(
     variable,
     AOR,
     lower_bound,
@@ -521,7 +521,7 @@ explanatory_variable_levels <- c(
   "1 physical health disorder",
   "2+ physical health disorders",
   "MH_disorders_total_count",
-  "depressive_and_anxiety_comorbidity_labelledDepressive and anxiety disorder",
+  "depressive_and_anxiety_comorbidity_labelledNo depressive and anxiety disorder",
   "depressive_and_anxiety_comorbidity_labelledDepressive disorder only",
   "depressive_and_anxiety_comorbidity_labelledAnxiety disorder only",
   "Eating disorder",
@@ -618,7 +618,7 @@ exploratory_LR_model1_tidy <- tidy(
         "0" = "Not-significant",
         "1" = "Significant"
       )) %>%
-  select(
+  dplyr::select(
     Variable,
     OR = estimate,
     `CI 95% lower` = conf.low,
@@ -688,7 +688,7 @@ exploratory_LR_model2_tidy <- tidy(
         "0" = "Not-significant",
         "1" = "Significant"
       )) %>%
-  select(
+  dplyr::select(
     Variable,
     OR = estimate,
     `CI 95% lower` = conf.low,
@@ -758,7 +758,7 @@ exploratory_LR_model3_tidy <- tidy(
         "0" = "Not-significant",
         "1" = "Significant"
       )) %>%
-  select(
+  dplyr::select(
     Variable,
     OR = estimate,
     `CI 95% lower` = conf.low,
@@ -841,7 +841,7 @@ ZINB_model_or_CI <- ZINB_model1 %>%
   filter(
     Part == "zero"
   ) %>% 
-  select(
+  dplyr::select(
     "Independent_variable" = "Independent variable",
     Estimate,
     "CI_95_low" = "95% CI low",
@@ -884,7 +884,7 @@ ZINB_model1_explanatory_variable_levels <- c(
   "1 physical health disorder",
   "2+ physical health disorders",
   "MH_disorders_total_count",
-  "depressive_and_anxiety_comorbidity_labelledDepressive and anxiety disorder",
+  "depressive_and_anxiety_comorbidity_labelledNo depressive and anxiety disorder",
   "depressive_and_anxiety_comorbidity_labelledDepressive disorder only",
   "depressive_and_anxiety_comorbidity_labelledAnxiety disorder only",
   "Eating disorder",

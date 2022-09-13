@@ -1465,8 +1465,8 @@ GLAD_signup_depression_and_anxiety <- GLAD_signup_anxiety_disorder %>%
 
 GLAD_signup_depression_and_anxiety$depressive_and_anxiety_comorbidity_labelled <- factor(
   GLAD_signup_depression_and_anxiety$depressive_and_anxiety_comorbidity,
-  levels = c(0, 1, 2, 3),
-  labels = c("No depressive and anxiety disorder", "Depressive and anxiety disorder",
+  levels = c(1, 0, 2, 3),
+  labels = c("Depressive and anxiety disorder", " No depressive or anxiety disorder",
              "Depressive disorder only", "Anxiety disorder only")
   )
 
