@@ -111,9 +111,9 @@ glad_coping_participation %>%
   ggplot(aes(x = total_COPING_waves)) +
   geom_bar(fill = glad_colour,
            colour = "black") +
-  labs(title = "Distribution of completed follow-up surveys amongst GLAD Study participants",
-       subtitle = paste0("No. of pt's who completed at least one follow-up: ", N_followups),
-       caption = paste0("No. of pt's completing no surveys: ", N_no_followups),
+  labs(#title = "Distribution of completed follow-up surveys amongst GLAD Study participants",
+       #subtitle = paste0("No. of pt's who completed at least one follow-up: ", N_followups),
+       #caption = paste0("No. of pt's completing no surveys: ", N_no_followups),
        y = "N",
        x = "No. of surveys completed") +
   scale_x_continuous(limits = c(NA, NA),
