@@ -105,15 +105,46 @@ N_no_followups
 N_followups
 ```
 
+```{r Create total COPING waves variable with 0 responses level}
+glad_coping_participation <- glad_coping_participation %>% 
+  mutate(total_COPING_waves_with0 = 
+           case_when(
+             #This find the N pt's who didn't complete any follow-ups after joining COPING
+             total_COPING_waves == 0 &
+               completed_baseline == 1 ~ 0,
+             
+             #Leave the other values as they are
+             total_COPING_waves == 1 ~ 1,
+             total_COPING_waves == 2 ~ 2,
+             total_COPING_waves == 3 ~ 3,
+             total_COPING_waves == 4 ~ 4,
+             total_COPING_waves == 5 ~ 5,
+             total_COPING_waves == 6 ~ 6,
+             total_COPING_waves == 7 ~ 7,
+             total_COPING_waves == 8 ~ 8,
+             total_COPING_waves == 9 ~ 9,
+             total_COPING_waves == 10 ~ 10,
+             total_COPING_waves == 11 ~ 11,
+             total_COPING_waves == 12 ~ 12,
+             total_COPING_waves == 13 ~ 13,
+             total_COPING_waves == 14 ~ 14,
+           ))
+
+#Check new variable
+glad_coping_participation %>% 
+  group_by(total_COPING_waves_with0) %>% 
+  count()
+```
+
 ```{r Plot COPING surveys completed}
 glad_coping_participation %>% 
-  filter(total_COPING_waves != 0) %>% 
-  ggplot(aes(x = total_COPING_waves)) +
+  drop_na(total_COPING_waves_with0) %>% 
+  ggplot(aes(x = total_COPING_waves_with0)) +
   geom_bar(fill = glad_colour,
            colour = "black") +
-  labs(title = "Distribution of completed follow-up surveys amongst GLAD Study participants",
-       subtitle = paste0("No. of pt's who completed at least one follow-up: ", N_followups),
-       caption = paste0("No. of pt's completing no surveys: ", N_no_followups),
+  labs(#title = "Distribution of completed follow-up surveys amongst GLAD Study participants",
+       #subtitle = paste0("No. of pt's who completed at least one follow-up: ", N_followups),
+       #caption = paste0("No. of pt's completing no surveys: ", N_no_followups),
        y = "N",
        x = "No. of surveys completed") +
   scale_x_continuous(limits = c(NA, NA),
