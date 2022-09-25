@@ -138,8 +138,8 @@ glad_coping_participation %>%
 
 ```{r Plot COPING surveys completed}
 glad_coping_participation %>% 
-  filter(total_COPING_waves != 0) %>% 
-  ggplot(aes(x = total_COPING_waves)) +
+  drop_na(total_COPING_waves_with0) %>% 
+  ggplot(aes(x = total_COPING_waves_with0)) +
   geom_bar(fill = glad_colour,
            colour = "black") +
   labs(#title = "Distribution of completed follow-up surveys amongst GLAD Study participants",
