@@ -2308,9 +2308,21 @@ GLAD_signup_wave_col_names %>%
 ```
 
 ```{r Create total waves completed variable}
-glad_signup_total_waves <- GLAD_signup_waves_merged %>% 
+#Calculate every pt's total completed follow-up surveys with row sums
+glad_signup_total_waves <- GLAD_signup_waves_merged %>%
+  mutate(
+    total_COPING_waves =
+      rowSums(.[GLAD_signup_wave_col_names])
+  )
+
+#Ensure that pt's who didn't complete the COPING baseline survey get NA
+glad_signup_total_waves <- glad_signup_total_waves %>% 
   mutate(total_COPING_waves = 
            case_when(
+             
+             #People who didn't complete baseline survey didn't receive follow-up surveys
+             completed_baseline == 0 ~ NA_real_,
+             
              #This find the N pt's who didn't complete any follow-ups after joining COPING
              total_COPING_waves == 0 &
                completed_baseline == 1 ~ 0,
@@ -2333,7 +2345,7 @@ glad_signup_total_waves <- GLAD_signup_waves_merged %>%
            ))
 
 #Check new variable
-glad_coping_participation %>% 
+glad_signup_total_waves %>% 
   freq(total_COPING_waves)
 ```
 
@@ -2402,9 +2414,9 @@ Pt's we want to remove are as follows:
 
 glad_signup_final <- glad_signup_total_waves %>% 
   filter(age_cleaned >= 16 &
-           age_cleaned <= 117) %>%  #41,142, 28 pt's removed
-  filter(!is.na(gender_recode_labelled)) %>% #40,271, 871 pt's removed
-  filter(joined_coping_first_invitation_labelled != "Not applicable") #34,285, 5,986 pt's removed
+           age_cleaned <= 117) %>%
+  filter(!is.na(gender_recode_labelled)) %>%
+  filter(joined_coping_first_invitation_labelled != "Not applicable")
 
 #Check results
 glad_signup_total_waves %>% 
