@@ -105,41 +105,10 @@ N_no_followups
 N_followups
 ```
 
-```{r Create total COPING waves variable with 0 responses level}
-glad_coping_participation <- glad_coping_participation %>% 
-  mutate(total_COPING_waves_with0 = 
-           case_when(
-             #This find the N pt's who didn't complete any follow-ups after joining COPING
-             total_COPING_waves == 0 &
-               completed_baseline == 1 ~ 0,
-             
-             #Leave the other values as they are
-             total_COPING_waves == 1 ~ 1,
-             total_COPING_waves == 2 ~ 2,
-             total_COPING_waves == 3 ~ 3,
-             total_COPING_waves == 4 ~ 4,
-             total_COPING_waves == 5 ~ 5,
-             total_COPING_waves == 6 ~ 6,
-             total_COPING_waves == 7 ~ 7,
-             total_COPING_waves == 8 ~ 8,
-             total_COPING_waves == 9 ~ 9,
-             total_COPING_waves == 10 ~ 10,
-             total_COPING_waves == 11 ~ 11,
-             total_COPING_waves == 12 ~ 12,
-             total_COPING_waves == 13 ~ 13,
-             total_COPING_waves == 14 ~ 14,
-           ))
-
-#Check new variable
-glad_coping_participation %>% 
-  group_by(total_COPING_waves_with0) %>% 
-  count()
-```
-
 ```{r Plot COPING surveys completed}
 glad_coping_participation %>% 
-  drop_na(total_COPING_waves_with0) %>% 
-  ggplot(aes(x = total_COPING_waves_with0)) +
+  drop_na(total_COPING_waves) %>% 
+  ggplot(aes(x = total_COPING_waves)) +
   geom_bar(fill = glad_colour,
            colour = "black") +
   labs(#title = "Distribution of completed follow-up surveys amongst GLAD Study participants",
@@ -148,7 +117,7 @@ glad_coping_participation %>%
        y = "N",
        x = "No. of surveys completed") +
   scale_x_continuous(limits = c(NA, NA),
-                   breaks = seq(1, 14, 1)) +
+                   breaks = seq(0, 14, 1)) +
   scale_y_continuous(limits = c(0, 2000),
                      breaks = seq(0, 2000, 500)) +
   geom_text(aes(y = ..prop..,
@@ -643,7 +612,6 @@ correlation_vars_data <- glad_coping_participation %>%
 #Get correlations
 all.corr.mat <- correlation_vars_data %>% 
   cor(use = "pairwise.complete.obs")
-
 ```
 
 ```{r Plot the correlations}
