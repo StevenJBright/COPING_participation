@@ -2308,18 +2308,33 @@ GLAD_signup_wave_col_names %>%
 ```
 
 ```{r Create total waves completed variable}
+glad_signup_total_waves <- GLAD_signup_waves_merged %>% 
+  mutate(total_COPING_waves = 
+           case_when(
+             #This find the N pt's who didn't complete any follow-ups after joining COPING
+             total_COPING_waves == 0 &
+               completed_baseline == 1 ~ 0,
+             
+             #Leave the other values as they are
+             total_COPING_waves == 1 ~ 1,
+             total_COPING_waves == 2 ~ 2,
+             total_COPING_waves == 3 ~ 3,
+             total_COPING_waves == 4 ~ 4,
+             total_COPING_waves == 5 ~ 5,
+             total_COPING_waves == 6 ~ 6,
+             total_COPING_waves == 7 ~ 7,
+             total_COPING_waves == 8 ~ 8,
+             total_COPING_waves == 9 ~ 9,
+             total_COPING_waves == 10 ~ 10,
+             total_COPING_waves == 11 ~ 11,
+             total_COPING_waves == 12 ~ 12,
+             total_COPING_waves == 13 ~ 13,
+             total_COPING_waves == 14 ~ 14,
+           ))
 
-#Calculate every pt's total disorders with row sums
-glad_signup_total_waves <- GLAD_signup_waves_merged %>%
-  mutate(
-    total_COPING_waves =
-      rowSums(.[GLAD_signup_wave_col_names])
-  )
-
-#Check results
-glad_signup_total_waves %>% 
+#Check new variable
+glad_coping_participation %>% 
   freq(total_COPING_waves)
-
 ```
 
 ```{r Create labelled version of total COPING waves}
