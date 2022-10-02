@@ -612,7 +612,6 @@ correlation_vars_data <- glad_coping_participation %>%
 #Get correlations
 all.corr.mat <- correlation_vars_data %>% 
   cor(use = "pairwise.complete.obs")
-
 ```
 
 ```{r Plot the correlations}
