@@ -619,8 +619,9 @@ all.corr.mat <- correlation_vars_data %>%
 all.corr.mat %>% 
   corrplot(method = "color",
            addCoef.col = 1,
-           number.cex = 0.3,
+           number.cex = 0.25,
            tl.cex = 0.4,
+           tl.col = "black",
            type = "lower")
 
 ```
