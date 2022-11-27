@@ -378,8 +378,8 @@ aim1_LR_model_tidy <- tidy(
     p.value = format.pval(pv = p.value,
                           digits = 2),
     threshold_adj_sig = case_when(
-      p.value <= adj_p_value_threshold ~ "Significant",
-      p.value > adj_p_value_threshold ~ "Not-significant"
+      p.value <= aim1_adjusted_sig_threshold ~ "Significant",
+      p.value > aim1_adjusted_sig_threshold ~ "Not-significant"
         )
     )
 
@@ -653,8 +653,8 @@ exploratory_LR_model1_tidy <- tidy(
     p.value = format.pval(pv = p.value,
                           digits = 2),
     threshold_adj_sig = case_when(
-      p.value <= adj_p_value_threshold ~ "Significant",
-      p.value > adj_p_value_threshold ~ "Not-significant"
+      p.value <= aim2_adjusted_sig_threshold ~ "Significant",
+      p.value > aim2_adjusted_sig_threshold ~ "Not-significant"
         )
     )
 
@@ -723,8 +723,8 @@ exploratory_LR_model2_tidy <- tidy(
     p.value = format.pval(pv = p.value,
                           digits = 2),
     threshold_adj_sig = case_when(
-      p.value <= adj_p_value_threshold ~ "Significant",
-      p.value > adj_p_value_threshold ~ "Not-significant"
+      p.value <= aim2_adjusted_sig_threshold ~ "Significant",
+      p.value > aim2_adjusted_sig_threshold ~ "Not-significant"
         )
     )
 
@@ -793,8 +793,8 @@ exploratory_LR_model3_tidy <- tidy(
     p.value = format.pval(pv = p.value,
                           digits = 2),
     threshold_adj_sig = case_when(
-      p.value <= adj_p_value_threshold ~ "Significant",
-      p.value > adj_p_value_threshold ~ "Not-significant"
+      p.value <= aim2_adjusted_sig_threshold ~ "Significant",
+      p.value > aim2_adjusted_sig_threshold ~ "Not-significant"
         )
     )
 
@@ -835,8 +835,8 @@ ZINB_model1 <- ZINB_model1 %>%
     p_value = format.pval(p_value,
                           digits = 2),
     threshold_adj_sig = case_when(
-        p_value <= adj_p_value_threshold ~ "Significant",
-        p_value > adj_p_value_threshold ~ "Not-significant"
+        p_value <= aim2_adjusted_sig_threshold ~ "Significant",
+        p_value > aim2_adjusted_sig_threshold ~ "Not-significant"
       )
   )
 
@@ -1070,8 +1070,8 @@ exploratory_ZINB_model1 <- exploratory_ZINB_model1 %>%
     p_value = format.pval(p_value,
                           digits = 2),
     threshold_adj_sig = case_when(
-        p_value <= adj_p_value_threshold ~ "Significant",
-        p_value > adj_p_value_threshold ~ "Not-significant"
+        p_value <= exploratory_ZINB_adjusted_sig_threshold ~ "Significant",
+        p_value > exploratory_ZINB_adjusted_sig_threshold ~ "Not-significant"
       )
   )
 
@@ -1198,8 +1198,8 @@ exploratory_ZINB_model2 <- exploratory_ZINB_model2 %>%
     p_value = format.pval(p_value,
                           digits = 2),
     threshold_adj_sig = case_when(
-        p_value <= adj_p_value_threshold ~ "Significant",
-        p_value > adj_p_value_threshold ~ "Not-significant"
+        p_value <= exploratory_ZINB_adjusted_sig_threshold ~ "Significant",
+        p_value > exploratory_ZINB_adjusted_sig_threshold ~ "Not-significant"
       )
   )
 
