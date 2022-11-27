@@ -295,14 +295,26 @@ actual p-values themselves by the authors.
 ```{r Create adjusted p-value threshold object}
 #Create p-value and no. of test objects
 standard_p_value_level <- 0.05
-no_of_tests <- 5
+aim1_model_n_tests <- 42
+aim2_model_n_tests <- 41
+exploratory_ZINB_model_n_tests <- 40
 
-#Create adjusted p value threshold
-adj_p_value_threshold <- format.pval(pv = standard_p_value_level / no_of_tests,
-                                     digits = 2)
+#Create adjusted p value thresholds
+aim1_adjusted_sig_threshold <- format.pval(pv = standard_p_value_level / aim1_model_n_tests,
+                                     digits = 3)
 
-#Check threshold
-adj_p_value_threshold
+aim2_adjusted_sig_threshold <- format.pval(pv = standard_p_value_level / aim2_model_n_tests,
+                                     digits = 3)
+
+exploratory_ZINB_adjusted_sig_threshold <- format.pval(pv = standard_p_value_level / exploratory_ZINB_model_n_tests,
+                                                       digits = 3)
+
+
+
+#Check thresholds
+aim1_adjusted_sig_threshold
+aim2_adjusted_sig_threshold #Exploratory LR model 1 and 2 will also use same threshold
+exploratory_ZINB_adjusted_sig_threshold
 ```
 
 #Aim 1 Logistic regression model
@@ -366,8 +378,8 @@ aim1_LR_model_tidy <- tidy(
     p.value = format.pval(pv = p.value,
                           digits = 2),
     threshold_adj_sig = case_when(
-      p.value <= adj_p_value_threshold ~ "Significant",
-      p.value > adj_p_value_threshold ~ "Not-significant"
+      p.value <= aim1_adjusted_sig_threshold ~ "Significant",
+      p.value > aim1_adjusted_sig_threshold ~ "Not-significant"
         )
     )
 
@@ -641,8 +653,8 @@ exploratory_LR_model1_tidy <- tidy(
     p.value = format.pval(pv = p.value,
                           digits = 2),
     threshold_adj_sig = case_when(
-      p.value <= adj_p_value_threshold ~ "Significant",
-      p.value > adj_p_value_threshold ~ "Not-significant"
+      p.value <= aim2_adjusted_sig_threshold ~ "Significant",
+      p.value > aim2_adjusted_sig_threshold ~ "Not-significant"
         )
     )
 
@@ -711,8 +723,8 @@ exploratory_LR_model2_tidy <- tidy(
     p.value = format.pval(pv = p.value,
                           digits = 2),
     threshold_adj_sig = case_when(
-      p.value <= adj_p_value_threshold ~ "Significant",
-      p.value > adj_p_value_threshold ~ "Not-significant"
+      p.value <= aim2_adjusted_sig_threshold ~ "Significant",
+      p.value > aim2_adjusted_sig_threshold ~ "Not-significant"
         )
     )
 
@@ -781,8 +793,8 @@ exploratory_LR_model3_tidy <- tidy(
     p.value = format.pval(pv = p.value,
                           digits = 2),
     threshold_adj_sig = case_when(
-      p.value <= adj_p_value_threshold ~ "Significant",
-      p.value > adj_p_value_threshold ~ "Not-significant"
+      p.value <= aim2_adjusted_sig_threshold ~ "Significant",
+      p.value > aim2_adjusted_sig_threshold ~ "Not-significant"
         )
     )
 
@@ -805,8 +817,7 @@ ZINB_model1 <- zeroinf.neg.binomial.estimates(
 )
 
 #Check ZINB model output
-ZINB_model1 %>% 
-  head()
+ZINB_model1
 ```
 
 ```{r Create a significance column for the ZINB model results}
@@ -823,14 +834,13 @@ ZINB_model1 <- ZINB_model1 %>%
     p_value = format.pval(p_value,
                           digits = 2),
     threshold_adj_sig = case_when(
-        p_value <= adj_p_value_threshold ~ "Significant",
-        p_value > adj_p_value_threshold ~ "Not-significant"
+        p_value <= aim2_adjusted_sig_threshold ~ "Significant",
+        p_value > aim2_adjusted_sig_threshold ~ "Not-significant"
       )
   )
 
 #Check significance column
-ZINB_model1 %>% 
-  head()
+ZINB_model1
 ```
 
 ##Plot ZINB model 1
@@ -844,8 +854,8 @@ ZINB_model_or_CI <- ZINB_model1 %>%
   dplyr::select(
     "Independent_variable" = "Independent variable",
     Estimate,
-    "CI_95_low" = "95% CI low",
-    "CI_95_up" = "95% CI up"
+    CI_95_low = "95% CI low",
+    CI_95_up = "95% CI up"
   )
 
 ZINB_model_or_CI
@@ -914,20 +924,20 @@ ZINB_model_or_CI %>%
   slice(-1) %>% #remove row number 1 (The intercept) 
   ggplot(aes(x = Independent_variable, y = Estimate)) +
   geom_point(shape = 15,
-             size  = 1, 
-             position = "dodge", 
+             size = 1, 
+             #position = position_dodge(width = NULL), 
              color = "black") + 
-  geom_errorbar(aes(ymin  = CI_95_low,
-                    ymax  = CI_95_up),
-                size  = 0.7,
-                position = "dodge", 
-                color= "#EFC10B") +
-  labs(title = "ZINB model of participation in the COPING follow-up surveys",
+  geom_errorbar(aes(ymin = CI_95_low,
+                    ymax = CI_95_up),
+                size = 0.7,
+                #position = position_dodge(width = NULL), 
+                color = "#EFC10B") +
+  labs(title = "ZINB model of follow-up surveys",
          x = "Explanatory variables",
        y = "Adjusted rate ratios with 95% CI") +
   coord_flip() + 
-  #scale_y_continuous(breaks = seq(0, 4, 0.5),
-  #                   limits = c(0, 4)) +
+  scale_y_continuous(breaks = seq(0, 4.5, 0.5),
+                     limits = c(0, 4.5)) +
   scale_x_discrete(limits = rev) +
   geom_hline(yintercept = 1, color = "red", size = 1) +
   theme_bw() +
@@ -1058,8 +1068,8 @@ exploratory_ZINB_model1 <- exploratory_ZINB_model1 %>%
     p_value = format.pval(p_value,
                           digits = 2),
     threshold_adj_sig = case_when(
-        p_value <= adj_p_value_threshold ~ "Significant",
-        p_value > adj_p_value_threshold ~ "Not-significant"
+        p_value <= exploratory_ZINB_adjusted_sig_threshold ~ "Significant",
+        p_value > exploratory_ZINB_adjusted_sig_threshold ~ "Not-significant"
       )
   )
 
@@ -1186,8 +1196,8 @@ exploratory_ZINB_model2 <- exploratory_ZINB_model2 %>%
     p_value = format.pval(p_value,
                           digits = 2),
     threshold_adj_sig = case_when(
-        p_value <= adj_p_value_threshold ~ "Significant",
-        p_value > adj_p_value_threshold ~ "Not-significant"
+        p_value <= exploratory_ZINB_adjusted_sig_threshold ~ "Significant",
+        p_value > exploratory_ZINB_adjusted_sig_threshold ~ "Not-significant"
       )
   )
 
@@ -1198,16 +1208,22 @@ exploratory_ZINB_model2 %>%
 
 #Write all model output to Excel file
 
+Note: The 1st explanatory LR and ZINB models involve removing the returned saliva kit
+variable as an IV from the models. They are hashed here when the supplementary
+file is being created because instead of dropping the variable, we re-ran the 
+original aim 1 and 2 models by only including the participants who had returned 
+a kit.
+
 ```{r Write all models to a single Excel file}
 #Put models into named list
 model_list <- list(
   "Aim1_LR_model" = aim1_LR_model_tidy,
-  "Exploratory_LR_model1" = exploratory_LR_model1_tidy,
-  "Exploratory_LR_model2" = exploratory_LR_model2_tidy,
-  "Exploratory_LR_model3" = exploratory_LR_model3_tidy,
+  #"Exploratory_LR_model1" = exploratory_LR_model1_tidy,
+  "Exploratory_LR_model1" = exploratory_LR_model2_tidy,
+  "Exploratory_LR_model2" = exploratory_LR_model3_tidy,
   "Aim2_ZINB_model1" = ZINB_model1,
-  "Exploratory_ZINB_model1" = exploratory_ZINB_model1,
-  "Exploratory_ZINB_model2" = exploratory_ZINB_model2
+  #"Exploratory_ZINB_model1" = exploratory_ZINB_model1,
+  "Exploratory_ZINB_model1" = exploratory_ZINB_model2
 )
 
 #Write models to excel
