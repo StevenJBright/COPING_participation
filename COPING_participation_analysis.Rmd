@@ -917,6 +917,11 @@ ZINB_model_or_CI <- ZINB_model_or_CI %>%
 ZINB_model_or_CI$Independent_variable <- factor(ZINB_model_or_CI$Independent_variable,
                               levels = ZINB_model1_explanatory_variable_levels)
 
+#Round the CI up because to 2 decimal places to fix ethnicity arab being very long number
+ZINB_model_or_CI <- ZINB_model_or_CI %>% 
+  mutate(CI_95_up = 
+           round(CI_95_low, 2))
+
 #Check output
 ZINB_model_or_CI
 ```
