@@ -1208,16 +1208,22 @@ exploratory_ZINB_model2 %>%
 
 #Write all model output to Excel file
 
+Note: The 1st explanatory LR and ZINB models involve removing the returned saliva kit
+variable as an IV from the models. They are hashed here when the supplementary
+file is being created because instead of dropping the variable, we re-ran the 
+original aim 1 and 2 models by only including the participants who had returned 
+a kit.
+
 ```{r Write all models to a single Excel file}
 #Put models into named list
 model_list <- list(
   "Aim1_LR_model" = aim1_LR_model_tidy,
-  "Exploratory_LR_model1" = exploratory_LR_model1_tidy,
-  "Exploratory_LR_model2" = exploratory_LR_model2_tidy,
-  "Exploratory_LR_model3" = exploratory_LR_model3_tidy,
+  #"Exploratory_LR_model1" = exploratory_LR_model1_tidy,
+  "Exploratory_LR_model1" = exploratory_LR_model2_tidy,
+  "Exploratory_LR_model2" = exploratory_LR_model3_tidy,
   "Aim2_ZINB_model1" = ZINB_model1,
-  "Exploratory_ZINB_model1" = exploratory_ZINB_model1,
-  "Exploratory_ZINB_model2" = exploratory_ZINB_model2
+  #"Exploratory_ZINB_model1" = exploratory_ZINB_model1,
+  "Exploratory_ZINB_model1" = exploratory_ZINB_model2
 )
 
 #Write models to excel
