@@ -817,8 +817,7 @@ ZINB_model1 <- zeroinf.neg.binomial.estimates(
 )
 
 #Check ZINB model output
-ZINB_model1 %>% 
-  head()
+ZINB_model1
 ```
 
 ```{r Create a significance column for the ZINB model results}
@@ -841,8 +840,7 @@ ZINB_model1 <- ZINB_model1 %>%
   )
 
 #Check significance column
-ZINB_model1 %>% 
-  head()
+ZINB_model1
 ```
 
 ##Plot ZINB model 1
@@ -856,8 +854,8 @@ ZINB_model_or_CI <- ZINB_model1 %>%
   dplyr::select(
     "Independent_variable" = "Independent variable",
     Estimate,
-    "CI_95_low" = "95% CI low",
-    "CI_95_up" = "95% CI up"
+    CI_95_low = "95% CI low",
+    CI_95_up = "95% CI up"
   )
 
 ZINB_model_or_CI
@@ -917,11 +915,6 @@ ZINB_model_or_CI <- ZINB_model_or_CI %>%
 ZINB_model_or_CI$Independent_variable <- factor(ZINB_model_or_CI$Independent_variable,
                               levels = ZINB_model1_explanatory_variable_levels)
 
-#Round the CI up because to 2 decimal places to fix ethnicity arab being very long number
-ZINB_model_or_CI <- ZINB_model_or_CI %>% 
-  mutate(CI_95_up = 
-           round(CI_95_low, 2))
-
 #Check output
 ZINB_model_or_CI
 ```
@@ -931,20 +924,20 @@ ZINB_model_or_CI %>%
   slice(-1) %>% #remove row number 1 (The intercept) 
   ggplot(aes(x = Independent_variable, y = Estimate)) +
   geom_point(shape = 15,
-             size  = 1, 
-             position = "dodge", 
+             size = 1, 
+             #position = position_dodge(width = NULL), 
              color = "black") + 
-  geom_errorbar(aes(ymin  = CI_95_low,
-                    ymax  = CI_95_up),
-                size  = 0.7,
-                position = "dodge", 
-                color= "#EFC10B") +
-  labs(title = "ZINB model of participation in the COPING follow-up surveys",
+  geom_errorbar(aes(ymin = CI_95_low,
+                    ymax = CI_95_up),
+                size = 0.7,
+                #position = position_dodge(width = NULL), 
+                color = "#EFC10B") +
+  labs(title = "ZINB model of follow-up surveys",
          x = "Explanatory variables",
        y = "Adjusted rate ratios with 95% CI") +
   coord_flip() + 
-  #scale_y_continuous(breaks = seq(0, 4, 0.5),
-  #                   limits = c(0, 4)) +
+  scale_y_continuous(breaks = seq(0, 4.5, 0.5),
+                     limits = c(0, 4.5)) +
   scale_x_discrete(limits = rev) +
   geom_hline(yintercept = 1, color = "red", size = 1) +
   theme_bw() +
