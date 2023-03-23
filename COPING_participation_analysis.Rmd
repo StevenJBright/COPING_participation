@@ -1230,3 +1230,76 @@ model_list <- list(
 model_list %>% 
   write.xlsx(file = "../COPING_participation_models.xlsx")
 ```
+
+# Paper revisions
+23/03/2023
+
+After submitting the manuscript to BMC Psychiatry, we received some revisions to make during the peer review. Notably, two comments about the analysis included:
+
+1) Considering using a Poisson/negative binomial regression over a ZINB model.
+2) Using a Box-Tidwell test to assess whether the continuous variables in the LR model are linearly related to the logit transformation of the DV.
+
+These points will each be addressed in turn.
+
+# Revision 1: Using poisson or negative binomial regression over ZINB model
+
+The reviewer's rationale for suggesting these alternative models is that the ZINB model is highly sensitive to outliers. However, we chose to utilise the ZINB model because there is an excess of 0's in the outcome variable of COPING follow-up survey completion. That is, many participants who completed the COPING baseline survey did not complete any COPING follow-up surveys. The ZINB model, unlike these alternative models, is designed to handle these excess 0's.
+
+Therefore, we will check whether there are any outliers in the data.
+
+```{r Select continuous variables used in ZINB model}
+# Create vector of continuous variables used in ZINB model
+continuous_vars <- c(
+  "age_cleaned",
+  "phq.sum_score",
+  "gad.sum_score",
+  "audit.sum_score",
+  "MH_disorders_total_count"
+)
+
+# Select continuous variables
+continuous_vars_subset <- glad_coping_participation %>% 
+  select(all_of(continuous_vars))
+
+# Check
+continuous_vars_subset %>% 
+  head()
+```
+
+```{r Check for outliers in age}
+continuous_vars_subset %>% 
+  ggplot(aes(x = age_cleaned)) +
+  geom_histogram(bins = 20, colour = "Black", fill = "#EFC10B") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"))
+```
+
+```{r Check for outliers in PHQ depression scores}
+continuous_vars_subset %>% 
+  ggplot(aes(x = phq.sum_score)) +
+  geom_histogram(bins = 20, colour = "Black", fill = "#EFC10B") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"))
+```
+
+```{r Check for outliers in GAD anxiety scores}
+continuous_vars_subset %>% 
+  ggplot(aes(x = gad.sum_score)) +
+  geom_histogram(bins = 20, colour = "Black", fill = "#EFC10B") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"))
+```
+
+```{r Check for outliers in total MH disorders count}
+continuous_vars_subset %>% 
+  na.omit(MH_disorders_total_count) %>% # Remove cases with NAs
+  ggplot(aes(x = MH_disorders_total_count)) +
+  geom_histogram(bins = 10, colour = "Black", fill = "#EFC10B") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  scale_x_continuous(breaks = seq(0, 10))
+```
