@@ -1241,11 +1241,11 @@ After submitting the manuscript to BMC Psychiatry, we received some revisions to
 
 These points will each be addressed in turn.
 
-# Revision 1: Using poisson or negative binomial regression over ZINB model
+## Revision 1: Using poisson or negative binomial regression over ZINB model
 
 The reviewer's rationale for suggesting these alternative models is that the ZINB model is highly sensitive to outliers. However, we chose to utilise the ZINB model because there is an excess of 0's in the outcome variable of COPING follow-up survey completion. That is, many participants who completed the COPING baseline survey did not complete any COPING follow-up surveys. The ZINB model, unlike these alternative models, is designed to handle these excess 0's.
 
-Therefore, we will check whether there are any outliers in the data.
+Therefore, we will check whether there are any outliers for the continuous variables within our data.
 
 ```{r Select continuous variables used in ZINB model}
 # Create vector of continuous variables used in ZINB model
@@ -1362,6 +1362,133 @@ MH_disorder_count_hist
 # Save plot
 ggsave("../MH_disorders_count_hist.jpeg",
        plot = MH_disorder_count_hist,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
+```
+
+## Revision 2: Box-Tidwell test
+
+Box-Tidwell tests will be performed to assess whether the continuous variables in the data are linearly related to the logit transformation of the outcome variable for our LR model. This outcome variable is whether the GLAD participants completed the COPING baseline survey or not.
+
+```{r Create a complete case dataset}
+# Create complete case dataset
+glad_coping_participation_complete_case <- glad_coping_participation %>% 
+  select(all_of(explanatory_variables)) %>% 
+  na.omit()
+
+# Check
+glad_coping_participation_complete_case %>% 
+  dim()
+```
+
+Since the Box-Tidwell function doesn't work with variables that have negative numbers or 0, we can only test the age variable using the Box-Tidwell function. For the remaining variables, we can plot its relationship with the logit transformation of the outcome variable. 
+
+```{r Perform Box-Tidwell test for age variable}
+# Save the logodds of the outcome variable
+logodds <- aim1_LR_model$linear.predictors
+
+# Perform Box-Tidwell test
+boxTidwell(logodds ~ age_cleaned,
+           data = glad_coping_participation_complete_case
+           )
+```
+
+```{r Plot age and the logit transformation of the outcome}
+logit_age_plot <- glad_coping_participation_complete_case %>% 
+  ggplot(aes(x = age_cleaned, y = logodds)) +
+  geom_point(colour = "Black") +
+  theme_minimal() +
+  labs(x = "Age") +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"))
+
+logit_age_plot
+
+# Save plot
+ggsave("../logit_age_plot.jpeg",
+       plot = logit_age_plot,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
+```
+
+```{r Plot PHQ and logit transformation of outcome}
+logit_phq_plot <- glad_coping_participation_complete_case %>% 
+  ggplot(aes(x = phq.sum_score, y = logodds)) +
+  geom_point(colour = "Black") +
+  theme_minimal() +
+  labs(x = "PHQ sum score") +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"))
+
+logit_phq_plot
+
+# Save
+ggsave("../logit_phq_plot.jpeg",
+       plot = logit_phq_plot,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
+```
+
+```{r Plot GAD and logit transformation of outcome}
+logit_gad_plot <- glad_coping_participation_complete_case %>% 
+  ggplot(aes(x = gad.sum_score, y = logodds)) +
+  geom_point(colour = "Black") +
+  theme_minimal() +
+  labs(x = "GAD sum score") +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"))
+
+logit_gad_plot
+
+# Check
+ggsave("../logit_gad_plot.jpeg",
+       plot = logit_gad_plot,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
+```
+
+```{r Plot AUDIT and logit transformation of outcome}
+logit_audit_plot <- glad_coping_participation_complete_case %>% 
+  ggplot(aes(x = audit.sum_score, y = logodds)) +
+  geom_point(colour = "Black") +
+  theme_minimal() +
+  labs(x = "AUDIT sum score") +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"))
+
+logit_audit_plot
+
+# Save
+ggsave("../logit_audit_plot.jpeg",
+       plot = logit_audit_plot,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
+```
+
+```{r Plot total MH disorders and logit transformation of outcome}
+logit_MH_disorder_count_plot <- glad_coping_participation_complete_case %>% 
+  ggplot(aes(x = MH_disorders_total_count, y = logodds)) +
+  geom_point(colour = "Black") +
+  theme_minimal() +
+  labs(x = "No. Mental health disorders") +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"))
+
+logit_MH_disorder_count_plot
+
+# Save
+ggsave("../logit_MH_disorder_count_plot.jpeg",
+       plot = logit_MH_disorder_count_plot,
        width = 10,
        height = 6,
        dpi = 150,
