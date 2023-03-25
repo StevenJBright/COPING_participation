@@ -629,12 +629,24 @@ all.corr.mat <- correlation_vars_data %>%
 
 ```{r Plot the correlations}
 
-all.corr.mat %>% 
+correlation_heatmap <- {
+  all.corr.mat %>% 
   corrplot(method = "color",
            addCoef.col = 1,
            number.cex = 0.25,
            tl.cex = 0.4,
            tl.col = "black",
            type = "lower")
+  
+  recordPlot()
+}
+
+ggsave(filename = "COPING_correlation_heatmap.png",
+       path = "../",
+       plot = replayPlot(correlation_heatmap),
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
 
 ```
