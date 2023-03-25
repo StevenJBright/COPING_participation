@@ -106,7 +106,7 @@ N_followups
 ```
 
 ```{r Plot COPING surveys completed}
-glad_coping_participation %>% 
+COPING_followups_completed_plot <- glad_coping_participation %>% 
   drop_na(total_COPING_waves) %>% 
   ggplot(aes(x = total_COPING_waves)) +
   geom_bar(fill = glad_colour,
@@ -125,7 +125,20 @@ glad_coping_participation %>%
             stat = "count",
             vjust = -1,
             nudge_y = .01) +
-  theme_bw()
+  theme_bw() +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"))
+
+COPING_followups_completed_plot
+```
+
+```{r Save COPING followups completed plot}
+ggsave("../COPING_followups_completed.png",
+       plot = COPING_followups_completed_plot,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
 ```
 
 #Plots: Participation in the COPING baseline
