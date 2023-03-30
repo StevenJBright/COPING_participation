@@ -1251,11 +1251,28 @@ age_boxplot <- continuous_vars_subset %>%
   labs(y = "Age") +
   scale_y_continuous(breaks = seq(0, 100, by = 10))
 
+age_hist <- continuous_vars_subset %>% 
+  ggplot(aes(x = age_cleaned)) +
+  geom_histogram(bins = 20, colour = "Black", fill = "#EFC10B") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  labs(x = "Age")
+
+# Check plots
 age_boxplot
+age_hist
 
 # Save plot
 ggsave("../age_boxplot.jpeg",
        plot = age_boxplot,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
+
+ggsave("../age_hist.jpeg",
+       plot = age_hist,
        width = 10,
        height = 6,
        dpi = 150,
@@ -1272,11 +1289,28 @@ phq_boxplot <- continuous_vars_subset %>%
   labs(y = "PHQ sum score") +
   scale_y_continuous(breaks = seq(0, 27, by = 3))
 
-phq_boxplot
+phq_hist <- continuous_vars_subset %>% 
+  ggplot(aes(x = phq.sum_score)) +
+  geom_histogram(bins = 25, colour = "Black", fill = "#EFC10B") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  labs(x = "PHQ sum score")
 
-# Save plot
+# Check plots
+phq_boxplot
+phq_hist
+
+# Save plots
 ggsave("../phq_boxplot.jpeg",
        plot = phq_boxplot,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
+
+ggsave("../phq_hist.jpeg",
+       plot = phq_hist,
        width = 10,
        height = 6,
        dpi = 150,
@@ -1293,11 +1327,28 @@ gad_boxplot <- continuous_vars_subset %>%
   labs(y = "GAD sum score") +
   scale_y_continuous(breaks = seq(0, 21, by = 3))
 
-gad_boxplot
+gad_hist <- continuous_vars_subset %>% 
+  ggplot(aes(x = gad.sum_score)) +
+  geom_histogram(bins = 20, colour = "Black", fill = "#EFC10B") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  labs(x = "GAD sum score")
 
-# Save plot
+# Check plots 
+gad_boxplot
+gad_hist
+
+# Save plots
 ggsave("../gad_boxplot.jpeg",
        plot = gad_boxplot,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
+
+ggsave("../gad_hist.jpeg",
+       plot = gad_hist,
        width = 10,
        height = 6,
        dpi = 150,
@@ -1314,11 +1365,28 @@ audit_boxplot <- continuous_vars_subset %>%
   labs(y = "AUDIT sum score") +
   scale_y_continuous(breaks = seq(0, 40, by = 5))
 
-audit_boxplot
+audit_hist <- continuous_vars_subset %>% 
+  ggplot(aes(x = audit.sum_score)) +
+  geom_histogram(bins = 20, colour = "Black", fill = "#EFC10B") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  labs(x = "AUDIT sum score")
 
-# Save plot
+# Check plots
+audit_boxplot
+audit_hist
+
+# Save plots
 ggsave("../audit_boxplot.jpeg",
        plot = audit_boxplot,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
+
+ggsave("../audit_hist.jpeg",
+       plot = audit_hist,
        width = 10,
        height = 6,
        dpi = 150,
@@ -1336,11 +1404,30 @@ MH_disorder_count_boxplot <- continuous_vars_subset %>%
   labs(y = "No. mental health disorders") +
   scale_y_continuous(breaks = seq(0, 10, by = 1))
 
+MH_disorder_count_hist <- continuous_vars_subset %>% 
+  na.omit(MH_disorders_total_count) %>% 
+  ggplot(aes(x = MH_disorders_total_count)) +
+  geom_histogram(bins = 10, colour = "Black", fill = "#EFC10B") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  labs(x = "No. mental health disorders") +
+  scale_x_continuous(breaks = seq(0, 10, by = 1))
+
+# Check plots
 MH_disorder_count_boxplot
+MH_disorder_count_hist
 
 # Save plot
 ggsave("../MH_disorder_count_boxplot.jpeg",
        plot = MH_disorder_count_boxplot,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
+
+ggsave("../MH_disorder_count_hist.jpeg",
+       plot = MH_disorder_count_hist,
        width = 10,
        height = 6,
        dpi = 150,
