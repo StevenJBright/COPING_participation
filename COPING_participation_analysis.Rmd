@@ -1206,31 +1206,6 @@ exploratory_ZINB_model2 %>%
   head()
 ```
 
-#Write all model output to Excel file
-
-Note: The 1st explanatory LR and ZINB models involve removing the returned saliva kit
-variable as an IV from the models. They are hashed here when the supplementary
-file is being created because instead of dropping the variable, we re-ran the 
-original aim 1 and 2 models by only including the participants who had returned 
-a kit.
-
-```{r Write all models to a single Excel file}
-#Put models into named list
-model_list <- list(
-  "Aim1_LR_model" = aim1_LR_model_tidy,
-  #"Exploratory_LR_model1" = exploratory_LR_model1_tidy,
-  "Exploratory_LR_model1" = exploratory_LR_model2_tidy,
-  "Exploratory_LR_model2" = exploratory_LR_model3_tidy,
-  "Aim2_ZINB_model1" = ZINB_model1,
-  #"Exploratory_ZINB_model1" = exploratory_ZINB_model1,
-  "Exploratory_ZINB_model1" = exploratory_ZINB_model2
-)
-
-#Write models to excel
-model_list %>% 
-  write.xlsx(file = "../COPING_participation_models.xlsx")
-```
-
 # Paper revisions
 23/03/2023
 
@@ -1518,4 +1493,369 @@ ggsave("../logit_MH_disorder_count_plot.jpeg",
        height = 6,
        dpi = 150,
        units = "in")
+```
+
+### Sensitivity analysis: Aim 1 LR with newly categorised variables
+
+Since 4/5 of the continuous variables were not linearly related to the outcome variable in aim 1, this sensitivity analysis will investigate whether categorising the variables markedly changes the original results. The variables to be categorised are:
+
+- PHQ sum score
+- GAD sum score
+- AUDIT sum score
+- Total MH disorders
+
+#### Categorise the non-linear continuous variables
+
+Cut-offs for the standardised scales:
+
+PHQ9:
+None (0-4)
+Mild (5-9)
+Moderate (10-14)
+Moderately severe (15-19)
+Severe (20+)
+
+```{r Categorise the PHQ sum score variable}
+glad_coping_participation <- glad_coping_participation %>% 
+  mutate(PHQ_factor = 
+           case_when(
+             phq.sum_score >= 0 & phq.sum_score <= 4 ~ 1,
+             phq.sum_score > 4 & phq.sum_score <= 9 ~ 2,
+             phq.sum_score > 9 & phq.sum_score <= 14 ~ 3,
+             phq.sum_score > 14 & phq.sum_score <= 19 ~ 4,
+             phq.sum_score > 19 ~ 5
+           ))
+
+# Turn new variable into factor
+glad_coping_participation$PHQ_factor <- factor(glad_coping_participation$PHQ_factor,
+                                               levels = c(1, 2, 3, 4, 5),
+                                               labels = c(
+                                                 "None",
+                                                 "Mild",
+                                                 "Moderate",
+                                                 "Moderately severe",
+                                                 "Severe"
+                                               ))
+
+# Check
+glad_coping_participation %>% 
+  select(phq.sum_score,
+         PHQ_factor) %>% 
+  head()
+
+glad_coping_participation %>% 
+  count(PHQ_factor)
+```
+
+GAD7:
+None (0-4)
+Mild (5-9)
+Moderate (10-14)
+Severe (15+)
+
+```{r Categorise the GAD sum score variable}
+glad_coping_participation <- glad_coping_participation %>% 
+  mutate(GAD_factor = 
+           case_when(
+             gad.sum_score >= 0 & gad.sum_score <= 4 ~ 1,
+             gad.sum_score > 4 & gad.sum_score <= 9 ~ 2,
+             gad.sum_score > 9 & gad.sum_score <= 14 ~ 3,
+             gad.sum_score > 14 ~ 4
+           ))
+
+# Turn new variable into factor
+glad_coping_participation$GAD_factor <- factor(glad_coping_participation$GAD_factor,
+                                               levels = c(1, 2, 3, 4),
+                                               labels = c(
+                                                 "None",
+                                                 "Mild",
+                                                 "Moderate",
+                                                 "Severe"
+                                               ))
+
+# Check
+glad_coping_participation %>% 
+  select(gad.sum_score,
+         GAD_factor) %>% 
+  head()
+
+glad_coping_participation %>% 
+  count(GAD_factor)
+```
+
+AUDIT:
+No risk (0-7)
+Increasing risk (8-15)
+Higher risk (16-19)
+Possible dependence (20+)
+
+```{r Categorise the AUDIT sum score variable}
+glad_coping_participation <- glad_coping_participation %>% 
+  mutate(AUDIT_factor = 
+           case_when(
+             audit.sum_score >= 0 & audit.sum_score <= 7 ~ 1,
+             audit.sum_score > 7 & audit.sum_score <= 15 ~ 2,
+             audit.sum_score > 15 & audit.sum_score <= 19 ~ 3,
+             audit.sum_score > 19 ~ 4
+           ))
+
+# Turn new variable into factor
+glad_coping_participation$AUDIT_factor <- factor(glad_coping_participation$AUDIT_factor,
+                                               levels = c(1, 2, 3, 4),
+                                               labels = c(
+                                                 "No risk",
+                                                 "Increasing risk",
+                                                 "Higher risk",
+                                                 "Possible dependence"
+                                               ))
+
+# Check
+glad_coping_participation %>% 
+  select(audit.sum_score,
+         AUDIT_factor) %>% 
+  head()
+
+glad_coping_participation %>% 
+  count(AUDIT_factor)
+```
+
+```{r Categorise the total MH disorders variable}
+glad_coping_participation <- glad_coping_participation %>% 
+  mutate(total_MH_disorders_factor = 
+           case_when(
+             MH_disorders_total_count == 0 ~ 1,
+             MH_disorders_total_count == 1 ~ 2,
+             MH_disorders_total_count > 1 ~ 3
+           ))
+
+# Turn new variable into factor
+glad_coping_participation$total_MH_disorders_factor <- factor(glad_coping_participation$total_MH_disorders_factor,
+                                               levels = c(1, 2, 3),
+                                               labels = c(
+                                                 "No MH disorders",
+                                                 "1 MH disorder",
+                                                 "2+ MH disorders"
+                                               ))
+
+# Check
+glad_coping_participation %>% 
+  select(total_MH_disorders_factor,
+         MH_disorders_total_count) %>% 
+  head()
+
+glad_coping_participation %>% 
+  count(total_MH_disorders_factor)
+
+# Note: NA's are the same as in the MH_disorders_total_count variable
+glad_coping_participation %>% 
+  count(MH_disorders_total_count)
+```
+
+#### Prepare model fitting
+
+```{r Define explanatory and outcome variables}
+#Create explanatory variables vector
+explanatory_variables <- c(
+  "age_cleaned",
+  "gender_recode_labelled",
+  "highest_education_labelled",
+  "ethnicity_labelled",
+  "employment_labelled",
+  "partnership_status_labelled",
+  "PHQ_factor", # new PHQ factor variable
+  "GAD_factor", # New GAD factor variable
+  "AUDIT_factor", # New AUDIT factor variable
+  "smoking_status_labelled",
+  "physical_health_comorbidities_labelled",
+  "total_MH_disorders_factor", # New MH disorder count factor variable
+  "depressive_and_anxiety_comorbidity_labelled",
+  "eating_disorders_labelled",
+  "OCRDs_labelled",
+  "psychotic_and_biploar_disorder_labelled",
+  "asd_labelled",
+  "ADHD_ADD_labelled",
+  "personality_disorder_labelled",
+  #"PTSD_labelled", # Hasing this out because it turns to NA in models after adding anx/dep comorbidity
+  "startDate",
+  "kit_returned_labelled"
+  #joined_coping_first_invitation_labelled,
+)
+
+#Create dependent variable vectors
+coping_baseline_outcome <- c("completed_baseline_labelled")
+```
+
+```{r Create vector of variable terms in sensitivity analysis model}
+sensitivity_analysis_model_vars <- c(
+"Intercept",
+"age_cleaned",
+"gender_recode_labelledFemale",
+"gender_recode_labelledNon-binary/prefer to self-define",
+"highest_education_labelledA levels/AS levels or equivalent",
+"highest_education_labelledO levels/GCSEs or CSEs or equivalent",
+"highest_education_labelledNVQ or HND or HNC or equivalent",
+"highest_education_labelledNone of the above",
+"ethnicity_labelledMixed",
+"ethnicity_labelledAsian or Asian British",
+"ethnicity_labelledBlack or Black British",
+"ethnicity_labelledArab",
+"ethnicity_labelledOther",
+"employment_labelledRetired",
+"employment_labelledLooking after home and/or family",
+"employment_labelledUnable to work because of sickness or disability",
+"employment_labelledUnemployed",
+"employment_labelledDoing unpaid or voluntary work",
+"employment_labelledFull or part-time student",
+"employment_labelledNone of the above",
+"partnership_status_labelledRelationship or married/civil partnership",
+"partnership_status_labelledDivorced/widowed/separated",
+"PHQ_factorNone",
+"PHQ_factorModerate",
+"PHQ_factorModerately severe",
+"PHQ_factorSevere",
+"GAD_factorNone",
+"GAD_factorModerate",
+"GAD_factorSevere",
+"AUDIT_factorIncreasing risk",
+"AUDIT_factorHigher risk",
+"AUDIT_factorPossible dependence",
+"smoking_status_labelledI smoke now",
+"smoking_status_labelledI used to smoke",
+"physical_health_comorbidities_labelled1 physical health disorder",
+"physical_health_comorbidities_labelled2+ physical health disorders",
+"total_MH_disorders_factorNo MH disorders",
+"total_MH_disorders_factor1 MH disorder",
+"depressive_and_anxiety_comorbidity_labelled No depressive or anxiety disorder",
+"depressive_and_anxiety_comorbidity_labelledDepressive disorder only",
+"depressive_and_anxiety_comorbidity_labelledAnxiety disorder only",
+"eating_disorders_labelledEating disorder",
+"OCRDs_labelledOCRDs",
+"psychotic_and_biploar_disorder_labelledPsychotic and bipolar disorder",
+"psychotic_and_biploar_disorder_labelledOnly psychotic disorder",
+"psychotic_and_biploar_disorder_labelledOnly bipolar disorder",
+"asd_labelledAutistic spectrum disorder",
+"ADHD_ADD_labelledADHD or ADD disorder",
+"personality_disorder_labelledPersonality disorder",
+"startDate",
+"kit_returned_labelledPt has provided saliva kit"
+)
+```
+
+```{r Create model formula}
+sensitivity_analysis_formula <- as.formula(paste(coping_baseline_outcome, 
+                                                        paste(explanatory_variables, 
+                                                              collapse=" + "), 
+                                                        sep = " ~ "))
+
+# Check
+sensitivity_analysis_formula
+```
+
+For the newly categorised factors, the level with the highest N pt's should be the reference group.
+
+Note: No risk is the first level in the AUDIT variable and also has the highest N. Therefore, no need to re-level this variable.
+
+```{r Change reference groups}
+# PHQ
+glad_coping_participation$PHQ_factor <- relevel(glad_coping_participation$PHQ_factor,
+        ref = "Mild")
+
+# GAD
+glad_coping_participation$GAD_factor <- relevel(glad_coping_participation$GAD_factor,
+        ref = "Mild")
+
+# Total MH disorders
+glad_coping_participation$total_MH_disorders_factor <- relevel(glad_coping_participation$total_MH_disorders_factor,
+        ref = "2+ MH disorders")
+```
+
+```{r Create adjusted p-value threshold object}
+#Create p-value and no. of test objects
+standard_p_value_level <- 0.05
+sensitivity_analysis_n_tests <- 50 # Factor variables has led to more tests!
+
+#Create adjusted p value thresholds
+sensitivity_analysis_adjusted_sig <- format.pval(pv = standard_p_value_level / sensitivity_analysis_n_tests,
+                                     digits = 3)
+
+#Check thresholds
+sensitivity_analysis_adjusted_sig
+```
+
+#### Perform sensitivity analysis LR model
+
+```{r Run complete LR model}
+sensitivity_analysis_LR_model <- glm(
+  formula = sensitivity_analysis_formula,
+  family = "binomial",
+  data = glad_coping_participation)
+
+#Check output
+summary(sensitivity_analysis_LR_model)
+```
+
+```{r Create tidy output for sensitivity analysis LR model}
+#Create tidy model output
+sensitivity_analysis_LR_model_tidy <- tidy(
+  sensitivity_analysis_LR_model,
+  exponentiate = T,
+  conf.int = T) %>%
+  mutate(
+    Variable = sensitivity_analysis_model_vars, # Change names here!
+    Significance = if_else(
+      p.value < 0.05, 
+      1,
+      0
+      ) %>%
+    recode_factor(
+        "0" = "Not-significant",
+        "1" = "Significant"
+      )) %>%
+  dplyr::select(
+    Variable,
+    OR = estimate,
+    `CI 95% lower` = conf.low,
+    `CI 95% upper` = conf.high,
+     p.value,
+    Significance
+  ) %>% 
+  mutate(
+    OR = round(OR, 2),
+    `CI 95% lower` = round(`CI 95% lower`, 2),
+    `CI 95% upper` = round(`CI 95% upper`, 2),
+    p.value = format.pval(pv = p.value,
+                          digits = 2),
+    threshold_adj_sig = case_when(
+      p.value <= sensitivity_analysis_adjusted_sig ~ "Significant",
+      p.value > sensitivity_analysis_adjusted_sig ~ "Not-significant"
+        )
+    )
+
+#Check output
+sensitivity_analysis_LR_model_tidy
+```
+#Write all model output to Excel file
+
+Note: The 1st explanatory LR and ZINB models involve removing the returned saliva kit
+variable as an IV from the models. They are hashed here when the supplementary
+file is being created because instead of dropping the variable, we re-ran the 
+original aim 1 and 2 models by only including the participants who had returned 
+a kit.
+
+```{r Write all models to a single Excel file}
+#Put models into named list
+model_list <- list(
+  "Aim1_LR_model" = aim1_LR_model_tidy,
+  #"Exploratory_LR_model1" = exploratory_LR_model1_tidy,
+  "Exploratory_LR_model1" = exploratory_LR_model2_tidy,
+  "Exploratory_LR_model2" = exploratory_LR_model3_tidy,
+  "Sensitivity_analysis_LR_model" = sensitivity_analysis_LR_model_tidy,
+  "Aim2_ZINB_model1" = ZINB_model1,
+  #"Exploratory_ZINB_model1" = exploratory_ZINB_model1,
+  "Exploratory_ZINB_model1" = exploratory_ZINB_model2
+)
+
+#Write models to excel
+model_list %>% 
+  write.xlsx(file = "../COPING_participation_models.xlsx")
 ```
