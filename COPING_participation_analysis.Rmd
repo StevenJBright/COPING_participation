@@ -1383,16 +1383,41 @@ glad_coping_participation_complete_case %>%
   dim()
 ```
 
-Since the Box-Tidwell function doesn't work with variables that have negative numbers or 0, we can only test the age variable using the Box-Tidwell function. For the remaining variables, we can plot its relationship with the logit transformation of the outcome variable. 
+Since the Box-Tidwell function doesn't work with variables that have negative numbers or 0, we can increment the values of the continuous variables with 0's by 1 to perform the analyses.
 
-```{r Perform Box-Tidwell test for age variable}
+```{r Increment continuous variables values with 0's by 1 for Box-Tidwell test}
+# Increment sum score variables and total MH disorders by 1
+data_for_BoxTidwell <- glad_coping_participation_complete_case %>% 
+  mutate(across(continuous_vars[-1],
+                ~ .x + 1)
+  )
+
+# Check
+data_for_BoxTidwell %>% 
+  select(all_of(continuous_vars[-1])) %>% 
+  map(~ data_for_BoxTidwell %>% 
+        count({{ .x }}))
+```
+
+```{r Perform Box-Tidwell tests}
 # Save the logodds of the outcome variable
 logodds <- aim1_LR_model$linear.predictors
 
-# Perform Box-Tidwell test
+# Perform Box-Tidwell tests
 boxTidwell(logodds ~ age_cleaned,
-           data = glad_coping_participation_complete_case
-           )
+           data = data_for_BoxTidwell)
+
+boxTidwell(logodds ~ phq.sum_score,
+           data = data_for_BoxTidwell)
+
+boxTidwell(logodds ~ gad.sum_score,
+           data = data_for_BoxTidwell)
+
+boxTidwell(logodds ~ audit.sum_score,
+           data = data_for_BoxTidwell)
+
+boxTidwell(logodds ~ MH_disorders_total_count,
+           data = data_for_BoxTidwell)
 ```
 
 ```{r Plot age and the logit transformation of the outcome}
