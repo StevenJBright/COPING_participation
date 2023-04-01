@@ -1206,7 +1206,727 @@ exploratory_ZINB_model2 %>%
   head()
 ```
 
-#Write all model output to Excel file
+# Paper revisions
+23/03/2023
+
+After submitting the manuscript to BMC Psychiatry, we received some revisions to make during the peer review. Notably, two comments about the analysis included:
+
+1) Considering using a Poisson/negative binomial regression over a ZINB model.
+2) Using a Box-Tidwell test to assess whether the continuous variables in the LR model are linearly related to the logit transformation of the DV.
+
+These points will each be addressed in turn.
+
+## Revision 1: Using poisson or negative binomial regression over ZINB model
+
+The reviewer's rationale for suggesting these alternative models is that the ZINB model is highly sensitive to outliers. However, we chose to utilise the ZINB model because there is an excess of 0's in the outcome variable of COPING follow-up survey completion. That is, many participants who completed the COPING baseline survey did not complete any COPING follow-up surveys. The ZINB model, unlike these alternative models, is designed to handle these excess 0's.
+
+Therefore, we will check whether there are any outliers for the continuous variables within our data.
+
+```{r Select continuous variables used in ZINB model}
+# Create vector of continuous variables used in ZINB model
+continuous_vars <- c(
+  "age_cleaned",
+  "phq.sum_score",
+  "gad.sum_score",
+  "audit.sum_score",
+  "MH_disorders_total_count"
+)
+
+# Select continuous variables
+continuous_vars_subset <- glad_coping_participation %>% 
+  select(all_of(continuous_vars))
+
+# Check
+continuous_vars_subset %>% 
+  head()
+```
+
+```{r Check for outliers in age}
+age_boxplot <- continuous_vars_subset %>% 
+  ggplot(aes(y = age_cleaned)) +
+  geom_boxplot(colour = "Black", fill = "#EFC10B") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  labs(y = "Age") +
+  scale_y_continuous(breaks = seq(0, 100, by = 10))
+
+age_hist <- continuous_vars_subset %>% 
+  ggplot(aes(x = age_cleaned)) +
+  geom_histogram(bins = 20, colour = "Black", fill = "#EFC10B") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  labs(x = "Age")
+
+# Check plots
+age_boxplot
+age_hist
+
+# Save plot
+ggsave("../age_boxplot.jpeg",
+       plot = age_boxplot,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
+
+ggsave("../age_hist.jpeg",
+       plot = age_hist,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
+```
+
+```{r Check for outliers in PHQ depression scores}
+phq_boxplot <- continuous_vars_subset %>% 
+  ggplot(aes(y = phq.sum_score)) +
+  geom_boxplot(colour = "Black", fill = "#EFC10B") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  labs(y = "PHQ sum score") +
+  scale_y_continuous(breaks = seq(0, 27, by = 3))
+
+phq_hist <- continuous_vars_subset %>% 
+  ggplot(aes(x = phq.sum_score)) +
+  geom_histogram(bins = 25, colour = "Black", fill = "#EFC10B") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  labs(x = "PHQ sum score")
+
+# Check plots
+phq_boxplot
+phq_hist
+
+# Save plots
+ggsave("../phq_boxplot.jpeg",
+       plot = phq_boxplot,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
+
+ggsave("../phq_hist.jpeg",
+       plot = phq_hist,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
+```
+
+```{r Check for outliers in GAD anxiety scores}
+gad_boxplot <- continuous_vars_subset %>% 
+  ggplot(aes(y = gad.sum_score)) +
+  geom_boxplot(colour = "Black", fill = "#EFC10B") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  labs(y = "GAD sum score") +
+  scale_y_continuous(breaks = seq(0, 21, by = 3))
+
+gad_hist <- continuous_vars_subset %>% 
+  ggplot(aes(x = gad.sum_score)) +
+  geom_histogram(bins = 20, colour = "Black", fill = "#EFC10B") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  labs(x = "GAD sum score")
+
+# Check plots 
+gad_boxplot
+gad_hist
+
+# Save plots
+ggsave("../gad_boxplot.jpeg",
+       plot = gad_boxplot,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
+
+ggsave("../gad_hist.jpeg",
+       plot = gad_hist,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
+```
+
+```{r Check for outliers in GAD anxiety scores}
+audit_boxplot <- continuous_vars_subset %>% 
+  ggplot(aes(y = audit.sum_score)) +
+  geom_boxplot(colour = "Black", fill = "#EFC10B") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  labs(y = "AUDIT sum score") +
+  scale_y_continuous(breaks = seq(0, 40, by = 5))
+
+audit_hist <- continuous_vars_subset %>% 
+  ggplot(aes(x = audit.sum_score)) +
+  geom_histogram(bins = 20, colour = "Black", fill = "#EFC10B") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  labs(x = "AUDIT sum score")
+
+# Check plots
+audit_boxplot
+audit_hist
+
+# Save plots
+ggsave("../audit_boxplot.jpeg",
+       plot = audit_boxplot,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
+
+ggsave("../audit_hist.jpeg",
+       plot = audit_hist,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
+```
+
+```{r Check for outliers in total MH disorders count}
+MH_disorder_count_boxplot <- continuous_vars_subset %>% 
+  na.omit(MH_disorders_total_count) %>% # Remove cases with NAs
+  ggplot(aes(y = MH_disorders_total_count)) +
+  geom_boxplot(colour = "Black", fill = "#EFC10B") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  labs(y = "No. mental health disorders") +
+  scale_y_continuous(breaks = seq(0, 10, by = 1))
+
+MH_disorder_count_hist <- continuous_vars_subset %>% 
+  na.omit(MH_disorders_total_count) %>% 
+  ggplot(aes(x = MH_disorders_total_count)) +
+  geom_histogram(bins = 10, colour = "Black", fill = "#EFC10B") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black")) +
+  labs(x = "No. mental health disorders") +
+  scale_x_continuous(breaks = seq(0, 10, by = 1))
+
+# Check plots
+MH_disorder_count_boxplot
+MH_disorder_count_hist
+
+# Save plot
+ggsave("../MH_disorder_count_boxplot.jpeg",
+       plot = MH_disorder_count_boxplot,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
+
+ggsave("../MH_disorder_count_hist.jpeg",
+       plot = MH_disorder_count_hist,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
+```
+
+## Revision 2: Box-Tidwell test
+
+Box-Tidwell tests will be performed to assess whether the continuous variables in the data are linearly related to the logit transformation of the outcome variable for our LR model. This outcome variable is whether the GLAD participants completed the COPING baseline survey or not.
+
+```{r Create a complete case dataset}
+# Create complete case dataset
+glad_coping_participation_complete_case <- glad_coping_participation %>% 
+  select(all_of(explanatory_variables)) %>% 
+  na.omit()
+
+# Check
+glad_coping_participation_complete_case %>% 
+  dim()
+```
+
+Since the Box-Tidwell function doesn't work with variables that have negative numbers or 0, we can increment the values of the continuous variables with 0's by 1 to perform the analyses.
+
+```{r Increment continuous variables values with 0's by 1 for Box-Tidwell test}
+# Increment sum score variables and total MH disorders by 1
+data_for_BoxTidwell <- glad_coping_participation_complete_case %>% 
+  mutate(across(continuous_vars[-1],
+                ~ .x + 1)
+  )
+
+# Check
+data_for_BoxTidwell %>% 
+  select(all_of(continuous_vars[-1])) %>% 
+  map(~ data_for_BoxTidwell %>% 
+        count({{ .x }}))
+```
+
+```{r Perform Box-Tidwell tests}
+# Save the logodds of the outcome variable
+logodds <- aim1_LR_model$linear.predictors
+
+# Perform Box-Tidwell tests
+boxTidwell(logodds ~ age_cleaned,
+           data = data_for_BoxTidwell)
+
+boxTidwell(logodds ~ phq.sum_score,
+           data = data_for_BoxTidwell)
+
+boxTidwell(logodds ~ gad.sum_score,
+           data = data_for_BoxTidwell)
+
+boxTidwell(logodds ~ audit.sum_score,
+           data = data_for_BoxTidwell)
+
+boxTidwell(logodds ~ MH_disorders_total_count,
+           data = data_for_BoxTidwell)
+```
+
+```{r Plot age and the logit transformation of the outcome}
+logit_age_plot <- glad_coping_participation_complete_case %>% 
+  ggplot(aes(x = age_cleaned, y = logodds)) +
+  geom_point(colour = "Black") +
+  theme_minimal() +
+  labs(x = "Age") +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"))
+
+logit_age_plot
+
+# Save plot
+ggsave("../logit_age_plot.jpeg",
+       plot = logit_age_plot,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
+```
+
+```{r Plot PHQ and logit transformation of outcome}
+logit_phq_plot <- glad_coping_participation_complete_case %>% 
+  ggplot(aes(x = phq.sum_score, y = logodds)) +
+  geom_point(colour = "Black") +
+  theme_minimal() +
+  labs(x = "PHQ sum score") +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"))
+
+logit_phq_plot
+
+# Save
+ggsave("../logit_phq_plot.jpeg",
+       plot = logit_phq_plot,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
+```
+
+```{r Plot GAD and logit transformation of outcome}
+logit_gad_plot <- glad_coping_participation_complete_case %>% 
+  ggplot(aes(x = gad.sum_score, y = logodds)) +
+  geom_point(colour = "Black") +
+  theme_minimal() +
+  labs(x = "GAD sum score") +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"))
+
+logit_gad_plot
+
+# Check
+ggsave("../logit_gad_plot.jpeg",
+       plot = logit_gad_plot,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
+```
+
+```{r Plot AUDIT and logit transformation of outcome}
+logit_audit_plot <- glad_coping_participation_complete_case %>% 
+  ggplot(aes(x = audit.sum_score, y = logodds)) +
+  geom_point(colour = "Black") +
+  theme_minimal() +
+  labs(x = "AUDIT sum score") +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"))
+
+logit_audit_plot
+
+# Save
+ggsave("../logit_audit_plot.jpeg",
+       plot = logit_audit_plot,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
+```
+
+```{r Plot total MH disorders and logit transformation of outcome}
+logit_MH_disorder_count_plot <- glad_coping_participation_complete_case %>% 
+  ggplot(aes(x = MH_disorders_total_count, y = logodds)) +
+  geom_point(colour = "Black") +
+  theme_minimal() +
+  labs(x = "No. Mental health disorders") +
+  theme(axis.text.x = element_text(colour = "black"),
+        axis.text.y = element_text(colour = "black"))
+
+logit_MH_disorder_count_plot
+
+# Save
+ggsave("../logit_MH_disorder_count_plot.jpeg",
+       plot = logit_MH_disorder_count_plot,
+       width = 10,
+       height = 6,
+       dpi = 150,
+       units = "in")
+```
+
+### Sensitivity analysis: Aim 1 LR with newly categorised variables
+
+Since 4/5 of the continuous variables were not linearly related to the outcome variable in aim 1, this sensitivity analysis will investigate whether categorising the variables markedly changes the original results. The variables to be categorised are:
+
+- PHQ sum score
+- GAD sum score
+- AUDIT sum score
+- Total MH disorders
+
+#### Categorise the non-linear continuous variables
+
+Cut-offs for the standardised scales:
+
+PHQ9:
+None (0-4)
+Mild (5-9)
+Moderate (10-14)
+Moderately severe (15-19)
+Severe (20+)
+
+```{r Categorise the PHQ sum score variable}
+glad_coping_participation <- glad_coping_participation %>% 
+  mutate(PHQ_factor = 
+           case_when(
+             phq.sum_score >= 0 & phq.sum_score <= 4 ~ 1,
+             phq.sum_score > 4 & phq.sum_score <= 9 ~ 2,
+             phq.sum_score > 9 & phq.sum_score <= 14 ~ 3,
+             phq.sum_score > 14 & phq.sum_score <= 19 ~ 4,
+             phq.sum_score > 19 ~ 5
+           ))
+
+# Turn new variable into factor
+glad_coping_participation$PHQ_factor <- factor(glad_coping_participation$PHQ_factor,
+                                               levels = c(1, 2, 3, 4, 5),
+                                               labels = c(
+                                                 "None",
+                                                 "Mild",
+                                                 "Moderate",
+                                                 "Moderately severe",
+                                                 "Severe"
+                                               ))
+
+# Check
+glad_coping_participation %>% 
+  select(phq.sum_score,
+         PHQ_factor) %>% 
+  head()
+
+glad_coping_participation %>% 
+  count(PHQ_factor)
+```
+
+GAD7:
+None (0-4)
+Mild (5-9)
+Moderate (10-14)
+Severe (15+)
+
+```{r Categorise the GAD sum score variable}
+glad_coping_participation <- glad_coping_participation %>% 
+  mutate(GAD_factor = 
+           case_when(
+             gad.sum_score >= 0 & gad.sum_score <= 4 ~ 1,
+             gad.sum_score > 4 & gad.sum_score <= 9 ~ 2,
+             gad.sum_score > 9 & gad.sum_score <= 14 ~ 3,
+             gad.sum_score > 14 ~ 4
+           ))
+
+# Turn new variable into factor
+glad_coping_participation$GAD_factor <- factor(glad_coping_participation$GAD_factor,
+                                               levels = c(1, 2, 3, 4),
+                                               labels = c(
+                                                 "None",
+                                                 "Mild",
+                                                 "Moderate",
+                                                 "Severe"
+                                               ))
+
+# Check
+glad_coping_participation %>% 
+  select(gad.sum_score,
+         GAD_factor) %>% 
+  head()
+
+glad_coping_participation %>% 
+  count(GAD_factor)
+```
+
+AUDIT:
+No risk (0-7)
+Increasing risk (8-15)
+Higher risk (16-19)
+Possible dependence (20+)
+
+```{r Categorise the AUDIT sum score variable}
+glad_coping_participation <- glad_coping_participation %>% 
+  mutate(AUDIT_factor = 
+           case_when(
+             audit.sum_score >= 0 & audit.sum_score <= 7 ~ 1,
+             audit.sum_score > 7 & audit.sum_score <= 15 ~ 2,
+             audit.sum_score > 15 & audit.sum_score <= 19 ~ 3,
+             audit.sum_score > 19 ~ 4
+           ))
+
+# Turn new variable into factor
+glad_coping_participation$AUDIT_factor <- factor(glad_coping_participation$AUDIT_factor,
+                                               levels = c(1, 2, 3, 4),
+                                               labels = c(
+                                                 "No risk",
+                                                 "Increasing risk",
+                                                 "Higher risk",
+                                                 "Possible dependence"
+                                               ))
+
+# Check
+glad_coping_participation %>% 
+  select(audit.sum_score,
+         AUDIT_factor) %>% 
+  head()
+
+glad_coping_participation %>% 
+  count(AUDIT_factor)
+```
+
+```{r Categorise the total MH disorders variable}
+glad_coping_participation <- glad_coping_participation %>% 
+  mutate(total_MH_disorders_factor = 
+           case_when(
+             MH_disorders_total_count == 0 ~ 1,
+             MH_disorders_total_count == 1 ~ 2,
+             MH_disorders_total_count > 1 ~ 3
+           ))
+
+# Turn new variable into factor
+glad_coping_participation$total_MH_disorders_factor <- factor(glad_coping_participation$total_MH_disorders_factor,
+                                               levels = c(1, 2, 3),
+                                               labels = c(
+                                                 "No MH disorders",
+                                                 "1 MH disorder",
+                                                 "2+ MH disorders"
+                                               ))
+
+# Check
+glad_coping_participation %>% 
+  select(total_MH_disorders_factor,
+         MH_disorders_total_count) %>% 
+  head()
+
+glad_coping_participation %>% 
+  count(total_MH_disorders_factor)
+
+# Note: NA's are the same as in the MH_disorders_total_count variable
+glad_coping_participation %>% 
+  count(MH_disorders_total_count)
+```
+
+#### Prepare model fitting
+
+```{r Define explanatory and outcome variables}
+#Create explanatory variables vector
+explanatory_variables <- c(
+  "age_cleaned",
+  "gender_recode_labelled",
+  "highest_education_labelled",
+  "ethnicity_labelled",
+  "employment_labelled",
+  "partnership_status_labelled",
+  "PHQ_factor", # new PHQ factor variable
+  "GAD_factor", # New GAD factor variable
+  "AUDIT_factor", # New AUDIT factor variable
+  "smoking_status_labelled",
+  "physical_health_comorbidities_labelled",
+  "total_MH_disorders_factor", # New MH disorder count factor variable
+  "depressive_and_anxiety_comorbidity_labelled",
+  "eating_disorders_labelled",
+  "OCRDs_labelled",
+  "psychotic_and_biploar_disorder_labelled",
+  "asd_labelled",
+  "ADHD_ADD_labelled",
+  "personality_disorder_labelled",
+  #"PTSD_labelled", # Hasing this out because it turns to NA in models after adding anx/dep comorbidity
+  "startDate",
+  "kit_returned_labelled"
+  #joined_coping_first_invitation_labelled,
+)
+
+#Create dependent variable vectors
+coping_baseline_outcome <- c("completed_baseline_labelled")
+```
+
+```{r Create vector of variable terms in sensitivity analysis model}
+sensitivity_analysis_model_vars <- c(
+"Intercept",
+"age_cleaned",
+"gender_recode_labelledFemale",
+"gender_recode_labelledNon-binary/prefer to self-define",
+"highest_education_labelledA levels/AS levels or equivalent",
+"highest_education_labelledO levels/GCSEs or CSEs or equivalent",
+"highest_education_labelledNVQ or HND or HNC or equivalent",
+"highest_education_labelledNone of the above",
+"ethnicity_labelledMixed",
+"ethnicity_labelledAsian or Asian British",
+"ethnicity_labelledBlack or Black British",
+"ethnicity_labelledArab",
+"ethnicity_labelledOther",
+"employment_labelledRetired",
+"employment_labelledLooking after home and/or family",
+"employment_labelledUnable to work because of sickness or disability",
+"employment_labelledUnemployed",
+"employment_labelledDoing unpaid or voluntary work",
+"employment_labelledFull or part-time student",
+"employment_labelledNone of the above",
+"partnership_status_labelledRelationship or married/civil partnership",
+"partnership_status_labelledDivorced/widowed/separated",
+"PHQ_factorNone",
+"PHQ_factorModerate",
+"PHQ_factorModerately severe",
+"PHQ_factorSevere",
+"GAD_factorNone",
+"GAD_factorModerate",
+"GAD_factorSevere",
+"AUDIT_factorIncreasing risk",
+"AUDIT_factorHigher risk",
+"AUDIT_factorPossible dependence",
+"smoking_status_labelledI smoke now",
+"smoking_status_labelledI used to smoke",
+"physical_health_comorbidities_labelled1 physical health disorder",
+"physical_health_comorbidities_labelled2+ physical health disorders",
+"total_MH_disorders_factorNo MH disorders",
+"total_MH_disorders_factor1 MH disorder",
+"depressive_and_anxiety_comorbidity_labelled No depressive or anxiety disorder",
+"depressive_and_anxiety_comorbidity_labelledDepressive disorder only",
+"depressive_and_anxiety_comorbidity_labelledAnxiety disorder only",
+"eating_disorders_labelledEating disorder",
+"OCRDs_labelledOCRDs",
+"psychotic_and_biploar_disorder_labelledPsychotic and bipolar disorder",
+"psychotic_and_biploar_disorder_labelledOnly psychotic disorder",
+"psychotic_and_biploar_disorder_labelledOnly bipolar disorder",
+"asd_labelledAutistic spectrum disorder",
+"ADHD_ADD_labelledADHD or ADD disorder",
+"personality_disorder_labelledPersonality disorder",
+"startDate",
+"kit_returned_labelledPt has provided saliva kit"
+)
+```
+
+```{r Create model formula}
+sensitivity_analysis_formula <- as.formula(paste(coping_baseline_outcome, 
+                                                        paste(explanatory_variables, 
+                                                              collapse=" + "), 
+                                                        sep = " ~ "))
+
+# Check
+sensitivity_analysis_formula
+```
+
+For the newly categorised factors, the level with the highest N pt's should be the reference group.
+
+Note: No risk is the first level in the AUDIT variable and also has the highest N. Therefore, no need to re-level this variable.
+
+```{r Change reference groups}
+# PHQ
+glad_coping_participation$PHQ_factor <- relevel(glad_coping_participation$PHQ_factor,
+        ref = "Mild")
+
+# GAD
+glad_coping_participation$GAD_factor <- relevel(glad_coping_participation$GAD_factor,
+        ref = "Mild")
+
+# Total MH disorders
+glad_coping_participation$total_MH_disorders_factor <- relevel(glad_coping_participation$total_MH_disorders_factor,
+        ref = "2+ MH disorders")
+```
+
+```{r Create adjusted p-value threshold object}
+#Create p-value and no. of test objects
+standard_p_value_level <- 0.05
+sensitivity_analysis_n_tests <- 50 # Factor variables has led to more tests!
+
+#Create adjusted p value thresholds
+sensitivity_analysis_adjusted_sig <- format.pval(pv = standard_p_value_level / sensitivity_analysis_n_tests,
+                                     digits = 3)
+
+#Check thresholds
+sensitivity_analysis_adjusted_sig
+```
+
+#### Perform sensitivity analysis LR model
+
+```{r Run complete LR model}
+sensitivity_analysis_LR_model <- glm(
+  formula = sensitivity_analysis_formula,
+  family = "binomial",
+  data = glad_coping_participation)
+
+#Check output
+summary(sensitivity_analysis_LR_model)
+```
+
+```{r Create tidy output for sensitivity analysis LR model}
+#Create tidy model output
+sensitivity_analysis_LR_model_tidy <- tidy(
+  sensitivity_analysis_LR_model,
+  exponentiate = T,
+  conf.int = T) %>%
+  mutate(
+    Variable = sensitivity_analysis_model_vars, # Change names here!
+    Significance = if_else(
+      p.value < 0.05, 
+      1,
+      0
+      ) %>%
+    recode_factor(
+        "0" = "Not-significant",
+        "1" = "Significant"
+      )) %>%
+  dplyr::select(
+    Variable,
+    OR = estimate,
+    `CI 95% lower` = conf.low,
+    `CI 95% upper` = conf.high,
+     p.value,
+    Significance
+  ) %>% 
+  mutate(
+    OR = round(OR, 2),
+    `CI 95% lower` = round(`CI 95% lower`, 2),
+    `CI 95% upper` = round(`CI 95% upper`, 2),
+    p.value = format.pval(pv = p.value,
+                          digits = 2),
+    threshold_adj_sig = case_when(
+      p.value <= sensitivity_analysis_adjusted_sig ~ "Significant",
+      p.value > sensitivity_analysis_adjusted_sig ~ "Not-significant"
+        )
+    )
+
+#Check output
+sensitivity_analysis_LR_model_tidy
+```
+
+# Write all model output to Excel file
 
 Note: The 1st explanatory LR and ZINB models involve removing the returned saliva kit
 variable as an IV from the models. They are hashed here when the supplementary
@@ -1221,6 +1941,7 @@ model_list <- list(
   #"Exploratory_LR_model1" = exploratory_LR_model1_tidy,
   "Exploratory_LR_model1" = exploratory_LR_model2_tidy,
   "Exploratory_LR_model2" = exploratory_LR_model3_tidy,
+  "Sensitivity_analysis_LR_model" = sensitivity_analysis_LR_model_tidy,
   "Aim2_ZINB_model1" = ZINB_model1,
   #"Exploratory_ZINB_model1" = exploratory_ZINB_model1,
   "Exploratory_ZINB_model1" = exploratory_ZINB_model2
